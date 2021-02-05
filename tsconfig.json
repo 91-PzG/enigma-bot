@@ -10,7 +10,7 @@
     "outDir": "./dist",
     "incremental": true,
     "strict": true,
-    "strictPropertyInitialization": true,
+    "strictPropertyInitialization": false,
     "esModuleInterop": true
   },
   "exclude": ["node_modules", "dist"]
