@@ -22,9 +22,6 @@ export class HllEventGetAllDto {
   @IsNumber()
   playerCount: number;
 
-  @IsNumber()
-  maxPlayerCount: number;
-
   @IsDate()
   registerByDate: Date;
 }

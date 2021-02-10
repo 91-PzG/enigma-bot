@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { HllEventGetAllDto } from './dtos/hlleventGetAll.dto';
-import { HllEventController } from './hllevent.controller';
-import { HllEventService } from './hllevent.service';
+import { HllEventGetAllDto } from '../../src/hllevents/dtos/hlleventGetAll.dto';
+import { HllEventController } from '../../src/hllevents/hllevent.controller';
+import { HllEventService } from '../../src/hllevents/hllevent.service';
 
 describe('EventControler', () => {
   let hllEventController: HllEventController;
@@ -39,7 +39,6 @@ describe('EventControler', () => {
         locked: false,
         closed: false,
         playerCount: 32,
-        maxPlayerCount: 50,
         registerByDate: new Date(),
       },
       {
@@ -50,14 +49,13 @@ describe('EventControler', () => {
         locked: true,
         closed: false,
         playerCount: 50,
-        maxPlayerCount: 50,
         registerByDate: new Date(),
       },
     ];
 
     hllEventService.getAll.mockResolvedValue(events);
 
-    const dtos = (await hllEventController.getAll()).map(pojo =>
+    const dtos = (await hllEventController.getAll()).map((pojo) =>
       plainToClass(HllEventGetAllDto, pojo),
     );
     expect(dtos.length).toBeGreaterThan(0);
