@@ -1,6 +1,6 @@
 export * from './accessRoles.entity';
 export * from './contact.entity';
-export * from './division.entitiy';
+export * from './division.entity';
 export * from './enrolment.entity';
 export * from './enrolmentType.entity';
 export * from './hlldiscordevent.entity';

@@ -1,7 +1,43 @@
-import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { HllDiscordEvent } from './hlldiscordevent.entity';
+import { Member } from './member.entity';
 
-@Entity()
-export class HllEvent extends BaseEntity {
+export interface HLLEvent {
+  //required
+  id: number;
+  name: string;
+  description: string;
+  date: Date;
+  registerByDate: Date;
+  playerCount: number;
+  organisator: Member;
+  mandatory: boolean;
+  locked: boolean;
+  closed: boolean;
+
+  //optional
+  rounds?: number;
+  hllMap?: string;
+  commander?: string;
+  moderator?: string;
+  duration?: number;
+  meetingPoint?: string;
+  server?: string;
+  password?: string;
+  maxPlayerCount?: number;
+  briefing?: Date;
+}
+
+@Entity('hll_event')
+export class HllEventEntity extends BaseEntity implements HLLEvent {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -20,7 +56,8 @@ export class HllEvent extends BaseEntity {
   @Column({ default: 0 })
   playerCount: number;
 
-  //Organisator
+  @ManyToOne(() => Member, { eager: true })
+  organisator: Member;
 
   @Column()
   mandatory: boolean;
@@ -56,8 +93,15 @@ export class HllEvent extends BaseEntity {
   password: string;
 
   @Column({ nullable: true })
-  maxPlayerCount: string;
+  maxPlayerCount: number;
 
   @Column({ nullable: true })
   briefing: Date;
+
+  @Column({ nullable: true })
+  autoPublishDate: Date;
+
+  @OneToOne(() => HllDiscordEvent, { nullable: true })
+  @JoinColumn()
+  discordEvent: HllDiscordEvent;
 }

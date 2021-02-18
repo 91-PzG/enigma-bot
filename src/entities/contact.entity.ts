@@ -1,5 +1,4 @@
-import { BaseEntity, Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
-import { Member } from './member.entity';
+import { BaseEntity, Column, Entity, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class Contact extends BaseEntity {
@@ -11,7 +10,4 @@ export class Contact extends BaseEntity {
 
   @Column()
   comment: string;
-
-  @OneToOne(() => Member, { nullable: true })
-  member: Member;
 }

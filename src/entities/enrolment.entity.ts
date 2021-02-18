@@ -5,9 +5,9 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Division } from './division.entitiy';
+import { Division } from './division.entity';
 import { EnrolmentType } from './enrolmentType.entity';
-import { HllEvent } from './hllevent.entity';
+import { HllEventEntity } from './hllevent.entity';
 import { HllRole } from './hllrole.entity';
 import { Member } from './member.entity';
 import { Squad } from './squad.entity';
@@ -32,8 +32,8 @@ export class Enrolment extends BaseEntity {
   @Column({ nullable: true })
   username: string;
 
-  @ManyToOne(() => HllEvent)
-  event: HllEvent;
+  @ManyToOne(() => HllEventEntity)
+  event: HllEventEntity;
 
   @ManyToOne(() => Member, { nullable: true })
   member: Member;

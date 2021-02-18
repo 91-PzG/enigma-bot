@@ -5,10 +5,13 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToOne,
   PrimaryColumn,
 } from 'typeorm';
+import { Division } from '.';
 import { AccessRole } from './accessRoles.entity';
-import { Division } from './division.entitiy';
+import { Contact } from './contact.entity';
+import { Rank } from './rank.entity';
 
 @Entity()
 export class Member extends BaseEntity {
@@ -19,30 +22,48 @@ export class Member extends BaseEntity {
   recruitSince: Date;
 
   @Column({ nullable: true })
-  recruitTill: Date;
+  recruitTill?: Date;
 
   @Column({ nullable: true })
-  memberSince: Date;
+  memberSince?: Date;
 
   @Column({ nullable: true })
-  memberTill: Date;
+  memberTill?: Date;
 
   @Column()
   reserve: boolean;
 
   @Column({ nullable: true })
-  avatar: string;
+  avatar?: string;
 
   @Column({ default: 0 })
-  missedEvents: number;
+  missedEvents: number = 0;
 
   @Column({ default: 0 })
-  missedConsecutiveEvents: number;
+  missedConsecutiveEvents: number = 0;
 
   @ManyToOne(() => Division)
   division: Division;
 
+  @ManyToOne(() => Rank)
+  rank: Rank;
+
   @ManyToMany(() => AccessRole, { eager: true })
   @JoinTable()
   roles: AccessRole[];
+
+  @OneToOne(() => Contact, { eager: true })
+  contact: Contact;
+
+  @Column({
+    nullable: true,
+    select: false,
+  })
+  password: string;
+
+  @Column({
+    nullable: true,
+    select: false,
+  })
+  salt: string;
 }

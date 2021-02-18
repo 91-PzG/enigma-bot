@@ -2,11 +2,10 @@ import {
   BaseEntity,
   Column,
   Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
+
+
+  PrimaryGeneratedColumn
 } from 'typeorm';
-import { HllEvent } from './hllevent.entity';
 
 @Entity()
 export class HllDiscordEvent extends BaseEntity {
@@ -22,7 +21,5 @@ export class HllDiscordEvent extends BaseEntity {
   @Column()
   registrationMsg: string;
 
-  @OneToOne(() => HllEvent)
-  @JoinColumn()
-  event: HllEvent;
+  
 }

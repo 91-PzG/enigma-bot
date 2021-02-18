@@ -1,4 +1,10 @@
-import { IsBoolean, IsDate, IsNotEmpty, IsNumber } from 'class-validator';
+import {
+  IsBoolean,
+  IsDate,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+} from 'class-validator';
 
 export class HllEventGetAllDto {
   @IsNumber()
@@ -19,9 +25,16 @@ export class HllEventGetAllDto {
   @IsBoolean()
   closed: boolean;
 
+  @IsOptional()
+  @IsNumber()
+  maxPlayerCount?: number;
+
   @IsNumber()
   playerCount: number;
 
   @IsDate()
   registerByDate: Date;
+
+  @IsBoolean()
+  mandatory: boolean;
 }

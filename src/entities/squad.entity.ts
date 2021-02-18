@@ -6,8 +6,7 @@ import {
   OneToMany,
   PrimaryColumn,
 } from 'typeorm';
-import { HllEvent } from '.';
-import { Division } from './division.entitiy';
+import { Division, HllEventEntity } from '.';
 import { Enrolment } from './enrolment.entity';
 
 @Entity()
@@ -24,11 +23,15 @@ export class Squad extends BaseEntity {
   @ManyToOne(() => Division)
   division: Division;
 
-  @ManyToOne(() => HllEvent)
-  event: HllEvent;
+  @ManyToOne(() => HllEventEntity)
+  event: HllEventEntity;
 
-  @OneToMany(() => Enrolment, (enrolment) => enrolment.squad, {
-    eager: true,
-  })
+  @OneToMany(
+    () => Enrolment,
+    enrolment => enrolment.squad,
+    {
+      eager: true,
+    },
+  )
   members: Enrolment[];
 }
