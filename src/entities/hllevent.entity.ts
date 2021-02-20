@@ -28,7 +28,7 @@ export interface HLLEvent {
   hllMap?: string;
   commander?: string;
   moderator?: string;
-  duration?: number;
+  duration?: string;
   meetingPoint?: string;
   server?: string;
   password?: string;
@@ -37,7 +37,7 @@ export interface HLLEvent {
 }
 
 @Entity('hll_event')
-export class HllEventEntity extends BaseEntity implements HLLEvent {
+export class HLLEventEntity extends BaseEntity implements HLLEvent {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -68,6 +68,9 @@ export class HllEventEntity extends BaseEntity implements HLLEvent {
   @Column()
   closed: boolean;
 
+  @Column()
+  channelName: string;
+
   @Column({ nullable: true })
   rounds: number;
 
@@ -81,7 +84,7 @@ export class HllEventEntity extends BaseEntity implements HLLEvent {
   moderator: string;
 
   @Column({ nullable: true })
-  duration: number;
+  duration: string;
 
   @Column({ nullable: true })
   meetingPoint: string;

@@ -1,0 +1,16 @@
+export enum HLLRole {
+  COMMANDER = 'commander',
+  OFFICER = 'officer',
+  RIFLEMAN = 'rifleman',
+  ANTITANK = 'antitank',
+  MACHINEGUNNER = 'machinegunner',
+  ASSAULT = 'assault',
+  MEDIC = 'medic',
+  ENGINEER = 'engineer',
+  SUPPORT = 'support',
+  AUTOMATICRIFLEMAN = 'automaticrifleman',
+  SPOTTER = 'spotter',
+  SNIPER = 'sniper',
+  TANKCOMMANDER = 'tankcommander',
+  CREWMAN = 'crewman',
+}

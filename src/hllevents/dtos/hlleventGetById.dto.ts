@@ -2,9 +2,9 @@ import { Transform } from 'class-transformer';
 import {
   IsBoolean,
   IsDate,
-  IsNotEmpty,
   IsNumber,
   IsOptional,
+  IsString,
 } from 'class-validator';
 import { Member } from '../../entities';
 
@@ -12,10 +12,10 @@ export class HLLEventGetByIdDto {
   @IsNumber()
   id: number;
 
-  @IsNotEmpty()
+  @IsString()
   name: string;
 
-  @IsNotEmpty()
+  @IsString()
   description: string;
 
   @IsDate()
@@ -44,28 +44,31 @@ export class HLLEventGetByIdDto {
   rounds?: number;
 
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   hllMap?: string;
 
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   commander?: string;
 
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   moderator?: string;
-  duration?: number;
 
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
+  duration?: string;
+
+  @IsOptional()
+  @IsString()
   meetingPoint?: string;
 
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   server?: string;
 
   @IsOptional()
-  @IsNotEmpty()
+  @IsString()
   password?: string;
 
   @IsOptional()

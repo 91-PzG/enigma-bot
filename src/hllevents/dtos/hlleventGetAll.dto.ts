@@ -6,7 +6,7 @@ import {
   IsOptional,
 } from 'class-validator';
 
-export class HllEventGetAllDto {
+export class HLLEventGetAllDto {
   @IsNumber()
   id: number;
 

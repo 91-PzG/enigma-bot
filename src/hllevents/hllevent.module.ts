@@ -1,12 +1,13 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { HllEventEntity } from '../entities';
-import { HllEventController } from './hllevent.controller';
-import { HllEventService } from './hllevent.service';
+import { HLLEventEntity } from '../entities';
+import { UsersModule } from '../users/users.module';
+import { HLLEventController } from './hllevent.controller';
+import { HLLEventService } from './hllevent.service';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([HllEventEntity])],
-  controllers: [HllEventController],
-  providers: [HllEventService],
+  imports: [TypeOrmModule.forFeature([HLLEventEntity]), UsersModule],
+  controllers: [HLLEventController],
+  providers: [HLLEventService],
 })
-export class HllEventModule {}
+export class HLLEventModule {}

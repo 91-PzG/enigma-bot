@@ -1,12 +1,16 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HllEventEntity, Member } from '../../entities';
-import { HllEventService } from '../hllevent.service';
+import { HLLEventEntity, Member } from '../../entities';
+import { UsersService } from '../../users/users.service';
+import { HLLEventCreateWrapperDto } from '../dtos/hllEventCreate.dto';
+import { HLLEventUpdateWrapperDto } from '../dtos/hllEventUpdate.dto';
+import { HLLEventService } from '../hllevent.service';
 
-describe('HllEventService', () => {
-  let service: HllEventService;
-  let repository: Repository<HllEventEntity>;
+describe('HLLEventService', () => {
+  let service: HLLEventService;
+  let repository: Repository<HLLEventEntity>;
+  let usersService: jest.Mocked<UsersService>;
   const events = [
     {
       id: 1,
@@ -39,9 +43,9 @@ describe('HllEventService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        HllEventService,
+        HLLEventService,
         {
-          provide: getRepositoryToken(HllEventEntity),
+          provide: getRepositoryToken(HLLEventEntity),
           useValue: {
             createQueryBuilder: jest.fn().mockReturnValue({
               select: jest.fn().mockReturnThis(),
@@ -50,11 +54,18 @@ describe('HllEventService', () => {
             findOne: jest.fn(),
           },
         },
+        {
+          provide: UsersService,
+          useValue: {
+            getMemberById: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
-    service = module.get(HllEventService);
-    repository = module.get(getRepositoryToken(HllEventEntity));
+    service = module.get(HLLEventService);
+    repository = module.get(getRepositoryToken(HLLEventEntity));
+    usersService = module.get(UsersService);
   });
 
   it('should be defined', () => {
@@ -63,7 +74,7 @@ describe('HllEventService', () => {
   });
 
   describe('get Event list', () => {
-    it('should get all events', async function() {
+    it('should get all events', async function () {
       const eventList = await service.getAll();
 
       expect(eventList).toBe(events);
@@ -72,16 +83,16 @@ describe('HllEventService', () => {
   });
 
   describe('get Event by id', () => {
-    it('should throw notFoundException if event not found', async function() {
+    it('should throw notFoundException if event not found', async function () {
       expect.assertions(1);
       jest.spyOn(repository, 'findOne').mockResolvedValue(undefined);
 
-      await service.getEventById(3).catch(e => {
+      await service.getEventById(3).catch((e) => {
         expect(e).toEqual(Error("Event with id '3' not found."));
       });
     });
 
-    it('should get event by id ', async function() {
+    it('should get event by id ', async function () {
       const event = {
         id: 1,
         name: 'name',
@@ -97,7 +108,7 @@ describe('HllEventService', () => {
         hllMap: 'map',
         commander: 'string',
         moderator: 'string',
-        duration: 15,
+        duration: '15min',
         meetingPoint: 'string',
         server: 'string',
         password: 'string',
@@ -106,11 +117,98 @@ describe('HllEventService', () => {
       };
       jest
         .spyOn(repository, 'findOne')
-        .mockResolvedValue(event as HllEventEntity);
+        .mockResolvedValue(event as HLLEventEntity);
       const foundEvent = await service.getEventById(5);
 
       expect(foundEvent).toBe(event);
       expect(repository.findOne).toBeCalled();
+    });
+  });
+
+  describe('patch Event', () => {
+    it('should reject if event is invalid', async function () {
+      expect.assertions(1);
+      service.getEventById = jest.fn().mockRejectedValue('Event Not found');
+
+      return expect(
+        service.patchEvent(1, {} as HLLEventUpdateWrapperDto),
+      ).rejects.toBe('Event Not found');
+    });
+
+    it('should reject if organisator is invalid', async function () {
+      expect.assertions(1);
+      service.getEventById = jest.fn().mockResolvedValue({});
+      usersService.getMemberById.mockResolvedValue(undefined);
+
+      return expect(
+        service.patchEvent(1, {
+          control: { organisator: 'hans' },
+        } as HLLEventUpdateWrapperDto),
+      ).rejects.toEqual(new Error('Invalid Organisator'));
+    });
+
+    it('should call save with correct values', async function () {
+      const event = {
+        save: jest.fn(),
+      };
+      const data = {
+        description: 'des',
+        name: 'name',
+        maxPlayerCount: 5,
+      };
+      service.getEventById = jest.fn().mockResolvedValue(event);
+
+      await service.patchEvent(1, {
+        data,
+        control: {},
+      } as HLLEventUpdateWrapperDto);
+
+      expect(event).toEqual({
+        ...event,
+        ...data,
+      });
+    });
+  });
+
+  describe('create Event', () => {
+    let event: { save: jest.Mock };
+
+    beforeEach(() => {
+      event = { save: jest.fn().mockResolvedValue({ id: 45 }) };
+      repository.create = jest.fn().mockReturnValue(event);
+    });
+
+    it('should reject if organisator is invalid', async function () {
+      expect.assertions(1);
+      usersService.getMemberById.mockResolvedValue(undefined);
+
+      return expect(
+        service.createEvent({
+          control: { organisator: 'hans' },
+        } as HLLEventCreateWrapperDto),
+      ).rejects.toEqual(new Error('Invalid Organisator'));
+    });
+
+    it('should call save with correct values', async function () {
+      const data = {
+        description: 'des',
+        name: 'name',
+        maxPlayerCount: 5,
+      };
+      const member = { id: '5' } as Member;
+
+      usersService.getMemberById.mockResolvedValue(member);
+
+      await service.createEvent({
+        data,
+        control: { organisator: 'any' },
+      } as HLLEventCreateWrapperDto);
+
+      expect(event).toEqual({
+        ...data,
+        organisator: member,
+        save: event.save,
+      });
     });
   });
 });

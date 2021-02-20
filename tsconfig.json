@@ -11,7 +11,8 @@
     "incremental": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "noImplicitAny": false
   },
   "exclude": ["node_modules", "dist"]
 }

@@ -5,10 +5,10 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { Division } from './division.entity';
-import { EnrolmentType } from './enrolmentType.entity';
-import { HllEventEntity } from './hllevent.entity';
-import { HllRole } from './hllrole.entity';
+import { Division } from './division.enum';
+import { EnrolmentType } from './enrolmentType.enum';
+import { HLLEventEntity } from './hllevent.entity';
+import { HLLRole } from './hllRole.enum';
 import { Member } from './member.entity';
 import { Squad } from './squad.entity';
 
@@ -32,21 +32,30 @@ export class Enrolment extends BaseEntity {
   @Column({ nullable: true })
   username: string;
 
-  @ManyToOne(() => HllEventEntity)
-  event: HllEventEntity;
+  @ManyToOne(() => HLLEventEntity)
+  event: HLLEventEntity;
 
   @ManyToOne(() => Member, { nullable: true })
   member: Member;
 
-  @ManyToOne(() => Division)
+  @Column({
+    type: 'enum',
+    enum: Division,
+  })
   division: Division;
 
-  @ManyToOne(() => EnrolmentType)
-  enrolmentType: Division;
+  @Column({
+    type: 'enum',
+    enum: EnrolmentType,
+  })
+  enrolmentType: EnrolmentType;
 
   @ManyToOne(() => Squad)
   squad: Squad;
 
-  @ManyToOne(() => HllRole)
-  role: HllRole;
+  @Column({
+    type: 'enum',
+    enum: HLLRole,
+  })
+  role: HLLRole;
 }

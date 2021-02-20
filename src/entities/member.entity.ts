@@ -1,17 +1,9 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  OneToOne,
-  PrimaryColumn,
-} from 'typeorm';
+import * as bcrypt from 'bcrypt';
+import { BaseEntity, Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
 import { Division } from '.';
-import { AccessRole } from './accessRoles.entity';
+import { AccessRoles } from './accessRoles.enum';
 import { Contact } from './contact.entity';
-import { Rank } from './rank.entity';
+import { Rank } from './rank.enum';
 
 @Entity()
 export class Member extends BaseEntity {
@@ -42,15 +34,27 @@ export class Member extends BaseEntity {
   @Column({ default: 0 })
   missedConsecutiveEvents: number = 0;
 
-  @ManyToOne(() => Division)
+  @Column({ default: false })
+  honoraryMember: boolean;
+
+  @Column({
+    type: 'enum',
+    enum: Division,
+  })
   division: Division;
 
-  @ManyToOne(() => Rank)
+  @Column({
+    type: 'enum',
+    enum: Rank,
+  })
   rank: Rank;
 
-  @ManyToMany(() => AccessRole, { eager: true })
-  @JoinTable()
-  roles: AccessRole[];
+  @Column({
+    type: 'enum',
+    array: true,
+    enum: AccessRoles,
+  })
+  roles: AccessRoles[];
 
   @OneToOne(() => Contact, { eager: true })
   contact: Contact;
@@ -66,4 +70,12 @@ export class Member extends BaseEntity {
     select: false,
   })
   salt: string;
+
+  @Column({ default: false })
+  mustChangePassword: boolean;
+
+  async validatePassword(password: string): Promise<boolean> {
+    const hash = await bcrypt.hash(password, this.salt);
+    return hash === this.password;
+  }
 }

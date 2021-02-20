@@ -1,0 +1,108 @@
+import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Client as InjectClient, ClientProvider, Once } from 'discord-nestjs';
+import {
+  CategoryChannel,
+  Channel,
+  Client,
+  Collection,
+  Guild,
+  GuildEmoji,
+  GuildMember,
+  Message,
+  Role,
+  TextChannel,
+  User,
+} from 'discord.js';
+import { DiscordChannelDto } from '../channel/dtos/discord-channel.dto';
+import { DiscordConfig } from '../config/discord.config';
+
+@Injectable()
+export class DiscordService {
+  @InjectClient()
+  discordProvider: ClientProvider;
+  client: Client;
+  private config: DiscordConfig;
+  private logger = new Logger('DiscordService');
+
+  constructor(config: ConfigService) {
+    this.config = config.get('discord') as DiscordConfig;
+  }
+
+  @Once({ event: 'ready' })
+  onReady(): void {
+    this.client = this.discordProvider.getClient();
+    this.logger.log('Discord client connected');
+  }
+
+  async getClanMembers(): Promise<Collection<string, GuildMember>> {
+    const channel = await this.getChannelById<TextChannel>(
+      this.config.clanChat,
+    );
+    return channel.members;
+  }
+
+  getEventChannels(): DiscordChannelDto[] {
+    return this.client.channels.cache
+      .filter(
+        (f) =>
+          f.type === 'text' &&
+          (f as TextChannel).parentID === this.config.eventCategory,
+      )
+      .map((channel) => ({
+        id: channel.id,
+        name: (channel as TextChannel).name,
+      }));
+  }
+
+  async getChannelById<T extends Channel>(id: string): Promise<T> {
+    return this.client.channels.fetch(id) as Promise<T>;
+  }
+
+  async getMessageById(messageId: string, channelId: string): Promise<Message> {
+    const channel = await this.getChannelById<TextChannel>(channelId);
+    if (!channel) throw Error();
+    return await channel.messages.fetch(messageId);
+  }
+
+  getEmojiById(emojiId: string): GuildEmoji | undefined {
+    return this.client.emojis.cache.get(emojiId);
+  }
+
+  getGuild(): Guild | undefined {
+    return this.client.guilds.cache.get(this.config.guild);
+  }
+
+  getMember(user: User | string): Promise<GuildMember> | undefined {
+    return this.getGuild()?.members.fetch(user);
+  }
+
+  async createTextChannel(name: string): Promise<string | undefined> {
+    const guild = this.getGuild();
+    if (!guild) throw Error('could not find guild');
+
+    const channel = await guild.channels.create(name, {
+      type: 'text',
+      parent: await this.getChannelById<CategoryChannel>(
+        this.config.eventCategory,
+      ),
+    });
+
+    return channel.id;
+  }
+
+  async getRoleByID(id: string): Promise<Role | null | undefined> {
+    return this.getGuild()?.roles.fetch(id);
+  }
+
+  async clearChannel(channel: TextChannel) {
+    const messages = await channel.messages.fetch();
+    try {
+      await channel.bulkDelete(messages);
+    } catch (error) {}
+  }
+
+  isClanMember(member: GuildMember): boolean {
+    return member.roles.cache.has(this.config.memberRole);
+  }
+}

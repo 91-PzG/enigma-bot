@@ -1,0 +1,96 @@
+import {
+  ConflictException,
+  ForbiddenException,
+  Logger,
+  NotFoundException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
+import { EntityRepository, Repository } from 'typeorm';
+import { Member } from '../entities';
+import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
+import { ChangePasswordDto } from './dtos/change-password.dto';
+import { JwtPayload, JwtWrapper } from './jwt/jwt-payload.interface';
+
+@EntityRepository(Member)
+export class AuthRepository extends Repository<Member> {
+  private logger = new Logger('AuthRepository');
+
+  async setPassword(clearPassword: string, id: string): Promise<void> {
+    const { salt, password } = await this.hashPassword(clearPassword);
+
+    const affected = (
+      await this.createQueryBuilder()
+        .update(Member)
+        .set({ salt, password, mustChangePassword: true })
+        .where('id = :id', { id })
+        .execute()
+    ).affected;
+    if (!affected) throw new Error(`No user with id '${id}' found.`);
+  }
+
+  private async hashPassword(
+    clearPassword: string,
+  ): Promise<{ password: string; salt: string }> {
+    const salt = await bcrypt.genSalt();
+    const password = await bcrypt.hash(clearPassword, salt);
+    return { password, salt };
+  }
+
+  async changePassword(
+    changePasswordDto: ChangePasswordDto,
+  ): Promise<JwtWrapper> {
+    const member = await this.getMemberByName(changePasswordDto.username);
+
+    if (!member) throw new NotFoundException('Username not found');
+    if (!(await member.validatePassword(changePasswordDto.oldPassword)))
+      throw new UnauthorizedException('Passwort ungültig');
+
+    const { salt, password } = await this.hashPassword(
+      changePasswordDto.newPassword,
+    );
+    member.mustChangePassword = false;
+    member.salt = salt;
+    member.password = password;
+    await member.save();
+    return this.generateJwtWrapper(member);
+  }
+
+  async signIn(authCredentialsDto: AuthCredentialsDto): Promise<JwtWrapper> {
+    const { username, password } = authCredentialsDto;
+    const member = await this.getMemberByName(username);
+
+    if (!member || !(await member.validatePassword(password)))
+      throw new UnauthorizedException('Invalid credentials');
+    if (member.mustChangePassword)
+      throw new ForbiddenException('Must change password');
+    if (!member.password)
+      throw new ConflictException('User not registered yet');
+
+    return this.generateJwtWrapper(member);
+  }
+
+  private async getMemberByName(username: string): Promise<Member | undefined> {
+    return this.createQueryBuilder('member')
+      .select('member')
+      .addSelect('user.password')
+      .addSelect('user.salt')
+      .where('user.username = :username', { username })
+      .getOne();
+  }
+
+  private async generateJwtWrapper(member: Member): Promise<JwtWrapper> {
+    return {
+      accessToken: this.generateAccessToken(member),
+    };
+  }
+
+  private generateAccessToken(member: Member): JwtPayload {
+    return {
+      userId: member.id,
+      username: member.contact.name,
+      avatar: member.avatar || undefined,
+      roles: [],
+    };
+  }
+}
