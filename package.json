@@ -80,6 +80,8 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "coverageDirectory": "../coverage",
+    "collectCoverage": true,
+    "coverageReporters": ["lcov"],
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
       "src/entities",
