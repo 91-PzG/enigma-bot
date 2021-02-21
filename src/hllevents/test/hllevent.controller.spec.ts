@@ -4,7 +4,7 @@ import { validate } from 'class-validator';
 import { HLLEvent, HLLEventEntity, Member } from '../../entities';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from '../dtos/hllEventGetAll.dto';
-import { HLLEventUpdateWrapperDto } from '../dtos/hllEventUpdate.dto';
+import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';
 import { HLLEventController } from '../hllevent.controller';
 import { HLLEventService } from '../hllevent.service';
 
