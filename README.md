@@ -8,6 +8,7 @@
 <a href="https://codeclimate.com/github/91-PzG/enigma-bot/"><img src="https://img.shields.io/codeclimate/maintainability/91-PzG/enigma-bot" alt="Maintainability" /></a>
 <a href="https://codeclimate.com/github/91-PzG/enigma-bot/"><img src="https://img.shields.io/codeclimate/coverage/91-PzG/enigma-bot" alt="Test Coverage" /></a>
 <a href="https://snyk.io/test/github/91-PzG/enigma-bot/"><img src="https://img.shields.io/snyk/vulnerabilities/github/91-PzG/enigma-bot" alt="Vulnerabilities" /></a>
+<img src="https://github.com/91-PzG/enigma-website/actions/workflows/codeql-analysis.yml/badge.svg" alt="CodeQL" />
 </p>
 
 ## Beschreibung
