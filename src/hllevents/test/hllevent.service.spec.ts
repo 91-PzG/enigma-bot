@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { HLLEventEntity, Member } from '../../entities';
 import { UsersService } from '../../users/users.service';
-import { HLLEventCreateWrapperDto } from '../dtos/hllEventCreate.dto';
+import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hllEventUpdate.dto';
 import { HLLEventService } from '../hllevent.service';
 

@@ -11,10 +11,10 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { EventGuard } from '../auth/jwt/guards/event.guard';
-import { HLLEventCreateWrapperDto } from './dtos/hllEventCreate.dto';
-import { HLLEventGetAllDto } from './dtos/hllEventGetAll.dto';
+import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
+import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
 import { HLLEventGetByIdDto } from './dtos/hlleventGetById.dto';
-import { HLLEventUpdateWrapperDto } from './dtos/hllEventUpdate.dto';
+import { HLLEventUpdateWrapperDto } from './dtos/hlleventUpdate.dto';
 import { HLLEventService } from './hllevent.service';
 
 @Controller('events')

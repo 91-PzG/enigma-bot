@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { HLLEvent, HLLEventEntity, Member } from '../../entities';
-import { HLLEventCreateWrapperDto } from '../dtos/hllEventCreate.dto';
+import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from '../dtos/hllEventGetAll.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hllEventUpdate.dto';
 import { HLLEventController } from '../hllevent.controller';

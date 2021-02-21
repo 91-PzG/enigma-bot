@@ -5,7 +5,7 @@ export * from './enrolment.entity';
 export * from './enrolmentType.enum';
 export * from './hlldiscordevent.entity';
 export * from './hllevent.entity';
-export * from './hllrole.enum';
+export * from './hllRole.enum';
 export * from './mapvote.entity';
 export * from './member.entity';
 export * from './rank.enum';
