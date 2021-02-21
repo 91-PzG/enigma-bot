@@ -3,7 +3,7 @@ import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { HLLEvent, HLLEventEntity, Member } from '../../entities';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
-import { HLLEventGetAllDto } from '../dtos/hllEventGetAll.dto';
+import { HLLEventGetAllDto } from '../dtos/hlleventGetAll.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';
 import { HLLEventController } from '../hllevent.controller';
 import { HLLEventService } from '../hllevent.service';
