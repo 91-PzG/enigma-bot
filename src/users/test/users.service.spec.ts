@@ -20,11 +20,11 @@ describe('UsersService', () => {
           provide: getRepositoryToken(Member),
           useValue: {
             createQueryBuilder: jest.fn().mockReturnValue({
-              leftJoinAndSelect: jest.fn().mockReturnThis(),
+              leftJoin: jest.fn().mockReturnThis(),
               select: jest.fn().mockReturnThis(),
               where: jest.fn().mockReturnThis(),
               andWhere: jest.fn().mockReturnThis(),
-              getMany: jest.fn().mockReturnValue(users),
+              getRawMany: jest.fn().mockResolvedValue(users),
             }),
             findOne: jest.fn().mockReturnValue(user),
           },
@@ -40,8 +40,8 @@ describe('UsersService', () => {
   });
 
   describe('userList', () => {
-    it('should return users', () => {
-      expect(service.getUserList()).toEqual(users);
+    it('should return users', async () => {
+      expect(await service.getUserList()).toEqual(users);
     });
   });
 

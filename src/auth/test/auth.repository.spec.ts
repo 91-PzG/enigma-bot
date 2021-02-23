@@ -14,6 +14,7 @@ describe('AuthRepository', () => {
   };
   let queryBuilder: Partial<SelectQueryBuilder<Member>> = {
     update: jest.fn().mockReturnValue(updateQueryBuilder),
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
     select: jest.fn().mockReturnThis(),
     addSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
@@ -94,6 +95,7 @@ describe('AuthRepository', () => {
         contact: { name: 'name' },
         id: 'id',
         avatar: 'avatar',
+        roles: [],
       };
     });
 
@@ -160,6 +162,7 @@ describe('AuthRepository', () => {
         //@ts-ignore
         contact: { name: 'name' },
         id: 'id',
+        roles: [],
       };
     });
 
@@ -188,7 +191,7 @@ describe('AuthRepository', () => {
       queryBuilder.getOne = jest.fn().mockResolvedValue(member);
 
       await authRepository.signIn({ password: '', username: '' }).catch((e) => {
-        expect(e).toEqual(Error('Invalid credentials'));
+        expect(e).toEqual(Error('User not registered yet'));
       });
     });
 
