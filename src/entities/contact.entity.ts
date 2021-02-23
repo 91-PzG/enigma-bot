@@ -8,6 +8,6 @@ export class Contact extends BaseEntity {
   @Column()
   name: string;
 
-  @Column()
-  comment: string;
+  @Column({ nullable: true })
+  comment?: string;
 }

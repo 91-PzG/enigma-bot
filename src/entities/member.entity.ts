@@ -1,5 +1,12 @@
 import * as bcrypt from 'bcrypt';
-import { BaseEntity, Column, Entity, OneToOne, PrimaryColumn } from 'typeorm';
+import {
+  BaseEntity,
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryColumn,
+} from 'typeorm';
 import { Division } from '.';
 import { AccessRoles } from './accessRoles.enum';
 import { Contact } from './contact.entity';
@@ -22,7 +29,7 @@ export class Member extends BaseEntity {
   @Column({ nullable: true })
   memberTill?: Date;
 
-  @Column()
+  @Column({ default: false })
   reserve: boolean;
 
   @Column({ nullable: true })
@@ -53,10 +60,12 @@ export class Member extends BaseEntity {
     type: 'enum',
     array: true,
     enum: AccessRoles,
+    default: [AccessRoles.MEMBER],
   })
   roles: AccessRoles[];
 
   @OneToOne(() => Contact, { eager: true })
+  @JoinColumn()
   contact: Contact;
 
   @Column({
@@ -75,6 +84,7 @@ export class Member extends BaseEntity {
   mustChangePassword: boolean;
 
   async validatePassword(password: string): Promise<boolean> {
+    if (!password) return false;
     const hash = await bcrypt.hash(password, this.salt);
     return hash === this.password;
   }
