@@ -36,10 +36,10 @@ export class Member extends BaseEntity {
   avatar?: string;
 
   @Column({ default: 0 })
-  missedEvents: number = 0;
+  missedEvents: number;
 
   @Column({ default: 0 })
-  missedConsecutiveEvents: number = 0;
+  missedConsecutiveEvents: number;
 
   @Column({ default: false })
   honoraryMember: boolean;

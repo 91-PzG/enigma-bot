@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HLLEvent, HLLEventEntity, Member } from '../entities';
+import { HLLEvent, IHLLEvent, Member } from '../entities';
 import { UsersService } from '../users/users.service';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventUpdateWrapperDto } from './dtos/hlleventUpdate.dto';
@@ -13,29 +13,29 @@ import { HLLEventUpdateWrapperDto } from './dtos/hlleventUpdate.dto';
 @Injectable()
 export class HLLEventService {
   constructor(
-    @InjectRepository(HLLEventEntity)
-    private eventRepository: Repository<HLLEventEntity>,
+    @InjectRepository(HLLEvent)
+    private eventRepository: Repository<HLLEvent>,
     private userService: UsersService,
   ) {}
 
-  getAll(): Promise<HLLEvent[]> {
+  getAll(): Promise<IHLLEvent[]> {
     return this.eventRepository
       .createQueryBuilder('event')
       .select([
-        'id',
-        'name',
-        'date',
-        'locked',
-        'description',
-        'closed',
-        'playerCount',
-        'maxPlayerCount',
-        'registerByDate',
+        'event.id',
+        'event.name',
+        'event.date',
+        'event.locked',
+        'event.description',
+        'event.closed',
+        'event.playerCount',
+        'event.maxPlayerCount',
+        'event.registerByDate',
       ])
       .getMany();
   }
 
-  async getEventById(id: number): Promise<HLLEventEntity> {
+  async getEventById(id: number): Promise<HLLEvent> {
     const event = await this.eventRepository.findOne(id);
     if (!event) throw new NotFoundException(`Event with id '${id}' not found.`);
     return event;

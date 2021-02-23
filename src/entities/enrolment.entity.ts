@@ -7,7 +7,7 @@ import {
 } from 'typeorm';
 import { Division } from './division.enum';
 import { EnrolmentType } from './enrolmentType.enum';
-import { HLLEventEntity } from './hllevent.entity';
+import { HLLEvent } from './hllevent.entity';
 import { HLLRole } from './hllRole.enum';
 import { Member } from './member.entity';
 import { Squad } from './squad.entity';
@@ -32,8 +32,8 @@ export class Enrolment extends BaseEntity {
   @Column({ nullable: true })
   username: string;
 
-  @ManyToOne(() => HLLEventEntity)
-  event: HLLEventEntity;
+  @ManyToOne(() => HLLEvent)
+  event: HLLEvent;
 
   @ManyToOne(() => Member, { nullable: true })
   member: Member;

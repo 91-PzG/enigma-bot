@@ -5,7 +5,7 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
-import { HLLEventEntity } from './hllevent.entity';
+import { HLLEvent } from './hllevent.entity';
 
 @Entity()
 export class Mapvote extends BaseEntity {
@@ -18,6 +18,6 @@ export class Mapvote extends BaseEntity {
   @Column()
   massageId: string;
 
-  @ManyToOne(() => HLLEventEntity)
-  event: HLLEventEntity;
+  @ManyToOne(() => HLLEvent)
+  event: HLLEvent;
 }

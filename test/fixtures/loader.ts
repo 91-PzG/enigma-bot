@@ -1,15 +1,17 @@
 import * as fs from 'fs';
-import yaml from 'js-yaml';
+import * as yaml from 'js-yaml';
 import { Connection } from 'typeorm';
 
 export async function loadFixtures(
   name: string,
   dbConnection: Connection,
 ): Promise<any> {
+  console.log('startup');
   let items: any[] = [];
   try {
-    const file: any = yaml.load(fs.readFileSync(`./${name}.yml`, 'utf8'));
-    console.log(file);
+    const file: any = yaml.load(
+      fs.readFileSync(`./test/fixtures/${name}.yml`, 'utf8'),
+    );
     items = file['fixtures'];
   } catch (e) {
     console.log('fixtures error', e);
@@ -19,7 +21,7 @@ export async function loadFixtures(
     return;
   }
 
-  items.forEach(async (item: any) => {
+  for (const item of items) {
     const entityName = Object.keys(item)[0];
     const data = item[entityName];
     await dbConnection
@@ -28,5 +30,5 @@ export async function loadFixtures(
       .into(entityName)
       .values(data)
       .execute();
-  });
+  }
 }

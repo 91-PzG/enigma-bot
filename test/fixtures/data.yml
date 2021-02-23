@@ -1,0 +1,88 @@
+fixtures:
+  - Contact:
+      id: '1'
+      name: 'One'
+  - Contact:
+      id: '2'
+      name: 'Two'
+  - Contact:
+      id: '3'
+      name: 'Three'
+  - Contact:
+      id: '4'
+      name: 'Four'
+  - Contact:
+      id: '5'
+      name: 'Five'
+  - Member:
+      id: '1'
+      recruitSince: '2020-07-31 20:00:00'
+      division: 'infanterie'
+      rank: 'soldier'
+      contact:
+        id: '1'
+      salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
+      password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
+  - Member:
+      id: '2'
+      recruitSince: '2020-07-31 20:00:00'
+      division: 'infanterie'
+      rank: 'soldier'
+      contact:
+        id: '2'
+      salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
+      password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
+      mustChangePassword: true
+  - Member:
+      id: '3'
+      recruitSince: '2020-07-31 20:00:00'
+      division: 'infanterie'
+      rank: 'soldier'
+      contact:
+        id: '3'
+  - Member:
+      id: '4'
+      recruitSince: '2020-07-31 20:00:00'
+      memberTill: '2020-07-31 20:00:00'
+      division: 'infanterie'
+      rank: 'soldier'
+      salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
+      password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
+      contact:
+        id: '4'
+  - Member:
+      id: '5'
+      recruitSince: '2020-07-31 20:00:00'
+      division: 'infanterie'
+      rank: 'soldier'
+      honoraryMember: true
+      salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
+      password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
+      contact:
+        id: '5'
+  - HLLEvent:
+      id: 1
+      name: 'Event #1'
+      description: 'Description for Event #1'
+      date: '2020-07-31 20:00:00'
+      registerByDate: '2020-07-31 20:00:00'
+      playerCount: 0
+      organisator:
+        id: '1'
+      mandatory: true
+      locked: false
+      closed: false
+      channelName: 'channel1'
+  - HLLEvent:
+      id: 2
+      name: 'Event #2'
+      description: 'Description for Event #2'
+      date: '2020-06-20 20:00:00'
+      registerByDate: '2020-06-20 20:00:00'
+      playerCount: 1
+      organisator:
+        id: '2'
+      mandatory: true
+      locked: true
+      closed: true
+      channelName: 'channel2'

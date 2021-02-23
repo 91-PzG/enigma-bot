@@ -60,12 +60,13 @@ export class AuthRepository extends Repository<Member> {
     const { username, password } = authCredentialsDto;
     const member = await this.getMemberByName(username);
 
-    if (!member || !(await member.validatePassword(password)))
-      throw new UnauthorizedException('Invalid credentials');
+    if (!member) throw new UnauthorizedException('Invalid credentials');
     if (member.mustChangePassword)
       throw new ForbiddenException('Must change password');
     if (!member.password)
       throw new ConflictException('User not registered yet');
+    if (!(await member.validatePassword(password)))
+      throw new UnauthorizedException('Invalid credentials');
 
     return this.generateJwtWrapper(member);
   }
@@ -73,9 +74,13 @@ export class AuthRepository extends Repository<Member> {
   private async getMemberByName(username: string): Promise<Member | undefined> {
     return this.createQueryBuilder('member')
       .select('member')
-      .addSelect('user.password')
-      .addSelect('user.salt')
-      .where('user.username = :username', { username })
+      .leftJoinAndSelect('member.contact', 'contact')
+      .addSelect('member.password')
+      .addSelect('member.salt')
+      .where(
+        'contact.name = :username AND member.memberTill is NULL AND member.honoraryMember = false',
+        { username },
+      )
       .getOne();
   }
 
@@ -90,7 +95,7 @@ export class AuthRepository extends Repository<Member> {
       userId: member.id,
       username: member.contact.name,
       avatar: member.avatar || undefined,
-      roles: [],
+      roles: member.roles,
     };
   }
 }

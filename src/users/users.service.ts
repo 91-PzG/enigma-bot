@@ -11,15 +11,15 @@ export class UsersService {
     private memberRepository: Repository<Member>,
   ) {}
 
-  getUserList(): Promise<UserListDto[]> {
-    return (this.memberRepository
+  async getUserList(): Promise<UserListDto[]> {
+    return ((await this.memberRepository
       .createQueryBuilder('member')
-      .leftJoinAndSelect('member.contact', 'contact')
-      .select('member.id', 'contact.name AS username')
+      .leftJoin('member.contact', 'contact')
+      .select(['member.id AS id', 'contact.name AS username'])
       .where('member.honoraryMember = false')
       .andWhere('member.reserve = false')
-      .andWhere('member.memberTill = false')
-      .getMany() as unknown) as Promise<UserListDto[]>;
+      .andWhere('member.memberTill IS NULL')
+      .getRawMany()) as unknown) as Promise<UserListDto[]>;
   }
 
   getMemberById(id: string): Promise<Member | undefined> {

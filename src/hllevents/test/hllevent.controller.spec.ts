@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { HLLEvent, HLLEventEntity, Member } from '../../entities';
+import { HLLEvent, IHLLEvent, Member } from '../../entities';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from '../dtos/hlleventGetAll.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';
@@ -35,7 +35,7 @@ describe('EventControler', () => {
 
   describe('get Event list', () => {
     it('getAll should convert domain objects returned from service to DTOs', async () => {
-      const events: HLLEvent[] = [
+      const events: IHLLEvent[] = [
         {
           id: 1,
           name: 'Freundschaftsspiel gegen 38.',
@@ -81,7 +81,7 @@ describe('EventControler', () => {
 
   describe('get Event by id', () => {
     it('getEventById should convert domain objects returned from service to DTOs', async () => {
-      const event: HLLEventEntity = {
+      const event: HLLEvent = {
         id: 1,
         name: 'name',
         description: 'description',

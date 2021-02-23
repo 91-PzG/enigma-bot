@@ -27,8 +27,8 @@ export class HLLEventGetByIdDto {
   @IsNumber()
   playerCount: number;
 
-  @Transform(({ value }: { value: Member }) => value.contact.name)
-  organisator: Member;
+  @Transform(({ value }: { value: Member }) => 'avcs')
+  organisator: Member | string;
 
   @IsBoolean()
   mandatory: boolean;

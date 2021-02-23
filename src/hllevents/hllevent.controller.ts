@@ -1,6 +1,5 @@
 import {
   Body,
-  ClassSerializerInterceptor,
   Controller,
   Get,
   Param,
@@ -8,9 +7,9 @@ import {
   Patch,
   Post,
   UseGuards,
-  UseInterceptors,
 } from '@nestjs/common';
 import { EventGuard } from '../auth/jwt/guards/event.guard';
+import { Member } from '../entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
 import { HLLEventGetByIdDto } from './dtos/hlleventGetById.dto';
@@ -27,11 +26,14 @@ export class HLLEventController {
   }
 
   @Get('/:id')
-  @UseInterceptors(ClassSerializerInterceptor)
-  getEventById(
+  async getEventById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<HLLEventGetByIdDto> {
-    return this.hllEventService.getEventById(id);
+    const event = (await this.hllEventService.getEventById(
+      id,
+    )) as HLLEventGetByIdDto;
+    event.organisator = (event.organisator as Member).contact.name;
+    return event;
   }
 
   @UseGuards(EventGuard)

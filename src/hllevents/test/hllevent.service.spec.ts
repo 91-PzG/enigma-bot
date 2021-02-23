@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { HLLEventEntity, Member } from '../../entities';
+import { HLLEvent, Member } from '../../entities';
 import { UsersService } from '../../users/users.service';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';
@@ -9,7 +9,7 @@ import { HLLEventService } from '../hllevent.service';
 
 describe('HLLEventService', () => {
   let service: HLLEventService;
-  let repository: Repository<HLLEventEntity>;
+  let repository: Repository<HLLEvent>;
   let usersService: jest.Mocked<UsersService>;
   const events = [
     {
@@ -45,7 +45,7 @@ describe('HLLEventService', () => {
       providers: [
         HLLEventService,
         {
-          provide: getRepositoryToken(HLLEventEntity),
+          provide: getRepositoryToken(HLLEvent),
           useValue: {
             createQueryBuilder: jest.fn().mockReturnValue({
               select: jest.fn().mockReturnThis(),
@@ -64,7 +64,7 @@ describe('HLLEventService', () => {
     }).compile();
 
     service = module.get(HLLEventService);
-    repository = module.get(getRepositoryToken(HLLEventEntity));
+    repository = module.get(getRepositoryToken(HLLEvent));
     usersService = module.get(UsersService);
   });
 
@@ -115,9 +115,7 @@ describe('HLLEventService', () => {
         maxPlayerCount: 10,
         briefing: new Date(),
       };
-      jest
-        .spyOn(repository, 'findOne')
-        .mockResolvedValue(event as HLLEventEntity);
+      jest.spyOn(repository, 'findOne').mockResolvedValue(event as HLLEvent);
       const foundEvent = await service.getEventById(5);
 
       expect(foundEvent).toBe(event);

@@ -10,7 +10,7 @@ import {
 import { HllDiscordEvent } from './hlldiscordevent.entity';
 import { Member } from './member.entity';
 
-export interface HLLEvent {
+export interface IHLLEvent {
   //required
   id: number;
   name: string;
@@ -37,7 +37,7 @@ export interface HLLEvent {
 }
 
 @Entity('hll_event')
-export class HLLEventEntity extends BaseEntity implements HLLEvent {
+export class HLLEvent extends BaseEntity implements IHLLEvent {
   @PrimaryGeneratedColumn()
   id: number;
 
