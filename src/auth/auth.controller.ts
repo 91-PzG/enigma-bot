@@ -4,7 +4,6 @@ import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { JwtWrapperDto } from './dtos/jwt-wrapper.dto';
 
-
 @Controller('auth')
 export class AuthController {
   constructor(private authService: AuthService) {}

@@ -1,11 +1,4 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-
-
-  PrimaryGeneratedColumn
-} from 'typeorm';
+import { BaseEntity, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class HllDiscordEvent extends BaseEntity {
@@ -20,6 +13,4 @@ export class HllDiscordEvent extends BaseEntity {
 
   @Column()
   registrationMsg: string;
-
-  
 }
