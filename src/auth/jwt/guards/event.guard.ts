@@ -8,6 +8,6 @@ export class EventGuard implements CanActivate {
     ctx: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
     const user: JwtPayload = ctx.switchToHttp().getRequest().user;
-    return user ? user.roles.includes('eventOrga') : false;
+    return user.roles.includes('eventorga');
   }
 }

@@ -105,6 +105,10 @@ export class HLLEventUpdateDataDto {
   briefing?: Date;
 
   @IsOptional()
+  @IsString()
+  channelName?: string;
+
+  @IsOptional()
   @Type(() => Date)
   @IsDate()
   autoPublishDate?: Date;

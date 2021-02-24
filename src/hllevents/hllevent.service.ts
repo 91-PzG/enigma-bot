@@ -51,18 +51,17 @@ export class HLLEventService {
     Object.entries(dto.data).forEach(([key, value]) => {
       event[key] = value;
     });
-    await event.save();
+    return event.save();
   }
 
-  async createEvent(dto: HLLEventCreateWrapperDto): Promise<number> {
+  async createEvent(dto: HLLEventCreateWrapperDto): Promise<HLLEvent> {
     const event = this.eventRepository.create();
     event.organisator = await this.getMemberById(dto.control.organisator);
     Object.entries(dto.data).forEach(([key, value]) => {
       event[key] = value;
     });
 
-    const id = (await event.save()).id;
-    return id;
+    return event.save();
   }
 
   private async getMemberById(id: string): Promise<Member> {

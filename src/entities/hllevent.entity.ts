@@ -62,10 +62,10 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
   @Column()
   mandatory: boolean;
 
-  @Column()
+  @Column({ default: false })
   locked: boolean;
 
-  @Column()
+  @Column({ default: false })
   closed: boolean;
 
   @Column()

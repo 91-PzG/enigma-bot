@@ -8,8 +8,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { EventGuard } from '../auth/jwt/guards/event.guard';
-import { Member } from '../entities';
+import { HLLEvent } from '../entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
 import { HLLEventGetByIdDto } from './dtos/hlleventGetById.dto';
@@ -29,27 +30,33 @@ export class HLLEventController {
   async getEventById(
     @Param('id', ParseIntPipe) id: number,
   ): Promise<HLLEventGetByIdDto> {
-    const event = (await this.hllEventService.getEventById(
-      id,
-    )) as HLLEventGetByIdDto;
-    event.organisator = (event.organisator as Member).contact.name;
-    return event;
+    return this.setOrganisator(await this.hllEventService.getEventById(id));
   }
 
-  @UseGuards(EventGuard)
+  @UseGuards(AuthGuard('userToken'), EventGuard)
   @Patch('/:id')
-  patchEvent(
+  async patchEvent(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEventDto: HLLEventUpdateWrapperDto,
-  ): Promise<void> {
-    return this.hllEventService.patchEvent(id, updateEventDto);
+  ): Promise<HLLEventGetByIdDto> {
+    return this.setOrganisator(
+      await this.hllEventService.patchEvent(id, updateEventDto),
+    );
   }
 
-  @UseGuards(EventGuard)
+  @UseGuards(AuthGuard('userToken'), EventGuard)
   @Post()
-  createEvent(
+  async createEvent(
     @Body() createEventDto: HLLEventCreateWrapperDto,
-  ): Promise<number> {
-    return this.hllEventService.createEvent(createEventDto);
+  ): Promise<HLLEventGetByIdDto> {
+    return this.setOrganisator(
+      await this.hllEventService.createEvent(createEventDto),
+    );
+  }
+
+  private setOrganisator(event: HLLEvent): HLLEventGetByIdDto {
+    const e = event as HLLEventGetByIdDto;
+    e.organisator = event.organisator.contact.name;
+    return e;
   }
 }

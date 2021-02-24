@@ -6,7 +6,6 @@ export async function loadFixtures(
   name: string,
   dbConnection: Connection,
 ): Promise<any> {
-  console.log('startup');
   let items: any[] = [];
   try {
     const file: any = yaml.load(

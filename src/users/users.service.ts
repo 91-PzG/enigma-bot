@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Member } from '../entities';
@@ -22,7 +22,9 @@ export class UsersService {
       .getRawMany()) as unknown) as Promise<UserListDto[]>;
   }
 
-  getMemberById(id: string): Promise<Member | undefined> {
-    return this.memberRepository.findOne(id);
+  async getMemberById(id: string): Promise<Member> {
+    const member = await this.memberRepository.findOne(id);
+    if (!member) throw new NotFoundException(`User with id ${id} not found`);
+    return member;
   }
 }

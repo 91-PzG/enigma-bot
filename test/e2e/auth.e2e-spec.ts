@@ -63,7 +63,7 @@ describe('AuthController (e2e)', () => {
       expect(jwtData).toMatchObject({
         userId: '1',
         username: 'One',
-        roles: ['member'],
+        roles: ['member', 'eventorga'],
       });
     });
   });

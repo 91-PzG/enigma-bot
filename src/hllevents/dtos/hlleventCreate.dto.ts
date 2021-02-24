@@ -33,12 +33,6 @@ export class HLLEventCreateDataDto {
   @IsDate()
   registerByDate: Date;
 
-  @Transform(({ value }) => parseInt(value))
-  @IsInt()
-  @IsPositive()
-  @Max(100)
-  playerCount: number;
-
   @IsBoolean()
   mandatory: boolean;
 

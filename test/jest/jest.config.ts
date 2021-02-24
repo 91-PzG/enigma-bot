@@ -14,7 +14,6 @@ const config: Config.InitialOptions = {
   globalSetup: './jest/setup.ts',
   globalTeardown: './jest/teardown.ts',
   testRunner: 'jest-circus/runner',
-  maxWorkers: 1,
   globals: {
     __port: 3333,
   },
