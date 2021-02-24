@@ -24,7 +24,7 @@ describe('Event Guard', () => {
   });
 
   it('should return true if user has the eventorga role', () => {
-    const user = { roles: ['abc', 'xyz', 'eventOrga'] };
+    const user = { roles: ['abc', 'xyz', 'eventorga'] };
     expect(guard.canActivate(ctx(user) as ExecutionContext)).toBe(true);
   });
 });

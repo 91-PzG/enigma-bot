@@ -46,8 +46,8 @@ describe('UsersService', () => {
   });
 
   describe('getMemberById', () => {
-    it('should return user', () => {
-      expect(service.getMemberById('')).toEqual(user);
+    it('should return user', async () => {
+      expect(await service.getMemberById('')).toEqual(user);
     });
   });
 });

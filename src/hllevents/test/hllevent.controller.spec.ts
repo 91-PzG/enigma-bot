@@ -122,7 +122,9 @@ describe('EventControler', () => {
   describe('patch Event', () => {
     it('should resolve', () => {
       expect.assertions(1);
-      hllEventService.patchEvent = jest.fn().mockResolvedValue(null);
+      hllEventService.patchEvent = jest
+        .fn()
+        .mockResolvedValue({ organisator: { contact: { name: 'hans' } } });
 
       return expect(
         hllEventController.patchEvent(1, {} as HLLEventUpdateWrapperDto),
@@ -143,7 +145,9 @@ describe('EventControler', () => {
   describe('create Event', () => {
     it('should resolve', () => {
       expect.assertions(1);
-      hllEventService.createEvent = jest.fn().mockResolvedValue(null);
+      hllEventService.createEvent = jest
+        .fn()
+        .mockResolvedValue({ organisator: { contact: { name: 'hans' } } });
 
       return expect(
         hllEventController.createEvent({} as HLLEventCreateWrapperDto),
