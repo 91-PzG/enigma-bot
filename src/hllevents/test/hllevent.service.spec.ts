@@ -136,7 +136,7 @@ describe('HLLEventService', () => {
     it('should reject if organisator is invalid', async function () {
       expect.assertions(1);
       service.getEventById = jest.fn().mockResolvedValue({});
-      usersService.getMemberById.mockResolvedValue(undefined);
+      usersService.getMemberById.mockRejectedValue('user not found');
 
       return expect(
         service.patchEvent(1, {
@@ -178,7 +178,7 @@ describe('HLLEventService', () => {
 
     it('should reject if organisator is invalid', async function () {
       expect.assertions(1);
-      usersService.getMemberById.mockResolvedValue(undefined);
+      usersService.getMemberById.mockRejectedValue('user not found');
 
       return expect(
         service.createEvent({
