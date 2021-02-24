@@ -65,8 +65,11 @@ export class HLLEventService {
   }
 
   private async getMemberById(id: string): Promise<Member> {
-    const user = await this.userService.getMemberById(id);
-    if (!user) throw new BadRequestException('Invalid Organisator');
-    return user;
+    try {
+      const user = await this.userService.getMemberById(id);
+      return user;
+    } catch (error) {
+      throw new BadRequestException('Invalid Organisator');
+    }
   }
 }
