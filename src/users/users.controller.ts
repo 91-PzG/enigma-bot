@@ -1,5 +1,5 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { GetUser } from '../auth/dtos/get-user.decorator';
+import { GetUser } from '../auth/jwt/get-user.decorator';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
 import { Member } from '../entities';
 import { UserListDto } from './dto/user-list.dto';

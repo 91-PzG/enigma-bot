@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
 import { UserListDto } from '../dto/user-list.dto';
 import { UsersController } from '../users.controller';
 import { UsersService } from '../users.service';
@@ -53,7 +54,7 @@ describe('UsersController', () => {
 
   describe('userById', () => {
     it('should return single user', () => {
-      expect(controller.findOne('')).toEqual(user);
+      expect(controller.findOne('', {} as JwtPayload)).toEqual(user);
     });
   });
 });
