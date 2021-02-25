@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscordModule as DiscordConfigModule } from 'discord-nestjs';
 import { AuthModule } from './auth/auth.module';
+import { OptionalAuthGuard } from './auth/jwt/guards/optional-auth.guard';
+import { ChannelsModule } from './channels/channels.module';
 import databaseConfig from './config/database.config';
 import discordConfig from './config/discord.config';
 import jwtConfig from './config/jwt.config';
@@ -42,6 +45,8 @@ import { UsersModule } from './users/users.module';
     DiscordModule,
     HLLEventModule,
     UsersModule,
+    ChannelsModule,
   ],
+  providers: [{ provide: APP_GUARD, useClass: OptionalAuthGuard }],
 })
 export class AppModule {}

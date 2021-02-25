@@ -1,4 +1,6 @@
 import { Controller, Get, Param } from '@nestjs/common';
+import { GetUser } from '../auth/dtos/get-user.decorator';
+import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
 import { Member } from '../entities';
 import { UserListDto } from './dto/user-list.dto';
 import { UsersService } from './users.service';
@@ -13,7 +15,10 @@ export class UsersController {
   }
 
   @Get('/:id')
-  findOne(@Param('id') id: string): Promise<Member> {
-    return this.usersService.getMemberById(id);
+  findOne(
+    @Param('id') id: string,
+    @GetUser() user: JwtPayload,
+  ): Promise<Member> {
+    return this.usersService.getMemberById(id, user);
   }
 }

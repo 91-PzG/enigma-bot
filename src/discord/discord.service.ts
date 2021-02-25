@@ -14,7 +14,7 @@ import {
   TextChannel,
   User,
 } from 'discord.js';
-import { DiscordChannelDto } from '../channel/dtos/discord-channel.dto';
+import { DiscordChannelDto } from '../channels/dtos/discord-channel.dto';
 import { DiscordConfig } from '../config/discord.config';
 
 @Injectable()

@@ -1,48 +1,50 @@
 fixtures:
   - Contact:
-      id: '1'
-      name: 'One'
+      id: 'signIn'
+      name: 'SignIn'
+      comment: 'SignIn ist ein sehr aktiver Spieler!'
   - Contact:
-      id: '2'
-      name: 'Two'
+      id: 'changePw'
+      name: 'ChangePw'
   - Contact:
-      id: '3'
-      name: 'Three'
+      id: 'noPw'
+      name: 'NoPw'
   - Contact:
-      id: '4'
-      name: 'Four'
+      id: 'memberTill'
+      name: 'MemberTill'
   - Contact:
-      id: '5'
-      name: 'Five'
+      id: 'honorary'
+      name: 'Honorary'
   - Member:
-      id: '1'
+      id: 'signIn'
       recruitSince: '2020-07-31 20:00:00'
       division: 'infanterie'
       rank: 'soldier'
-      roles: ['member', 'eventorga']
       contact:
-        id: '1'
+        id: 'signIn'
       salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
       password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
+      missedEvents: 5
+      missedConsecutiveEvents: 3
   - Member:
-      id: '2'
+      id: 'changePw'
       recruitSince: '2020-07-31 20:00:00'
       division: 'infanterie'
       rank: 'soldier'
       contact:
-        id: '2'
+        id: 'changePw'
       salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
       password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
       mustChangePassword: true
   - Member:
-      id: '3'
+      id: 'noPw'
       recruitSince: '2020-07-31 20:00:00'
       division: 'infanterie'
       rank: 'soldier'
       contact:
-        id: '3'
+        id: 'noPw'
   - Member:
-      id: '4'
+      id: 'memberTill'
       recruitSince: '2020-07-31 20:00:00'
       memberTill: '2020-07-31 20:00:00'
       division: 'infanterie'
@@ -50,9 +52,9 @@ fixtures:
       salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
       password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
       contact:
-        id: '4'
+        id: 'memberTill'
   - Member:
-      id: '5'
+      id: 'honorary'
       recruitSince: '2020-07-31 20:00:00'
       division: 'infanterie'
       rank: 'soldier'
@@ -60,7 +62,7 @@ fixtures:
       salt: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O' #Test123
       password: '$2a$06$0Wrs/rjz1UxZLy1SEkVS/O6auE9j5hFdpEBZx01/LP1e8OFEEF/Tm'
       contact:
-        id: '5'
+        id: 'honorary'
   - HLLEvent:
       id: 1
       name: 'Event #1'
@@ -69,7 +71,7 @@ fixtures:
       registerByDate: '2020-07-31 20:00:00'
       playerCount: 0
       organisator:
-        id: '1'
+        id: 'honorary'
       mandatory: true
       locked: false
       closed: false
@@ -82,7 +84,7 @@ fixtures:
       registerByDate: '2020-06-20 20:00:00'
       playerCount: 1
       organisator:
-        id: '2'
+        id: 'honorary'
       mandatory: true
       locked: true
       closed: true

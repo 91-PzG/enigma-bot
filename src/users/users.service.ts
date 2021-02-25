@@ -1,7 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Member } from '../entities';
+import { Repository, SelectQueryBuilder } from 'typeorm';
+import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
+import { AccessRoles, Member } from '../entities';
 import { UserListDto } from './dto/user-list.dto';
 
 @Injectable()
@@ -22,9 +23,47 @@ export class UsersService {
       .getRawMany()) as unknown) as Promise<UserListDto[]>;
   }
 
-  async getMemberById(id: string): Promise<Member> {
-    const member = await this.memberRepository.findOne(id);
+  async getMemberById(id: string, user?: JwtPayload): Promise<Member> {
+    const accessRoles: AccessRoles[] = [
+      AccessRoles.CLANRAT,
+      AccessRoles.HUMANRESOURCES,
+    ];
+    const eventorga =
+      id == user?.userId || user?.roles.includes(AccessRoles.EVENTORGA);
+    const hr = user?.roles.some((role) =>
+      accessRoles.includes(role as AccessRoles),
+    );
+    const query = this.defaultMemberSelectQuery(id);
+    if (eventorga || hr)
+      query.addSelect([
+        'member.missedEvents',
+        'member.missedConsecutiveEvents',
+      ]);
+    if (hr) query.addSelect('contact.comment');
+    const member = await query.getOne();
+
     if (!member) throw new NotFoundException(`User with id ${id} not found`);
     return member;
+  }
+
+  private defaultMemberSelectQuery(id: string): SelectQueryBuilder<Member> {
+    return this.memberRepository
+      .createQueryBuilder('member')
+      .leftJoin('member.contact', 'contact')
+      .select([
+        'member.id',
+        'member.recruitSince',
+        'member.recruitTill',
+        'member.memberSince',
+        'member.memberTill',
+        'member.reserve',
+        'member.avatar',
+        'member.honoraryMember',
+        'member.division',
+        'member.rank',
+        'member.roles',
+        'contact.name',
+      ])
+      .where('member.id = :id', { id });
   }
 }

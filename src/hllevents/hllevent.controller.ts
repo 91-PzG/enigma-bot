@@ -8,9 +8,9 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { EventGuard } from '../auth/jwt/guards/event.guard';
-import { HLLEvent } from '../entities';
+import { RoleGuard } from '../auth/jwt/guards/role.guard';
+import { Scopes } from '../auth/jwt/guards/scopes';
+import { AccessRoles, HLLEvent } from '../entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
 import { HLLEventGetByIdDto } from './dtos/hlleventGetById.dto';
@@ -33,7 +33,8 @@ export class HLLEventController {
     return this.setOrganisator(await this.hllEventService.getEventById(id));
   }
 
-  @UseGuards(AuthGuard('userToken'), EventGuard)
+  @Scopes(AccessRoles.EVENTORGA)
+  @UseGuards(RoleGuard)
   @Patch('/:id')
   async patchEvent(
     @Param('id', ParseIntPipe) id: number,
@@ -44,8 +45,9 @@ export class HLLEventController {
     );
   }
 
-  @UseGuards(AuthGuard('userToken'), EventGuard)
   @Post()
+  @UseGuards(RoleGuard)
+  @Scopes(AccessRoles.EVENTORGA)
   async createEvent(
     @Body() createEventDto: HLLEventCreateWrapperDto,
   ): Promise<HLLEventGetByIdDto> {

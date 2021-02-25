@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Member, Rank } from '../../entities';
+import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
+import { AccessRoles, Contact, Division, Member, Rank } from '../../entities';
 import { UserListDto } from '../dto/user-list.dto';
 import { UsersService } from '../users.service';
 
@@ -10,7 +11,52 @@ describe('UsersService', () => {
     { id: '1', username: 'hans' },
     { id: '2', username: 'susi' },
   ];
-  let user: Partial<Member> = { id: '1', rank: Rank.OFFICER, avatar: 'avatar' };
+  const member = new Member();
+  const contact = new Contact();
+  let select: string[] = [];
+  const queryBuilder = {
+    leftJoin: jest.fn().mockReturnThis(),
+    select: jest.fn().mockImplementation((selections: string[]) => {
+      select = select.concat(selections);
+      return queryBuilder;
+    }),
+    addSelect: jest.fn().mockImplementation((selections: string[]) => {
+      select = select.concat(selections);
+      return queryBuilder;
+    }),
+    where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
+    getRawMany: jest.fn().mockResolvedValue(users),
+    getOne: jest.fn().mockImplementation(() => {
+      const user = { contact: {} };
+      select.forEach((selection) => {
+        const s = selection.split('.');
+        if (s[0] == 'member') user[s[1]] = member[s[1]];
+        else user.contact[s[1]] = contact[s[1]];
+      });
+      return user;
+    }),
+  };
+
+  beforeAll(() => {
+    member.avatar = 'avatar';
+    member.id = 'one';
+    member.recruitSince = new Date('2020-07-31 20:00:00');
+    member.recruitTill = new Date('2020-07-31 20:00:00');
+    member.memberSince = new Date('2020-07-31 20:00:00');
+    member.memberTill = new Date('2020-07-31 20:00:00');
+    member.reserve = true;
+    member.honoraryMember = false;
+    member.division = Division.ARTILLERY;
+    member.rank = Rank.OFFICER;
+    member.roles = [AccessRoles.MEMBER];
+    member.missedConsecutiveEvents = 3;
+    member.missedEvents = 5;
+
+    contact.id = 'one';
+    contact.comment = 'comment';
+    contact.name = 'hans';
+  });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -19,14 +65,7 @@ describe('UsersService', () => {
         {
           provide: getRepositoryToken(Member),
           useValue: {
-            createQueryBuilder: jest.fn().mockReturnValue({
-              leftJoin: jest.fn().mockReturnThis(),
-              select: jest.fn().mockReturnThis(),
-              where: jest.fn().mockReturnThis(),
-              andWhere: jest.fn().mockReturnThis(),
-              getRawMany: jest.fn().mockResolvedValue(users),
-            }),
-            findOne: jest.fn().mockReturnValue(user),
+            createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
           },
         },
       ],
@@ -46,8 +85,98 @@ describe('UsersService', () => {
   });
 
   describe('getMemberById', () => {
-    it('should return user', async () => {
-      expect(await service.getMemberById('')).toEqual(user);
+    beforeEach(() => {
+      select = [];
+    });
+
+    it('should return error if user isnt found', async () => {
+      queryBuilder.getOne.mockReturnValueOnce(undefined);
+      expect(service.getMemberById('one')).rejects.toThrow();
+    });
+    it('should return basic member if user has no special roles or user is undefined', async () => {
+      const data = {
+        userId: 'two',
+        roles: [AccessRoles.MEMBER],
+      };
+      const result = {
+        contact: { name: 'hans' },
+        id: 'one',
+        recruitSince: new Date('2020-07-31T18:00:00.000Z'),
+        recruitTill: new Date('2020-07-31T18:00:00.000Z'),
+        memberSince: new Date('2020-07-31T18:00:00.000Z'),
+        memberTill: new Date('2020-07-31T18:00:00.000Z'),
+        reserve: true,
+        avatar: 'avatar',
+        honoraryMember: false,
+        division: 'artillery',
+        rank: 'officer',
+        roles: ['member'],
+      };
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
+        result,
+      );
+      expect(await service.getMemberById('one')).toEqual(result);
+    });
+    it('should return missedEvents if user is member or member is eventorga', async () => {
+      let data = {
+        userId: 'one',
+        roles: [AccessRoles.MEMBER],
+      };
+      const result = {
+        contact: { name: 'hans' },
+        id: 'one',
+        recruitTill: new Date('2020-07-31T18:00:00.000Z'),
+        recruitSince: new Date('2020-07-31T18:00:00.000Z'),
+        memberSince: new Date('2020-07-31T18:00:00.000Z'),
+        memberTill: new Date('2020-07-31T18:00:00.000Z'),
+        reserve: true,
+        avatar: 'avatar',
+        honoraryMember: false,
+        division: 'artillery',
+        rank: 'officer',
+        roles: ['member'],
+        missedConsecutiveEvents: 3,
+        missedEvents: 5,
+      };
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
+        result,
+      );
+      data = {
+        userId: 'three',
+        roles: [AccessRoles.EVENTORGA],
+      };
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
+        result,
+      );
+    });
+    it('should return comment if user is clanrat or hr', async () => {
+      let data = {
+        userId: 'two',
+        roles: [AccessRoles.CLANRAT],
+      };
+      const result = {
+        contact: { name: 'hans', comment: 'comment' },
+        id: 'one',
+        recruitSince: new Date('2020-07-31T18:00:00.000Z'),
+        recruitTill: new Date('2020-07-31T18:00:00.000Z'),
+        memberSince: new Date('2020-07-31T18:00:00.000Z'),
+        memberTill: new Date('2020-07-31T18:00:00.000Z'),
+        reserve: true,
+        avatar: 'avatar',
+        honoraryMember: false,
+        division: 'artillery',
+        rank: 'officer',
+        roles: ['member'],
+        missedConsecutiveEvents: 3,
+        missedEvents: 5,
+      };
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
+        result,
+      );
+      data.roles = [AccessRoles.HUMANRESOURCES];
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
+        result,
+      );
     });
   });
 });

@@ -84,7 +84,8 @@
     "coverageDirectory": "../coverage",
     "collectCoverage": true,
     "coverageReporters": [
-      "lcov"
+      "lcov",
+      "text"
     ],
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [

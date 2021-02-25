@@ -145,15 +145,6 @@ describe('AuthRepository', () => {
   });
 
   describe('signIn', () => {
-    it('should throw Error if no user with provided name is is found', async function () {
-      expect.assertions(1);
-      queryBuilder.getOne = jest.fn().mockResolvedValue(undefined);
-
-      await authRepository.signIn({ password: '', username: '' }).catch((e) => {
-        expect(e).toEqual(Error('Invalid credentials'));
-      });
-    });
-
     let member: Partial<Member>;
     beforeEach(() => {
       member = {
@@ -166,7 +157,16 @@ describe('AuthRepository', () => {
       };
     });
 
-    it('should throw Error if mustChangePassword flag is true', async function () {
+    it('should throw Error if no user with provided name is is found', async function () {
+      expect.assertions(1);
+      queryBuilder.getOne = jest.fn().mockResolvedValue(undefined);
+
+      await authRepository.signIn({ password: '', username: '' }).catch((e) => {
+        expect(e).toEqual(Error('Invalid credentials'));
+      });
+    });
+
+    it('should throw Error if mustChangePassword flag is set', async function () {
       expect.assertions(1);
       member.mustChangePassword = true;
       queryBuilder.getOne = jest.fn().mockResolvedValue(member);
@@ -187,11 +187,12 @@ describe('AuthRepository', () => {
 
     it('should throw Error if password is incorrect', async function () {
       expect.assertions(1);
+      member.password = 'abc';
       member.validatePassword = jest.fn().mockResolvedValue(false);
       queryBuilder.getOne = jest.fn().mockResolvedValue(member);
 
       await authRepository.signIn({ password: '', username: '' }).catch((e) => {
-        expect(e).toEqual(Error('User not registered yet'));
+        expect(e).toEqual(Error('Invalid credentials'));
       });
     });
 

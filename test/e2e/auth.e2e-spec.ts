@@ -15,42 +15,42 @@ describe('AuthController (e2e)', () => {
     });
     it('should throw a 401 if password is wrong', async () => {
       const data: AuthCredentialsDto = {
-        username: 'One',
+        username: 'SignIn',
         password: 'Test123as',
       };
       await request.post('/auth/signin').send(data).expect(401);
     });
     it('should throw a 401 if member is honorary member', async () => {
       const data: AuthCredentialsDto = {
-        username: 'Five',
+        username: 'Honorary',
         password: 'Test123',
       };
       await request.post('/auth/signin').send(data).expect(401);
     });
     it('should throw a 401 if member isnt a member anymore', async () => {
       const data: AuthCredentialsDto = {
-        username: 'Four',
+        username: 'MemberTill',
         password: 'Test123',
       };
       await request.post('/auth/signin').send(data).expect(401);
     });
     it('should throw a 403 if user has to change password', async () => {
       const data: AuthCredentialsDto = {
-        username: 'Two',
+        username: 'ChangePw',
         password: 'Test123',
       };
       return await request.post('/auth/signin').send(data).expect(403);
     });
     it("should throw a 409 if user hasn't registered yet", async () => {
       const data: AuthCredentialsDto = {
-        username: 'Three',
+        username: 'NoPw',
         password: 'Test123as',
       };
       return await request.post('/auth/signin').send(data).expect(409);
     });
     it('should return jwt token', async () => {
       const data: AuthCredentialsDto = {
-        username: 'One',
+        username: 'SignIn',
         password: 'Test123',
       };
       const { body } = await request
@@ -61,16 +61,16 @@ describe('AuthController (e2e)', () => {
       const jwtData: JwtPayload = jwt_decode(body.accessToken);
 
       expect(jwtData).toMatchObject({
-        userId: '1',
-        username: 'One',
-        roles: ['member', 'eventorga'],
+        userId: 'signIn',
+        username: 'SignIn',
+        roles: ['member'],
       });
     });
   });
   describe('change Password', () => {
     it('should throw a 401 if credentials are wrong', async () => {
       const data: ChangePasswordDto = {
-        username: 'One',
+        username: 'ChangePw',
         oldPassword: 'Test123as',
         newPassword: 'Pa$$w0rd',
       };
@@ -78,7 +78,7 @@ describe('AuthController (e2e)', () => {
     });
     it('should return 201 if credentials are correct', async () => {
       const data: ChangePasswordDto = {
-        username: 'Two',
+        username: 'ChangePw',
         oldPassword: 'Test123',
         newPassword: 'Pa$$w0rd',
       };
@@ -90,14 +90,14 @@ describe('AuthController (e2e)', () => {
       const jwtData: JwtPayload = jwt_decode(body.accessToken);
 
       expect(jwtData).toMatchObject({
-        userId: '2',
-        username: 'Two',
+        userId: 'changePw',
+        username: 'ChangePw',
         roles: ['member'],
       });
     });
     it('password should have been updated', async () => {
       const data: AuthCredentialsDto = {
-        username: 'Two',
+        username: 'ChangePw',
         password: 'Pa$$w0rd',
       };
       return await request.post('/auth/signin').send(data).expect(201);
