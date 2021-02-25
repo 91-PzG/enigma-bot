@@ -9,7 +9,7 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
-import { Scopes } from '../auth/jwt/guards/scopes';
+import { Scopes } from '../auth/jwt/guards/scopes.decorator';
 import { AccessRoles, HLLEvent } from '../entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';

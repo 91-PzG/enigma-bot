@@ -90,7 +90,8 @@
     "testEnvironment": "node",
     "coveragePathIgnorePatterns": [
       "src/entities",
-      ".*dto.ts"
+      ".*dto.ts",
+      ".*decorator.ts"
     ]
   }
 }
