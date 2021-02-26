@@ -5,7 +5,7 @@ import { DiscordService } from '../discord/discord.service';
 import { AuthRepository } from './auth.repository';
 
 @Injectable()
-export class DiscordAuthService {
+export class AuthDiscordService {
   constructor(
     private authRepository: AuthRepository,
     private discordService: DiscordService,

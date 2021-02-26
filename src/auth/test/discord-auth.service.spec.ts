@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { GuildMember, Message } from 'discord.js';
 import { DiscordService } from '../../discord/discord.service';
+import { AuthDiscordService } from '../auth-discord.service';
 import { AuthRepository } from '../auth.repository';
-import { DiscordAuthService } from '../discord-auth.service';
 
 describe('AuthService', () => {
-  let discordAuthService: DiscordAuthService;
+  let discordAuthService: AuthDiscordService;
   let authRepository: jest.Mocked<AuthRepository>;
   let discordService: jest.Mocked<DiscordService>;
   let member: Partial<GuildMember>;
@@ -23,11 +23,11 @@ describe('AuthService', () => {
       providers: [
         { provide: AuthRepository, useValue: authRepositoryMock },
         { provide: DiscordService, useValue: discordServiceMock },
-        DiscordAuthService,
+        AuthDiscordService,
       ],
     }).compile();
 
-    discordAuthService = module.get<DiscordAuthService>(DiscordAuthService);
+    discordAuthService = module.get<AuthDiscordService>(AuthDiscordService);
     authRepository = module.get(AuthRepository);
     discordService = module.get(DiscordService);
 
@@ -121,7 +121,7 @@ describe('AuthService', () => {
 
       const password = 'Pa$$w0rd';
       jest
-        .spyOn(DiscordAuthService.prototype as any, 'generatePassword')
+        .spyOn(AuthDiscordService.prototype as any, 'generatePassword')
         .mockReturnValue(password);
 
       await discordAuthService.signUpOverDiscord(message as Message);

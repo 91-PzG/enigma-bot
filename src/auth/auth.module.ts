@@ -4,10 +4,10 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Member } from '../entities';
+import { AuthDiscordService } from './auth-discord.service';
 import { AuthController } from './auth.controller';
 import { AuthRepository } from './auth.repository';
 import { AuthService } from './auth.service';
-import { DiscordAuthService } from './discord-auth.service';
 import { JwtUserStrategy } from './jwt/jwt-user.strategy';
 
 @Module({
@@ -23,7 +23,7 @@ import { JwtUserStrategy } from './jwt/jwt-user.strategy';
     TypeOrmModule.forFeature([Member, AuthRepository]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, DiscordAuthService, JwtUserStrategy],
+  providers: [AuthService, AuthDiscordService, JwtUserStrategy],
   exports: [PassportModule, JwtUserStrategy],
 })
 export class AuthModule {}

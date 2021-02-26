@@ -1,15 +1,15 @@
 import { JwtService } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
+import { AuthDiscordService } from '../auth-discord.service';
 import { AuthRepository } from '../auth.repository';
 import { AuthService } from '../auth.service';
-import { DiscordAuthService } from '../discord-auth.service';
 import { JwtWrapper } from '../jwt/jwt-payload.interface';
 
 describe('AuthService', () => {
   let authService: AuthService;
   let authRepository: jest.Mocked<AuthRepository>;
   let jwtService: jest.Mocked<JwtService>;
-  let discordAuthService: jest.Mocked<DiscordAuthService>;
+  let discordAuthService: jest.Mocked<AuthDiscordService>;
 
   const signedMock: string = 'Test';
 
@@ -21,7 +21,7 @@ describe('AuthService', () => {
     const jwtServiceMock: Partial<JwtService> = {
       sign: jest.fn(),
     };
-    const discordAuthServiceMock: Partial<DiscordAuthService> = {
+    const discordAuthServiceMock: Partial<AuthDiscordService> = {
       notifyUserOnPasswordChange: jest.fn(),
     };
 
@@ -29,7 +29,7 @@ describe('AuthService', () => {
       providers: [
         { provide: AuthRepository, useValue: authRepositoryMock },
         { provide: JwtService, useValue: jwtServiceMock },
-        { provide: DiscordAuthService, useValue: discordAuthServiceMock },
+        { provide: AuthDiscordService, useValue: discordAuthServiceMock },
         AuthService,
       ],
     }).compile();
@@ -37,7 +37,7 @@ describe('AuthService', () => {
     authService = module.get<AuthService>(AuthService);
     authRepository = module.get(AuthRepository);
     jwtService = module.get(JwtService);
-    discordAuthService = module.get(DiscordAuthService);
+    discordAuthService = module.get(AuthDiscordService);
 
     jwtService.sign.mockReturnValue(signedMock);
   });

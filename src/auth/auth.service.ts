@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { AuthDiscordService } from './auth-discord.service';
 import { AuthRepository } from './auth.repository';
-import { DiscordAuthService } from './discord-auth.service';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { JwtWrapperDto } from './dtos/jwt-wrapper.dto';
@@ -12,7 +12,7 @@ export class AuthService {
   constructor(
     private authRepository: AuthRepository,
     private jwtService: JwtService,
-    private discordAuthService: DiscordAuthService,
+    private discordAuthService: AuthDiscordService,
   ) {}
 
   async signIn(authCredentialsDto: AuthCredentialsDto): Promise<JwtWrapperDto> {
