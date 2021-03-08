@@ -31,34 +31,6 @@ describe('Enrolment Service', () => {
     expect(service).toBeDefined();
   });
 
-  describe('get Enrolments', async () => {
-    const enrolments: Partial<Enrolment>[] = [
-      {
-        username: 'Hans',
-        squadlead: true,
-        commander: false,
-        enrolmentType: EnrolmentType.ANMELDUNG,
-        division: Division.ARMOR,
-      },
-      {
-        username: 'Peter',
-        squadlead: false,
-        commander: true,
-        enrolmentType: EnrolmentType.RESERVE,
-        division: Division.INFANTERIE,
-      },
-      {
-        username: 'Susi',
-        squadlead: false,
-        commander: false,
-        enrolmentType: EnrolmentType.ABMELDUNG,
-        division: Division.ARTILLERY,
-      },
-    ];
-    repository.getEmbedEnrolments = jest.fn().mockResolvedValue(enrolments);
-    expect(service.getEnrolments(1)).toEqual(enrolments);
-  });
-
   describe('enrol', () => {
     const dto: EnrolByDiscordDto = {
       type: EnrolmentType.ABMELDUNG,
@@ -70,6 +42,36 @@ describe('Enrolment Service', () => {
     };
     it('should throw unimplemented', async () => {
       await expect(service.enrol(dto)).rejects.toThrow(NotImplementedException);
+    });
+  });
+
+  describe('get Enrolments', () => {
+    it('should return enrolments', async () => {
+      const enrolments: Partial<Enrolment>[] = [
+        {
+          username: 'Hans',
+          squadlead: true,
+          commander: false,
+          enrolmentType: EnrolmentType.ANMELDUNG,
+          division: Division.ARMOR,
+        },
+        {
+          username: 'Peter',
+          squadlead: false,
+          commander: true,
+          enrolmentType: EnrolmentType.RESERVE,
+          division: Division.INFANTERIE,
+        },
+        {
+          username: 'Susi',
+          squadlead: false,
+          commander: false,
+          enrolmentType: EnrolmentType.ABMELDUNG,
+          division: Division.ARTILLERY,
+        },
+      ];
+      repository.getEmbedEnrolments = jest.fn().mockResolvedValue(enrolments);
+      expect(await service.getEnrolments(1)).toEqual(enrolments);
     });
   });
 });
