@@ -10,7 +10,9 @@ describe('Enrolment Service', () => {
   let repository: jest.Mocked<EnrolmentsRepository>;
 
   beforeEach(async () => {
-    const repositoryMock: Partial<EnrolmentsRepository> = {};
+    const repositoryMock: Partial<EnrolmentsRepository> = {
+      getEmbedEnrolments: jest.fn(),
+    };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         EnrolmentsDiscordService,
