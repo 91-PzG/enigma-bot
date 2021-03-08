@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import * as bcrypt from 'bcrypt';
 import { SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import { Member } from '../../entities';
+import { Member } from '../../postgres/entities';
 import { AuthRepository } from '../auth.repository';
 
 jest.mock('bcrypt');

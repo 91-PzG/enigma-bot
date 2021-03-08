@@ -1,42 +1,20 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { HLLEvent, IHLLEvent, Member } from '../entities';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { HLLEvent, IHLLEvent, Member } from '../postgres/entities';
 import { UsersService } from '../users/users.service';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventUpdateWrapperDto } from './dtos/hlleventUpdate.dto';
+import { HLLEventRepository } from './hllevent.repository';
 
 @Injectable()
 export class HLLEventService {
-  constructor(
-    @InjectRepository(HLLEvent)
-    private eventRepository: Repository<HLLEvent>,
-    private userService: UsersService,
-  ) {}
+  constructor(private eventRepository: HLLEventRepository, private userService: UsersService) {}
 
   getAll(): Promise<IHLLEvent[]> {
-    return this.eventRepository
-      .createQueryBuilder('event')
-      .select([
-        'event.id',
-        'event.name',
-        'event.date',
-        'event.locked',
-        'event.description',
-        'event.closed',
-        'event.playerCount',
-        'event.maxPlayerCount',
-        'event.registerByDate',
-      ])
-      .getMany();
+    return this.eventRepository.getAll();
   }
 
   async getEventById(id: number): Promise<HLLEvent> {
-    const event = await this.eventRepository.findOne(id);
+    const event = await this.eventRepository.getEventById(id);
     if (!event) throw new NotFoundException(`Event with id '${id}' not found.`);
     return event;
   }
@@ -44,9 +22,7 @@ export class HLLEventService {
   async patchEvent(id: number, dto: HLLEventUpdateWrapperDto) {
     const event = await this.getEventById(id);
     if (dto.control.organisator) {
-      dto.data['organisator'] = await this.getMemberById(
-        dto.control.organisator,
-      );
+      dto.data['organisator'] = await this.getMemberById(dto.control.organisator);
     }
     Object.entries(dto.data).forEach(([key, value]) => {
       event[key] = value;
@@ -56,7 +32,7 @@ export class HLLEventService {
 
   async createEvent(dto: HLLEventCreateWrapperDto): Promise<HLLEvent> {
     const event = this.eventRepository.create();
-    event.organisator = await this.getMemberById(dto.control.organisator);
+    event.organisator = (await this.getMemberById(dto.control.organisator)).contact;
     Object.entries(dto.data).forEach(([key, value]) => {
       event[key] = value;
     });

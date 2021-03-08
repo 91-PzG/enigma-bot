@@ -1,0 +1,93 @@
+import { Injectable } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
+import { Message } from 'discord.js';
+import { DiscordService } from '../../discord/discord.service';
+import { HLLEvent } from '../../postgres/entities';
+import { HLLEventRepository } from '../hllevent.repository';
+import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
+import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
+import { InformationMessageFactory } from './messages/informationMessage.factory';
+
+@Injectable()
+export class HLLEventsDiscordService {
+  constructor(
+    private discordService: DiscordService,
+    private discordRepository: HLLDiscordEventRepository,
+    private eventRepository: HLLEventRepository,
+    private informationMessageFactory: InformationMessageFactory,
+    private enrolmentMessageFactory: EnrolmentMessageFactory,
+  ) {}
+
+  async publishMessages(event: HLLEvent) {
+    const channel = await this.discordService.createEventChannelIfNotExists(event.channelName);
+
+    const informationMessage = this.informationMessageFactory.createMessage(event);
+    const enrolmentMessage = await this.enrolmentMessageFactory.createMessage(event);
+
+    const informationId = (await channel.send(informationMessage)).id;
+    const enrolmentId = (await channel.send(enrolmentMessage)).id;
+
+    event.discordEvent = await this.discordRepository.createEntity(
+      channel.id,
+      informationId,
+      enrolmentId,
+    );
+
+    //@ts-ignore
+    event.autoPublishDate = null;
+    event.save();
+  }
+
+  async updateInformationMessage(event: HLLEvent): Promise<boolean> {
+    const discordEvent = await this.discordRepository.findOne(event.discordEventId);
+    if (!discordEvent) return false;
+
+    let oldMessage = await this.getMessageFromDiscord(
+      event,
+      discordEvent.channelId,
+      discordEvent.informationMsg,
+    );
+    if (!oldMessage) return false;
+
+    const newMessage = this.informationMessageFactory.createMessage(event);
+    oldMessage.edit(newMessage);
+    return true;
+  }
+
+  async updateEnrolmentMessage(event: HLLEvent): Promise<boolean> {
+    const discordEvent = await this.discordRepository.findOne(event.discordEventId);
+    if (!discordEvent) return false;
+
+    let oldMessage = await this.getMessageFromDiscord(
+      event,
+      discordEvent.channelId,
+      discordEvent.enrolmentMsg,
+    );
+    if (!oldMessage) return false;
+
+    const newMessage = await this.enrolmentMessageFactory.createMessage(event);
+    oldMessage.edit(newMessage);
+    return true;
+  }
+
+  private async getMessageFromDiscord(
+    event: HLLEvent,
+    channel: string,
+    message: string,
+  ): Promise<Message | undefined> {
+    try {
+      return await this.discordService.getMessageById(message, channel, true);
+    } catch (error) {
+      event.closed = true;
+      event.save();
+      return;
+    }
+  }
+
+  @Cron('*/5 * * * *')
+  async checkEvents() {
+    const events = await this.eventRepository.getPublishableEvents();
+
+    events.forEach((event) => this.publishMessages(event));
+  }
+}

@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { EntityRepository, Repository } from 'typeorm';
-import { Member } from '../entities';
+import { Member } from '../postgres/entities';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
 import { JwtPayload, JwtWrapper } from './jwt/jwt-payload.interface';

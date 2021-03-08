@@ -76,6 +76,7 @@ fixtures:
       locked: false
       closed: false
       channelName: 'channel1'
+      singlePool: true
   - HLLEvent:
       id: 2
       name: 'Event #2'
@@ -89,3 +90,4 @@ fixtures:
       locked: true
       closed: true
       channelName: 'channel2'
+      singlePool: false

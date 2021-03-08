@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
-import { AccessRoles, Contact, Division, Member, Rank } from '../../entities';
+import { AccessRoles, Contact, Division, Member, Rank } from '../../postgres/entities';
 import { UserListDto } from '../dto/user-list.dto';
 import { UsersService } from '../users.service';
 
@@ -112,9 +112,7 @@ describe('UsersService', () => {
         rank: 'officer',
         roles: ['member'],
       };
-      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
-        result,
-      );
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(result);
       expect(await service.getMemberById('one')).toEqual(result);
     });
     it('should return missedEvents if user is member or member is eventorga', async () => {
@@ -138,16 +136,12 @@ describe('UsersService', () => {
         missedConsecutiveEvents: 3,
         missedEvents: 5,
       };
-      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
-        result,
-      );
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(result);
       data = {
         userId: 'three',
         roles: [AccessRoles.EVENTORGA],
       };
-      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
-        result,
-      );
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(result);
     });
     it('should return comment if user is clanrat or hr', async () => {
       let data = {
@@ -170,13 +164,24 @@ describe('UsersService', () => {
         missedConsecutiveEvents: 3,
         missedEvents: 5,
       };
-      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
-        result,
-      );
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(result);
       data.roles = [AccessRoles.HUMANRESOURCES];
-      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(
-        result,
-      );
+      expect(await service.getMemberById('one', data as JwtPayload)).toEqual(result);
+    });
+  });
+
+  describe('getActiveMember', () => {
+    it('should return value from db', async () => {
+      queryBuilder.getOne.mockResolvedValue(member).mockResolvedValueOnce(undefined);
+      expect(await service.getActiveMember('one')).toBeUndefined();
+      expect(await service.getActiveMember('one')).toEqual(member);
+    });
+  });
+  describe('getDivisionforMember', () => {
+    it('should return value from db', async () => {
+      queryBuilder.getOne.mockResolvedValue(member).mockResolvedValueOnce(undefined);
+      expect(await service.getDivisionForMember('one')).toBeUndefined();
+      expect(await service.getDivisionForMember('one')).toBe(Division.ARTILLERY);
     });
   });
 });

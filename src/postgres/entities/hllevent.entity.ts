@@ -7,8 +7,8 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { Contact } from '.';
 import { HllDiscordEvent } from './hlldiscordevent.entity';
-import { Member } from './member.entity';
 
 export interface IHLLEvent {
   //required
@@ -18,10 +18,11 @@ export interface IHLLEvent {
   date: Date;
   registerByDate: Date;
   playerCount: number;
-  organisator: Member;
+  organisator: Contact;
   mandatory: boolean;
   locked: boolean;
   closed: boolean;
+  singlePool: boolean;
 
   //optional
   rounds?: number;
@@ -56,8 +57,8 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
   @Column({ default: 0 })
   playerCount: number;
 
-  @ManyToOne(() => Member, { eager: true })
-  organisator: Member;
+  @ManyToOne(() => Contact, { eager: true })
+  organisator: Contact;
 
   @Column()
   mandatory: boolean;
@@ -69,6 +70,9 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
   closed: boolean;
 
   @Column()
+  singlePool: boolean;
+
+  @Column()
   channelName: string;
 
   @Column({ nullable: true })
@@ -78,7 +82,7 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
   hllMap: string;
 
   @Column({ nullable: true })
-  commander: string; //member
+  commander: string;
 
   @Column({ nullable: true })
   moderator: string;
@@ -107,4 +111,6 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
   @OneToOne(() => HllDiscordEvent, { nullable: true })
   @JoinColumn()
   discordEvent: HllDiscordEvent;
+
+  discordEventId: number;
 }

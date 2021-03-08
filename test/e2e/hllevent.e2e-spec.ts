@@ -42,6 +42,7 @@ describe('EventController (e2e)', () => {
         briefing: null,
         autoPublishDate: null,
         organisator: 'Honorary',
+        singlePool: true,
       });
     });
   });
@@ -100,6 +101,7 @@ describe('EventController (e2e)', () => {
         maxPlayerCount: 50,
         briefing: new Date('2020-07-31T18:00:00.000Z'),
         autoPublishDate: new Date('2020-07-31T18:00:00.000Z'),
+        singlePool: false,
       },
     };
     it('should return 403 if called without token', async () => {
@@ -145,6 +147,7 @@ describe('EventController (e2e)', () => {
         playerCount: 0,
         locked: false,
         closed: false,
+        singlePool: false,
       };
       const { body } = await request.get(`/events/${eventId}`).expect(200);
       expect(body).toEqual(createdEvent);
@@ -174,6 +177,7 @@ describe('EventController (e2e)', () => {
         maxPlayerCount: 40,
         briefing: new Date('2020-07-29T18:00:00.000Z'),
         autoPublishDate: new Date('2020-07-20T18:00:00.000Z'),
+        singlePool: true,
       },
     };
     it('should return 403 if called without token', async () => {
@@ -217,6 +221,7 @@ describe('EventController (e2e)', () => {
         briefing: '2020-07-29T18:00:00.000Z',
         autoPublishDate: '2020-07-20T18:00:00.000Z',
         organisator: 'NoPw',
+        singlePool: true,
       };
       const { body } = await request.get('/events/1').expect(200);
       expect(body).toEqual(returnData);

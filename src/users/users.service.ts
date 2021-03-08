@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
-import { AccessRoles, Member } from '../entities';
+import { AccessRoles, Division, Member } from '../postgres/entities';
 import { UserListDto } from './dto/user-list.dto';
 
 @Injectable()
@@ -24,21 +24,11 @@ export class UsersService {
   }
 
   async getMemberById(id: string, user?: JwtPayload): Promise<Member> {
-    const accessRoles: AccessRoles[] = [
-      AccessRoles.CLANRAT,
-      AccessRoles.HUMANRESOURCES,
-    ];
-    const eventorga =
-      id == user?.userId || user?.roles.includes(AccessRoles.EVENTORGA);
-    const hr = user?.roles.some((role) =>
-      accessRoles.includes(role as AccessRoles),
-    );
+    const accessRoles: AccessRoles[] = [AccessRoles.CLANRAT, AccessRoles.HUMANRESOURCES];
+    const eventorga = id == user?.userId || user?.roles.includes(AccessRoles.EVENTORGA);
+    const hr = user?.roles.some((role) => accessRoles.includes(role as AccessRoles));
     const query = this.defaultMemberSelectQuery(id);
-    if (eventorga || hr)
-      query.addSelect([
-        'member.missedEvents',
-        'member.missedConsecutiveEvents',
-      ]);
+    if (eventorga || hr) query.addSelect(['member.missedEvents', 'member.missedConsecutiveEvents']);
     if (hr) query.addSelect('contact.comment');
     const member = await query.getOne();
 
@@ -65,5 +55,25 @@ export class UsersService {
         'contact.name',
       ])
       .where('member.id = :id', { id });
+  }
+
+  getActiveMember(id: string) {
+    return this.memberRepository
+      .createQueryBuilder()
+      .where('member.memberTill IS NULL')
+      .andWhere('reserve = false')
+      .andWhere('honoraryMember=false')
+      .andWhere('id = :id', { id })
+      .getOne();
+  }
+
+  async getDivisionForMember(id: string): Promise<Division | undefined> {
+    return (
+      await this.memberRepository
+        .createQueryBuilder()
+        .select('division')
+        .where('id = :id', { id })
+        .getOne()
+    )?.division;
   }
 }

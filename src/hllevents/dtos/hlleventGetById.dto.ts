@@ -1,12 +1,6 @@
 import { Transform } from 'class-transformer';
-import {
-  IsBoolean,
-  IsDate,
-  IsNumber,
-  IsOptional,
-  IsString,
-} from 'class-validator';
-import { Member } from '../../entities';
+import { IsBoolean, IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
+import { Contact, Member } from '../../postgres/entities';
 
 export class HLLEventGetByIdDto {
   @IsNumber()
@@ -28,7 +22,7 @@ export class HLLEventGetByIdDto {
   playerCount: number;
 
   @Transform(({ value }: { value: Member }) => 'avcs')
-  organisator: Member | string;
+  organisator: Contact | string;
 
   @IsBoolean()
   mandatory: boolean;

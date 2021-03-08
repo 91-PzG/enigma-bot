@@ -2,10 +2,11 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { ClientProvider } from 'discord-nestjs';
 import { Collection, GuildMember, TextChannel, User } from 'discord.js';
+import { DiscordChannelDto } from '../../channels/dtos/discord-channel.dto';
 import { DiscordConfig } from '../../config/discord.config';
 import { DiscordService } from '../../discord/discord.service';
 
-describe('AuthService', () => {
+describe('DiscordService', () => {
   let discordService: DiscordService;
   let configService: jest.Mocked<ConfigService>;
 
@@ -24,10 +25,7 @@ describe('AuthService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        { provide: ConfigService, useValue: configServiceMock },
-        DiscordService,
-      ],
+      providers: [{ provide: ConfigService, useValue: configServiceMock }, DiscordService],
     }).compile();
 
     discordService = module.get<DiscordService>(DiscordService);
@@ -143,9 +141,7 @@ describe('AuthService', () => {
         messages: { fetch: jest.fn().mockResolvedValue({}) },
       });
 
-      return expect(
-        discordService.getMessageById('', ''),
-      ).resolves.toBeTruthy();
+      return expect(discordService.getMessageById('', '')).resolves.toBeTruthy();
     });
   });
 
@@ -209,20 +205,34 @@ describe('AuthService', () => {
     });
     it('should resolve', () => {
       expect.assertions(1);
-      discordService.getChannelById = jest
-        .fn()
-        .mockResolvedValue({ members: new Collection() });
+      discordService.getChannelById = jest.fn().mockResolvedValue({ members: new Collection() });
 
       return expect(discordService.getClanMembers()).resolves.toBeTruthy();
     });
   });
 
-  describe('create text channel', () => {
+  describe('create event channel if not exists', () => {
+    beforeEach(() => {
+      discordService.getEventChannels = jest.fn().mockReturnValue([]);
+    });
+    it('should return existing channel', () => {
+      expect.assertions(1);
+      const channels: DiscordChannelDto[] = [
+        { id: 'id1', name: 'one' },
+        { id: 'id2', name: 'two' },
+      ];
+      const fullChannel = { id: 'id2', name: 'two', property: 'test' };
+      discordService.getEventChannels = jest.fn().mockReturnValue(channels);
+      discordService.getChannelById = jest.fn().mockResolvedValue(fullChannel);
+
+      return expect(discordService.createEventChannelIfNotExists('two')).resolves.toBe(fullChannel);
+    });
+
     it('should reject if guild is undefined', () => {
       expect.assertions(1);
       discordService.getGuild = jest.fn().mockReturnValue(undefined);
 
-      return expect(discordService.createTextChannel('')).rejects.toBeTruthy();
+      return expect(discordService.createEventChannelIfNotExists('')).rejects.toBeTruthy();
     });
     it('should reject if creation fails', () => {
       expect.assertions(1);
@@ -232,9 +242,9 @@ describe('AuthService', () => {
         },
       });
 
-      return expect(discordService.createTextChannel('')).rejects.toBeTruthy();
+      return expect(discordService.createEventChannelIfNotExists('')).rejects.toBeTruthy();
     });
-    it('should resolve to id if creation succeds', () => {
+    it('should resolve to channel if creation succeds', () => {
       expect.assertions(1);
       const channelId = '5';
       discordService.getGuild = jest.fn().mockReturnValue({
@@ -244,9 +254,7 @@ describe('AuthService', () => {
       });
       discordService.getChannelById = jest.fn().mockResolvedValue({});
 
-      return expect(discordService.createTextChannel('')).resolves.toBe(
-        channelId,
-      );
+      return expect(discordService.createEventChannelIfNotExists('')).resolves.toEqual({ id: '5' });
     });
   });
 

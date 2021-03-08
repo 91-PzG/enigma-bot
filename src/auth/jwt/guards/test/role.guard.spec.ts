@@ -1,5 +1,5 @@
 import { Reflector } from '@nestjs/core';
-import { RoleGuard } from '../jwt/guards/role.guard';
+import { RoleGuard } from '../role.guard';
 
 describe('Role Guard', () => {
   let guard: RoleGuard;

@@ -1,16 +1,7 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Patch,
-  Post,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
 import { Scopes } from '../auth/jwt/guards/scopes.decorator';
-import { AccessRoles, HLLEvent } from '../entities';
+import { AccessRoles, HLLEvent } from '../postgres/entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
 import { HLLEventGetByIdDto } from './dtos/hlleventGetById.dto';
@@ -27,9 +18,7 @@ export class HLLEventController {
   }
 
   @Get('/:id')
-  async getEventById(
-    @Param('id', ParseIntPipe) id: number,
-  ): Promise<HLLEventGetByIdDto> {
+  async getEventById(@Param('id', ParseIntPipe) id: number): Promise<HLLEventGetByIdDto> {
     return this.setOrganisator(await this.hllEventService.getEventById(id));
   }
 
@@ -40,25 +29,19 @@ export class HLLEventController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEventDto: HLLEventUpdateWrapperDto,
   ): Promise<HLLEventGetByIdDto> {
-    return this.setOrganisator(
-      await this.hllEventService.patchEvent(id, updateEventDto),
-    );
+    return this.setOrganisator(await this.hllEventService.patchEvent(id, updateEventDto));
   }
 
   @Post()
   @UseGuards(RoleGuard)
   @Scopes(AccessRoles.EVENTORGA)
-  async createEvent(
-    @Body() createEventDto: HLLEventCreateWrapperDto,
-  ): Promise<HLLEventGetByIdDto> {
-    return this.setOrganisator(
-      await this.hllEventService.createEvent(createEventDto),
-    );
+  async createEvent(@Body() createEventDto: HLLEventCreateWrapperDto): Promise<HLLEventGetByIdDto> {
+    return this.setOrganisator(await this.hllEventService.createEvent(createEventDto));
   }
 
   private setOrganisator(event: HLLEvent): HLLEventGetByIdDto {
     const e = event as HLLEventGetByIdDto;
-    e.organisator = event.organisator.contact.name;
+    e.organisator = event.organisator.name;
     return e;
   }
 }

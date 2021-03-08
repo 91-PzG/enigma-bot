@@ -1,10 +1,4 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Division } from './division.enum';
 import { EnrolmentType } from './enrolmentType.enum';
 import { HLLEvent } from './hllevent.entity';
@@ -50,12 +44,13 @@ export class Enrolment extends BaseEntity {
   })
   enrolmentType: EnrolmentType;
 
-  @ManyToOne(() => Squad)
+  @ManyToOne(() => Squad, { nullable: true })
   squad: Squad;
 
   @Column({
     type: 'enum',
     enum: HLLRole,
+    nullable: true,
   })
   role: HLLRole;
 }

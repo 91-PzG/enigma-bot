@@ -36,19 +36,13 @@ export class DiscordService {
   }
 
   async getClanMembers(): Promise<Collection<string, GuildMember>> {
-    const channel = await this.getChannelById<TextChannel>(
-      this.config.clanChat,
-    );
+    const channel = await this.getChannelById<TextChannel>(this.config.clanChat);
     return channel.members;
   }
 
   getEventChannels(): DiscordChannelDto[] {
     return this.client.channels.cache
-      .filter(
-        (f) =>
-          f.type === 'text' &&
-          (f as TextChannel).parentID === this.config.eventCategory,
-      )
+      .filter((f) => f.type === 'text' && (f as TextChannel).parentID === this.config.eventCategory)
       .map((channel) => ({
         id: channel.id,
         name: (channel as TextChannel).name,
@@ -59,10 +53,10 @@ export class DiscordService {
     return this.client.channels.fetch(id) as Promise<T>;
   }
 
-  async getMessageById(messageId: string, channelId: string): Promise<Message> {
+  async getMessageById(messageId: string, channelId: string, force?: boolean): Promise<Message> {
     const channel = await this.getChannelById<TextChannel>(channelId);
     if (!channel) throw Error();
-    return await channel.messages.fetch(messageId);
+    return channel.messages.fetch(messageId, undefined, force);
   }
 
   getEmojiById(emojiId: string): GuildEmoji | undefined {
@@ -77,18 +71,22 @@ export class DiscordService {
     return this.getGuild()?.members.fetch(user);
   }
 
-  async createTextChannel(name: string): Promise<string | undefined> {
+  async createEventChannelIfNotExists(name: string): Promise<TextChannel> {
+    let id: string = '';
+    this.getEventChannels().forEach((c) => {
+      if (c.name == name) id = c.id;
+    });
+    if (id != '') return this.getChannelById(id);
+
     const guild = this.getGuild();
     if (!guild) throw Error('could not find guild');
 
     const channel = await guild.channels.create(name, {
       type: 'text',
-      parent: await this.getChannelById<CategoryChannel>(
-        this.config.eventCategory,
-      ),
+      parent: await this.getChannelById<CategoryChannel>(this.config.eventCategory),
     });
 
-    return channel.id;
+    return channel;
   }
 
   async getRoleByID(id: string): Promise<Role | null | undefined> {

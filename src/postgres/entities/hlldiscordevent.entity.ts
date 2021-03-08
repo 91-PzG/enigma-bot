@@ -9,8 +9,8 @@ export class HllDiscordEvent extends BaseEntity {
   channelId: string;
 
   @Column()
-  eventMsg: string;
+  informationMsg: string;
 
   @Column()
-  registrationMsg: string;
+  enrolmentMsg: string;
 }

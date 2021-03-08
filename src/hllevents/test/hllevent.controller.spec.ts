@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { HLLEvent, IHLLEvent, Member } from '../../entities';
+import { Contact, HLLEvent, IHLLEvent } from '../../postgres/entities';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from '../dtos/hlleventGetAll.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';
@@ -19,10 +19,7 @@ describe('EventControler', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        { provide: HLLEventService, useValue: hllEventServiceMock },
-        HLLEventController,
-      ],
+      providers: [{ provide: HLLEventService, useValue: hllEventServiceMock }, HLLEventController],
     }).compile();
 
     hllEventController = module.get<HLLEventController>(HLLEventController);
@@ -47,7 +44,8 @@ describe('EventControler', () => {
           registerByDate: new Date(),
           mandatory: true,
           maxPlayerCount: 5,
-          organisator: new Member(),
+          organisator: new Contact(),
+          singlePool: false,
         },
         {
           id: 2,
@@ -60,7 +58,8 @@ describe('EventControler', () => {
           registerByDate: new Date(),
           mandatory: true,
           maxPlayerCount: 5,
-          organisator: new Member(),
+          organisator: new Contact(),
+          singlePool: false,
         },
       ];
 
@@ -132,9 +131,7 @@ describe('EventControler', () => {
     });
     it('should reject if service throws error', () => {
       expect.assertions(1);
-      hllEventService.patchEvent = jest
-        .fn()
-        .mockRejectedValue('Invalid Organisator');
+      hllEventService.patchEvent = jest.fn().mockRejectedValue('Invalid Organisator');
 
       return expect(
         hllEventController.patchEvent(1, {} as HLLEventUpdateWrapperDto),
@@ -155,9 +152,7 @@ describe('EventControler', () => {
     });
     it('should reject if service throws error', () => {
       expect.assertions(1);
-      hllEventService.createEvent = jest
-        .fn()
-        .mockRejectedValue('Invalid Organisator');
+      hllEventService.createEvent = jest.fn().mockRejectedValue('Invalid Organisator');
 
       return expect(
         hllEventController.createEvent({} as HLLEventCreateWrapperDto),
