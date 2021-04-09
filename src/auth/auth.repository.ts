@@ -5,7 +5,7 @@ import {
   NotFoundException,
   UnauthorizedException,
 } from '@nestjs/common';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { EntityRepository, Repository } from 'typeorm';
 import { Member } from '../postgres/entities';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
@@ -29,26 +29,20 @@ export class AuthRepository extends Repository<Member> {
     if (!affected) throw new Error(`No user with id '${id}' found.`);
   }
 
-  private async hashPassword(
-    clearPassword: string,
-  ): Promise<{ password: string; salt: string }> {
+  private async hashPassword(clearPassword: string): Promise<{ password: string; salt: string }> {
     const salt = await bcrypt.genSalt();
     const password = await bcrypt.hash(clearPassword, salt);
     return { password, salt };
   }
 
-  async changePassword(
-    changePasswordDto: ChangePasswordDto,
-  ): Promise<JwtWrapper> {
+  async changePassword(changePasswordDto: ChangePasswordDto): Promise<JwtWrapper> {
     const member = await this.getMemberByName(changePasswordDto.username);
 
     if (!member) throw new NotFoundException('Username not found');
     if (!(await member.validatePassword(changePasswordDto.oldPassword)))
       throw new UnauthorizedException('Passwort ungültig');
 
-    const { salt, password } = await this.hashPassword(
-      changePasswordDto.newPassword,
-    );
+    const { salt, password } = await this.hashPassword(changePasswordDto.newPassword);
     member.mustChangePassword = false;
     member.salt = salt;
     member.password = password;
@@ -61,10 +55,8 @@ export class AuthRepository extends Repository<Member> {
     const member = await this.getMemberByName(username);
 
     if (!member) throw new UnauthorizedException('Invalid credentials');
-    if (member.mustChangePassword)
-      throw new ForbiddenException('Must change password');
-    if (!member.password)
-      throw new ConflictException('User not registered yet');
+    if (member.mustChangePassword) throw new ForbiddenException('Must change password');
+    if (!member.password) throw new ConflictException('User not registered yet');
     if (!(await member.validatePassword(password)))
       throw new UnauthorizedException('Invalid credentials');
 

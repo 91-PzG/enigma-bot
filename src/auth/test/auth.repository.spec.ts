@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import * as bcrypt from 'bcrypt';
+import * as bcrypt from 'bcryptjs';
 import { SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
 import { Member } from '../../postgres/entities';
 import { AuthRepository } from '../auth.repository';
@@ -68,9 +68,7 @@ describe('AuthRepository', () => {
       expect.assertions(1);
       updateQueryBuilder.execute = jest.fn().mockReturnValue({ affected: 1 });
 
-      return expect(
-        authRepository.setPassword('pw', 'id'),
-      ).resolves.not.toThrow();
+      return expect(authRepository.setPassword('pw', 'id')).resolves.not.toThrow();
     });
   });
 
