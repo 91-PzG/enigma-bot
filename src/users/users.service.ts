@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
 import { AccessRoles, Division, Member } from '../postgres/entities';
+import { PatchUserDto } from './dto/patch-user.dto';
 import { UserListDto } from './dto/user-list.dto';
 
 @Injectable()
@@ -75,5 +76,9 @@ export class UsersService {
         .where('id = :id', { id })
         .getOne()
     )?.division;
+  }
+
+  patchUser(id: string, body: PatchUserDto): number {
+    return 0;
   }
 }
