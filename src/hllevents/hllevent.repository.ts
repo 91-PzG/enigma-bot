@@ -25,7 +25,7 @@ export class HLLEventRepository extends Repository<HLLEvent> {
 
   getPublishableEvents(): Promise<HLLEvent[]> {
     return this.createQueryBuilder()
-      .where('autoPublishDate < :date', { date: new Date() })
+      .where('"autoPublishDate" < :date', { date: new Date() })
       .getMany();
   }
 }

@@ -1,12 +1,5 @@
-import * as bcrypt from 'bcrypt';
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryColumn,
-} from 'typeorm';
+import * as bcrypt from 'bcryptjs';
+import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Division } from '.';
 import { AccessRoles } from './accessRoles.enum';
 import { Contact } from './contact.entity';
