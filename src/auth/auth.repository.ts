@@ -17,7 +17,7 @@ export class AuthRepository extends Repository<Member> {
   private logger = new Logger('AuthRepository');
 
   async setPassword(clearPassword: string, id: string): Promise<void> {
-    const { salt, password } = await this.hashPassword(clearPassword);
+    const { salt, password } = this.hashPassword(clearPassword);
 
     const affected = (
       await this.createQueryBuilder()
@@ -29,9 +29,9 @@ export class AuthRepository extends Repository<Member> {
     if (!affected) throw new Error(`No user with id '${id}' found.`);
   }
 
-  private async hashPassword(clearPassword: string): Promise<{ password: string; salt: string }> {
-    const salt = await bcrypt.genSalt();
-    const password = await bcrypt.hash(clearPassword, salt);
+  private hashPassword(clearPassword: string): { password: string; salt: string } {
+    const salt = bcrypt.genSaltSync();
+    const password = bcrypt.hashSync(clearPassword, salt);
     return { password, salt };
   }
 
@@ -42,7 +42,7 @@ export class AuthRepository extends Repository<Member> {
     if (!(await member.validatePassword(changePasswordDto.oldPassword)))
       throw new UnauthorizedException('Passwort ungültig');
 
-    const { salt, password } = await this.hashPassword(changePasswordDto.newPassword);
+    const { salt, password } = this.hashPassword(changePasswordDto.newPassword);
     member.mustChangePassword = false;
     member.salt = salt;
     member.password = password;

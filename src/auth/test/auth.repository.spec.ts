@@ -4,7 +4,7 @@ import { SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
 import { Member } from '../../postgres/entities';
 import { AuthRepository } from '../auth.repository';
 
-jest.mock('bcrypt');
+jest.mock('bcryptjs');
 
 describe('AuthRepository', () => {
   let authRepository: AuthRepository;
@@ -33,8 +33,8 @@ describe('AuthRepository', () => {
       .spyOn(authRepository, 'createQueryBuilder')
       .mockReturnValue(queryBuilder as SelectQueryBuilder<Member>);
 
-    jest.spyOn(bcrypt, 'genSalt').mockResolvedValue(salt);
-    jest.spyOn(bcrypt, 'hash').mockResolvedValue(password);
+    jest.spyOn(bcrypt, 'genSaltSync').mockReturnValue(salt);
+    jest.spyOn(bcrypt, 'hashSync').mockReturnValue(password);
   });
 
   it('should be defined', () => {
