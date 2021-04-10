@@ -6,19 +6,16 @@ import { AuthRepository } from './auth.repository';
 
 @Injectable()
 export class AuthDiscordService {
-  constructor(
-    private authRepository: AuthRepository,
-    private discordService: DiscordService,
-  ) {}
+  constructor(private authRepository: AuthRepository, private discordService: DiscordService) {}
 
-  @OnCommand({ name: 'start' })
+  @OnCommand({ name: 'password', channelType: ['dm'] })
+  @OnCommand({ name: 'passwort', channelType: ['dm'] })
   async signUpOverDiscord(message: Message) {
     if (message.deletable) {
       message.delete();
     }
 
-    const member =
-      message.member || (await this.discordService.getMember(message.author));
+    const member = message.member || (await this.discordService.getMember(message.author));
 
     if (member && this.discordService.isClanMember(member)) {
       const password = this.generatePassword();
@@ -36,16 +33,13 @@ export class AuthDiscordService {
           );
         });
     } else {
-      message.author.send(
-        'Dieser Befehl steht nur Clanmitgliedern zur Verfügung',
-      );
+      message.author.send('Dieser Befehl steht nur Clanmitgliedern zur Verfügung');
     }
   }
 
   private generatePassword(): string {
     const length = 20;
-    const charset =
-      'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
+    const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890';
     let password = '';
 
     for (let i = 0; i < length; i++) {

@@ -10,7 +10,7 @@ export class Member extends BaseEntity {
   @PrimaryColumn()
   id: string;
 
-  @Column()
+  @Column({ nullable: true })
   recruitSince: Date;
 
   @Column({ nullable: true })
@@ -60,6 +60,9 @@ export class Member extends BaseEntity {
   @OneToOne(() => Contact, { eager: true })
   @JoinColumn()
   contact: Contact;
+
+  @Column()
+  contactId: string;
 
   @Column({
     nullable: true,

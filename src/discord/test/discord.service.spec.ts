@@ -20,6 +20,20 @@ describe('DiscordService', () => {
           eventCategory: 'eventCategory',
           guild: 'guild',
           memberRole: 'memberRole',
+          recruitRole: 'recruitRole',
+          reserveRole: 'reserveRole',
+          ranks: {
+            clanrat: 'clanrat',
+            officer: 'officer',
+            sergant: 'sergant',
+            corporal: 'corporal',
+          },
+          divisions: {
+            infanterie: 'inf',
+            armor: 'armor',
+            artillerie: 'arti',
+            recon: 'recon',
+          },
         }),
       ),
     };
@@ -114,7 +128,7 @@ describe('DiscordService', () => {
         },
       };
 
-      return expect(discordService.getChannelById('')).rejects.toBeTruthy();
+      return expect(discordService.getChannelById('')).resolves.toBeUndefined();
     });
   });
 

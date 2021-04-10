@@ -37,7 +37,7 @@ export class DiscordService {
 
   async getClanMembers(): Promise<Collection<string, GuildMember>> {
     const channel = await this.getChannelById<TextChannel>(this.config.clanChat);
-    return channel.members;
+    return channel.members.filter((member) => !member.user.bot);
   }
 
   getEventChannels(): DiscordChannelDto[] {
@@ -50,12 +50,20 @@ export class DiscordService {
   }
 
   async getChannelById<T extends Channel>(id: string): Promise<T> {
-    return this.client.channels.fetch(id) as Promise<T>;
+    try {
+      return (await this.client.channels.fetch(id)) as T;
+    } catch (error) {
+      return undefined;
+    }
   }
 
-  async getMessageById(messageId: string, channelId: string, force?: boolean): Promise<Message> {
+  async getMessageById(
+    messageId: string,
+    channelId: string,
+    force?: boolean,
+  ): Promise<Message | undefined> {
     const channel = await this.getChannelById<TextChannel>(channelId);
-    if (!channel) throw Error();
+    if (!channel) return undefined;
     return channel.messages.fetch(messageId, undefined, force);
   }
 
@@ -74,7 +82,7 @@ export class DiscordService {
   async createEventChannelIfNotExists(name: string): Promise<TextChannel> {
     let id: string = '';
     this.getEventChannels().forEach((c) => {
-      if (c.name == name) id = c.id;
+      if (c.name == name.toLowerCase()) id = c.id;
     });
     if (id != '') return this.getChannelById(id);
 
