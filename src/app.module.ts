@@ -35,8 +35,8 @@ import { UsersModule } from './users/users.module';
     DiscordConfigModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: (service: ConfigService) => ({
-        token: service.get('discord.token') as string,
-        commandPrefix: service.get('discord.prefix') as string,
+        token: service.get('discord.token'),
+        commandPrefix: service.get('discord.commandPrefix'),
       }),
       inject: [ConfigService],
     }),

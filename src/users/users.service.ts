@@ -61,9 +61,9 @@ export class UsersService {
   getActiveMember(id: string) {
     return this.memberRepository
       .createQueryBuilder()
-      .where('member.memberTill IS NULL')
+      .where('"memberTill" IS NULL')
       .andWhere('reserve = false')
-      .andWhere('honoraryMember=false')
+      .andWhere('"honoraryMember"=false')
       .andWhere('id = :id', { id })
       .getOne();
   }

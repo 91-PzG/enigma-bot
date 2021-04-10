@@ -4,4 +4,5 @@ export enum Rank {
   SERGANT = 'sergant',
   SOLDIER = 'soldier',
   RECRUIT = 'recruit',
+  CORPORAL = 'corporal',
 }
