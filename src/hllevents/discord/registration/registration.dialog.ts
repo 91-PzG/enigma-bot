@@ -16,9 +16,9 @@ type DivisionMatrixEntry = {
 };
 const divisionMatrix: { [key: string]: DivisionMatrixEntry } = {
   infanterie: { default: 'Fußsoldat', squadlead: 'Offizier' },
-  armor: { default: 'Scharfschütze', squadlead: '' },
-  recon: { default: '', squadlead: 'Spotter' },
-  artillery: { default: 'Panzerbesatzung', squadlead: 'Panzerkommandant' },
+  artillery: { default: 'Geschützbesatzung', squadlead: 'Batterieführer' },
+  recon: { default: 'Aufklärer', squadlead: 'Spotter' },
+  armor: { default: 'Panzerbesatzung', squadlead: 'Panzerkommandant' },
 };
 const enrolmentMatrix = {
   AN: 'angemeldet',
@@ -138,7 +138,7 @@ export class RegistrationDialog {
       .setDescription(
         [
           `${divisionMatrix[division].default} - 💂‍♂️`,
-          `${divisionMatrix[division].default} - 🤠`,
+          `${divisionMatrix[division].squadlead} - 🤠`,
           'Kommandant - 🕵️‍♂️',
           'Abbrechen - ❌',
         ].join('\n'),

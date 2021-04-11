@@ -34,14 +34,12 @@ export class EnrolmentMessageFactory {
 
   private loadEmojis() {
     this.emojis = {
-      squadlead:
-        this.config.squadleadEmoji.length == 2
-          ? this.config.squadleadEmoji
-          : this.discordService.getEmojiById(this.config.squadleadEmoji),
-      commander:
-        this.config.commanderEmoji.length == 2
-          ? this.config.commanderEmoji
-          : this.discordService.getEmojiById(this.config.commanderEmoji),
+      squadlead: this.config.squadleadEmoji
+        ? this.discordService.getEmojiById(this.config.squadleadEmoji)
+        : '💂',
+      commander: this.config.commanderEmoji
+        ? this.discordService.getEmojiById(this.config.commanderEmoji)
+        : '🤠',
     };
   }
 }
