@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
+import { On } from 'discord-nestjs';
 import { Message } from 'discord.js';
 import { DiscordService } from '../../discord/discord.service';
 import { HLLEvent } from '../../postgres/entities';
@@ -7,6 +8,7 @@ import { HLLEventRepository } from '../hllevent.repository';
 import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
 import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from './messages/informationMessage.factory';
+import { RegistrationManager } from './registration/registration.manager';
 
 @Injectable()
 export class HLLEventsDiscordService {
@@ -16,7 +18,17 @@ export class HLLEventsDiscordService {
     private eventRepository: HLLEventRepository,
     private informationMessageFactory: InformationMessageFactory,
     private enrolmentMessageFactory: EnrolmentMessageFactory,
+    private registrationManager: RegistrationManager,
   ) {}
+
+  @On({ event: 'ready' })
+  async getOpenEvents() {
+    const events = await this.eventRepository.getOpenEvents();
+
+    events.forEach((event) => {
+      this.registrationManager.addEvent(event, this);
+    });
+  }
 
   async publishMessages(event: HLLEvent) {
     const channel = await this.discordService.createEventChannelIfNotExists(event.channelName);
@@ -36,6 +48,8 @@ export class HLLEventsDiscordService {
     //@ts-ignore
     event.autoPublishDate = null;
     event.save();
+
+    this.registrationManager.addEvent(event, this);
   }
 
   async updateInformationMessage(event: HLLEvent): Promise<boolean> {
@@ -88,6 +102,10 @@ export class HLLEventsDiscordService {
   async checkEvents() {
     const events = await this.eventRepository.getPublishableEvents();
 
-    events.forEach((event) => this.publishMessages(event));
+    events.forEach((event) => {
+      //@ts-ignore
+      event.organisator = event.organisator.name;
+      this.publishMessages(event);
+    });
   }
 }

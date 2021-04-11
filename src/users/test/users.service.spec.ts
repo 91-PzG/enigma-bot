@@ -16,6 +16,7 @@ describe('UsersService', () => {
   let select: string[] = [];
   const queryBuilder = {
     leftJoin: jest.fn().mockReturnThis(),
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
     select: jest.fn().mockImplementation((selections: string[]) => {
       select = select.concat(selections);
       return queryBuilder;

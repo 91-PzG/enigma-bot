@@ -74,6 +74,10 @@ export class HLLEventUpdateDataDto {
 
   @IsOptional()
   @IsString()
+  faction?: string;
+
+  @IsOptional()
+  @IsString()
   commander?: string;
 
   @IsOptional()

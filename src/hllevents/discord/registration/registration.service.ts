@@ -52,14 +52,13 @@ export class RegistrationService {
 
   private onCollect = async (reaction: MessageReaction, user: User) => {
     const member = await this.manager.usersService.getActiveMember(user.id);
-
     if (!member) return;
 
-    /*new RegistrationDialog(this.getEnrolmentType(reaction.emoji), user, this.event.name)
-      .startDialog()
-      .then((participationDto: CreateParticipationDto) => {
-        this.updateParticipation(participationDto, jwtUser);
-      })*/
+    this.manager.dialog
+      .startDialog(this.getEnrolmentType(reaction.emoji), user, this.event, member)
+      .then(() => {
+        this.manager.hllEventDiscordService.updateEnrolmentMessage(this.event);
+      });
   };
 
   private getEnrolmentType(emoji: GuildEmoji | ReactionEmoji): EnrolmentType {

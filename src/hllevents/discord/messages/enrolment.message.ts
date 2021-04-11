@@ -75,15 +75,17 @@ export class EnrolmentMessage extends DefaultMessage {
       .reduce((acc, cur) => acc + cur);
     this.setTitle(`Anmeldungen - ${anmeldungen}`);
 
-    this.addPool(`Infanterie (${divisions.infanterie.length})`, divisions.infanterie);
-    this.addPool(`Panzer (${divisions.armor.length})`, divisions.armor);
+    this.addPool(`Infanterie (${divisions.infanterie.length})`, divisions.infanterie, true);
+    this.addPool(`Panzer (${divisions.armor.length})`, divisions.armor, true);
     this.addField('\u200B', '\u200B');
-    this.addPool(`Aufklärer (${divisions.recon.length})`, divisions.recon);
-    this.addPool(`Artillerie (${divisions.artillery.length})`, divisions.artillery);
+    this.addPool(`Aufklärer (${divisions.recon.length})`, divisions.recon, true);
+    this.addPool(`Artillerie (${divisions.artillery.length})`, divisions.artillery, true);
   }
 
   private formatName(enrolment: Enrolment): string {
-    let name = this.stripName(enrolment.username);
+    //@ts-ignore
+    let name = enrolment.name || enrolment.username;
+    name = this.stripName(name);
     if (enrolment.squadlead) name += this.emojis.squadlead;
     if (enrolment.commander) name += this.emojis.commander;
     return name;
@@ -93,14 +95,14 @@ export class EnrolmentMessage extends DefaultMessage {
     return name.split('|').slice(1).join('|');
   }
 
-  private addPool(header: string, members: string[]) {
-    this.addField(header, this.sanitizeMemberList(members));
+  private addPool(header: string, members: string[], inline?: boolean) {
+    this.addField(header, this.sanitizeMemberList(members), inline);
   }
 
   private addDefaultPools() {
     this.addField('\u200B', '\u200B');
-    this.addPool(`Reserve (${this.reservePool.length})`, this.reservePool);
-    this.addPool(`Abmeldungen (${this.abmeldungPool.length})`, this.abmeldungPool);
+    this.addPool(`Reserve (${this.reservePool.length})`, this.reservePool, true);
+    this.addPool(`Abmeldungen (${this.abmeldungPool.length})`, this.abmeldungPool, true);
   }
 
   private sanitizeMemberList(members: string[]): string {

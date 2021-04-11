@@ -7,6 +7,7 @@ import { HLLDiscordEventRepository } from '../hlldiscordevent.repository';
 import { HLLEventsDiscordService } from '../hllevent-discord.service';
 import { EnrolmentMessageFactory } from '../messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from '../messages/informationMessage.factory';
+import { RegistrationManager } from '../registration/registration.manager';
 
 describe('HLLEventDiscordService', () => {
   let service: HLLEventsDiscordService;
@@ -34,10 +35,17 @@ describe('HLLEventDiscordService', () => {
     const enrolmentFactoryMock: Partial<EnrolmentMessageFactory> = {
       createMessage: jest.fn(),
     };
+    const registrationManagerMock: Partial<RegistrationManager> = {
+      addEvent: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HLLEventsDiscordService,
+        {
+          provide: RegistrationManager,
+          useValue: registrationManagerMock,
+        },
         {
           provide: DiscordService,
           useValue: discordServiceMock,
@@ -182,7 +190,11 @@ describe('HLLEventDiscordService', () => {
 
   describe('checkEvents', () => {
     it('should call publish events for all events retured from repo', async () => {
-      const events = ['abc', 'def', 'ghi'];
+      const events = [
+        { organisator: { name: 'abc' } },
+        { organisator: { name: 'def' } },
+        { organisator: { name: 'ghi' } },
+      ];
       service.publishMessages = jest.fn();
       //@ts-ignore
       eventRepository.getPublishableEvents.mockResolvedValue(events);

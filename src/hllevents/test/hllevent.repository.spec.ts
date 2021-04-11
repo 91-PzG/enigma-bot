@@ -7,6 +7,7 @@ describe('HLLEventRepository', () => {
   let repository: HLLEventRepository;
   let queryBuilder: Partial<SelectQueryBuilder<HLLEvent>> = {
     select: jest.fn().mockReturnThis(),
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
   };

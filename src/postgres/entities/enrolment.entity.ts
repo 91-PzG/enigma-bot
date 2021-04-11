@@ -11,16 +11,16 @@ export class Enrolment extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: false })
   squadlead: boolean;
 
-  @Column()
+  @Column({ default: false })
   commander: boolean;
 
   @Column()
   timestamp: Date;
 
-  @Column()
+  @Column({ nullable: true })
   position: number;
 
   @Column({ nullable: true })
@@ -29,8 +29,14 @@ export class Enrolment extends BaseEntity {
   @ManyToOne(() => HLLEvent)
   event: HLLEvent;
 
+  @Column()
+  eventId: number;
+
   @ManyToOne(() => Member, { nullable: true })
   member: Member;
+
+  @Column()
+  memberId: string;
 
   @Column({
     type: 'enum',

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { Contact, HLLEvent, IHLLEvent, Member } from '../../postgres/entities';
 import { UsersService } from '../../users/users.service';
+import { HLLEventsDiscordService } from '../discord/hllevent-discord.service';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';
 import { HLLEventRepository } from '../hllevent.repository';
@@ -44,12 +45,20 @@ describe('HLLEventService', () => {
       getAll: jest.fn(),
       getEventById: jest.fn(),
     };
+    const hllEventDiscordServiceMock: Partial<HLLEventsDiscordService> = {
+      publishMessages: jest.fn(),
+      updateInformationMessage: jest.fn(),
+    };
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HLLEventService,
         {
           provide: HLLEventRepository,
           useValue: hllEventRepositoryMock,
+        },
+        {
+          provide: HLLEventsDiscordService,
+          useValue: hllEventDiscordServiceMock,
         },
         {
           provide: UsersService,

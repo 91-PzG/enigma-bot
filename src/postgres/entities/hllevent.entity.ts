@@ -58,7 +58,11 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
   playerCount: number;
 
   @ManyToOne(() => Contact, { eager: true })
+  @JoinColumn()
   organisator: Contact;
+
+  @Column({ nullable: true })
+  organisatorId: string;
 
   @Column()
   mandatory: boolean;
@@ -80,6 +84,9 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
 
   @Column({ nullable: true })
   hllMap: string;
+
+  @Column({ nullable: true })
+  faction: string;
 
   @Column({ nullable: true })
   commander: string;
@@ -112,5 +119,6 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
   @JoinColumn()
   discordEvent: HllDiscordEvent;
 
+  @Column({ nullable: true })
   discordEventId: number;
 }

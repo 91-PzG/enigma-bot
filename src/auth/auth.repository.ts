@@ -1,6 +1,5 @@
 import {
   ConflictException,
-  ForbiddenException,
   Logger,
   NotFoundException,
   UnauthorizedException,
@@ -55,7 +54,7 @@ export class AuthRepository extends Repository<Member> {
     const member = await this.getMemberByName(username);
 
     if (!member) throw new UnauthorizedException('Invalid credentials');
-    if (member.mustChangePassword) throw new ForbiddenException('Must change password');
+    //if (member.mustChangePassword) throw new ForbiddenException('Must change password');
     if (!member.password) throw new ConflictException('User not registered yet');
     if (!(await member.validatePassword(password)))
       throw new UnauthorizedException('Invalid credentials');

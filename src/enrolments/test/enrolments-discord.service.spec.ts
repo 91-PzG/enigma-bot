@@ -1,7 +1,5 @@
-import { NotImplementedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Division, Enrolment, EnrolmentType } from '../../postgres/entities';
-import { EnrolByDiscordDto } from '../dto/enrolByDiscord.dto';
 import { EnrolmentsDiscordService } from '../enrolments-discord.service';
 import { EnrolmentsRepository } from '../enrolments.repository';
 
@@ -29,20 +27,6 @@ describe('Enrolment Service', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  describe('enrol', () => {
-    const dto: EnrolByDiscordDto = {
-      type: EnrolmentType.ABMELDUNG,
-      squadlead: false,
-      commander: false,
-      division: Division.ARMOR,
-      eventId: 5,
-      memberId: 'test',
-    };
-    it('should throw unimplemented', async () => {
-      await expect(service.enrol(dto)).rejects.toThrow(NotImplementedException);
-    });
   });
 
   describe('get Enrolments', () => {

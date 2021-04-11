@@ -7,9 +7,11 @@ describe('Enrolment Repository', () => {
   let repository: EnrolmentsRepository;
   let queryBuilder: Partial<SelectQueryBuilder<Enrolment>> = {
     select: jest.fn().mockReturnThis(),
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    getRawMany: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -51,7 +53,7 @@ describe('Enrolment Repository', () => {
         division: Division.ARTILLERY,
       },
     ];
-    queryBuilder.getMany = jest.fn().mockResolvedValue(enrolments);
+    queryBuilder.getRawMany = jest.fn().mockResolvedValue(enrolments);
 
     it('should return enrolments', async () => {
       expect(await repository.getEmbedEnrolments(1)).toEqual(enrolments);

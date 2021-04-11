@@ -8,8 +8,8 @@ import { HLLEvent } from '../../../postgres/entities';
 import { EnrolmentMessage } from './enrolment.message';
 
 export interface EmojiWrapper {
-  squadlead: GuildEmoji;
-  commander: GuildEmoji;
+  squadlead: GuildEmoji | string;
+  commander: GuildEmoji | string;
 }
 
 @Injectable()
@@ -22,19 +22,26 @@ export class EnrolmentMessageFactory {
     private discordService: DiscordService,
     private enrolmentService: EnrolmentsDiscordService,
   ) {
-    this.config = config.get('embed') as EmbedConfig;
+    this.config = config.get('embed');
   }
 
   public async createMessage(event: HLLEvent): Promise<MessageEmbed> {
     if (!this.emojis) this.loadEmojis();
     const enrolments = await this.enrolmentService.getEnrolments(event.id);
+    console.log(enrolments);
     return new EnrolmentMessage(event, this.emojis, enrolments, this.config);
   }
 
   private loadEmojis() {
     this.emojis = {
-      squadlead: this.discordService.getEmojiById(this.config.squadleadEmoji) as GuildEmoji,
-      commander: this.discordService.getEmojiById(this.config.commanderEmoji) as GuildEmoji,
+      squadlead:
+        this.config.squadleadEmoji.length == 2
+          ? this.config.squadleadEmoji
+          : this.discordService.getEmojiById(this.config.squadleadEmoji),
+      commander:
+        this.config.commanderEmoji.length == 2
+          ? this.config.commanderEmoji
+          : this.discordService.getEmojiById(this.config.commanderEmoji),
     };
   }
 }

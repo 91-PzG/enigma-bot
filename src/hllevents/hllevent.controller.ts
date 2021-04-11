@@ -34,7 +34,7 @@ export class HLLEventController {
 
   @Post()
   @UseGuards(RoleGuard)
-  @Scopes(AccessRoles.EVENTORGA)
+  @Scopes(AccessRoles.OFFICER, AccessRoles.CLANRAT, AccessRoles.EVENTORGA)
   async createEvent(@Body() createEventDto: HLLEventCreateWrapperDto): Promise<HLLEventGetByIdDto> {
     return this.setOrganisator(await this.hllEventService.createEvent(createEventDto));
   }

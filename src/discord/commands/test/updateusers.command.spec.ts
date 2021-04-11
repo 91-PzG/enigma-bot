@@ -1,8 +1,9 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Member } from '../../../postgres/entities';
 import { DiscordService } from '../../discord.service';
 import { DiscordUtil } from '../../util/discord.util';
-import { MemberRepository } from '../../util/member.repository';
 import { UpdateUsersCommand } from '../updateusers.command';
 
 describe('updateUsers command', () => {
@@ -10,7 +11,6 @@ describe('updateUsers command', () => {
 
   beforeEach(async () => {
     const discordServiceMock: Partial<DiscordService> = {};
-    const memberRepositoryMock: Partial<MemberRepository> = {};
     const discordUtilMock: Partial<DiscordUtil> = {};
     const configServiceMock: Partial<ConfigService> = {
       get: jest.fn(),
@@ -20,7 +20,12 @@ describe('updateUsers command', () => {
       providers: [
         { provide: DiscordService, useValue: discordServiceMock },
         { provide: DiscordUtil, useValue: discordUtilMock },
-        { provide: MemberRepository, useValue: memberRepositoryMock },
+        {
+          provide: getRepositoryToken(Member),
+          useValue: {
+            findOne: jest.fn(),
+          },
+        },
         { provide: ConfigService, useValue: configServiceMock },
         UpdateUsersCommand,
       ],
