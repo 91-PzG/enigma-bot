@@ -39,11 +39,14 @@ export class RegistrationService {
     this.logger.debug(`Started collector for event ${event.id} - ${event.name}`);
   }
 
-  async stopCollector() {}
+  async stopCollector() {
+    this.collector.stop();
+  }
 
   private onEnd = async () => {
     await this.event.reload();
     if (!this.closed) {
+      await this.event.reload();
       this.event.closed = true;
       this.event.save();
     }

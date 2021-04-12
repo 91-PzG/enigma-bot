@@ -28,7 +28,6 @@ export class EnrolmentMessageFactory {
   public async createMessage(event: HLLEvent): Promise<MessageEmbed> {
     if (!this.emojis) this.loadEmojis();
     const enrolments = await this.enrolmentService.getEnrolments(event.id);
-    console.log(enrolments);
     return new EnrolmentMessage(event, this.emojis, enrolments, this.config);
   }
 

@@ -86,8 +86,8 @@ export class EnrolmentMessage extends DefaultMessage {
     //@ts-ignore
     let name = enrolment.name || enrolment.username;
     name = this.stripName(name);
-    if (enrolment.squadlead) name += this.emojis.squadlead;
-    if (enrolment.commander) name += this.emojis.commander;
+    if (enrolment.squadlead) name += ` ${this.emojis.squadlead}`;
+    if (enrolment.commander) name += ` ${this.emojis.commander}`;
     return name;
   }
 

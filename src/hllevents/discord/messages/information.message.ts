@@ -7,8 +7,16 @@ type Translation = {
   valuePipe?: (value: any) => string;
 };
 
+const days = ['Mo, ', 'Di, ', 'Mi,', 'Do, ', 'Fr,', 'Sa, ', 'So, '];
+
+const zeroPad = (num) => String(num).padStart(2, '0');
+
 const dateTransformation = (value: any): string => {
-  return new Date(value).toLocaleString('de-de');
+  const date = new Date(value);
+
+  return `${days[date.getDay()]}${date.getDate()}.${date.getMonth() + 1}.${
+    date.getFullYear() % 100
+  } ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}`;
 };
 
 const boolTransformation = (value: any): string => {

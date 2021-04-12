@@ -26,7 +26,7 @@ export class HLLEventService {
 
   async patchEvent(id: number, dto: HLLEventUpdateWrapperDto) {
     const event = await this.getEventById(id);
-    if (dto.control.organisator) {
+    if (dto.control?.organisator) {
       dto.data['organisator'] = await this.getMemberById(dto.control.organisator);
     }
     Object.entries(dto.data).forEach(([key, value]) => {
@@ -36,7 +36,6 @@ export class HLLEventService {
     await event.save();
 
     this.discordService.updateInformationMessage(event);
-
     return event;
   }
 

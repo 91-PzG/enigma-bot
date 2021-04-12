@@ -100,12 +100,26 @@ export class HLLEventsDiscordService {
 
   @Cron('*/5 * * * *')
   async checkEvents() {
-    const events = await this.eventRepository.getPublishableEvents();
-
-    events.forEach((event) => {
-      //@ts-ignore
-      event.organisator = event.organisator.name;
-      this.publishMessages(event);
+    this.eventRepository.getPublishableEvents().then((events) => {
+      events.forEach((event) => {
+        //@ts-ignore
+        event.organisator = event.organisator.name;
+        this.publishMessages(event);
+      });
+    });
+    this.eventRepository.getLockableEvents().then((events) => {
+      events.forEach((event) => {
+        event.locked = true;
+        event.save();
+        this.registrationManager.editEvent(event);
+      });
+    });
+    this.eventRepository.getClosableEvents().then((events) => {
+      events.forEach((event) => {
+        event.closed = true;
+        event.save();
+        this.registrationManager.closeEvent(event.id);
+      });
     });
   }
 }

@@ -23,7 +23,7 @@ export class RegistrationManager {
     public usersService: UsersService,
     public dialog: RegistrationDialog,
   ) {
-    this.config = configService.get('registration') as RegistrationConfig;
+    this.config = configService.get('registration');
   }
 
   async addEvent(event: HLLEvent, service: HLLEventsDiscordService) {
@@ -48,16 +48,19 @@ export class RegistrationManager {
   }
 
   editEvent(event: HLLEvent) {
-    if (this.collectors[event.id]) {
-      if (this.collectors[event.id].event.locked != event.locked) {
-        this.addReactions(this.collectors[event.id].message, event.locked);
-      }
-      this.collectors[event.id].event = event;
+    if (!this.collectors[event.id]) return;
+
+    if (this.collectors[event.id].event.locked != event.locked) {
+      this.addReactions(this.collectors[event.id].message, event.locked);
     }
+    this.collectors[event.id].event = event;
   }
 
   async closeEvent(eventId: number) {
+    if (!this.collectors[eventId]) return;
     await this.collectors[eventId].stopCollector();
+    await this.collectors[eventId].message.reactions.removeAll();
+    this.collectors[eventId].message.react('🛑');
     delete this.collectors[eventId];
   }
 

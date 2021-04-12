@@ -4,7 +4,10 @@ import { HLLEvent, IHLLEvent } from '../postgres/entities';
 @EntityRepository(HLLEvent)
 export class HLLEventRepository extends Repository<HLLEvent> {
   getEventById(id: number): Promise<HLLEvent | undefined> {
-    return this.findOne(id);
+    return this.createQueryBuilder('event')
+      .leftJoinAndSelect('event.organisator', 'orga')
+      .where('event.id = :id', { id })
+      .getOne();
   }
 
   getAll(): Promise<IHLLEvent[]> {
@@ -18,7 +21,25 @@ export class HLLEventRepository extends Repository<HLLEvent> {
   getPublishableEvents(): Promise<HLLEvent[]> {
     return this.createQueryBuilder('e')
       .leftJoinAndSelect('e.organisator', 'orga')
-      .where('"autoPublishDate" < :date', { date: new Date() })
+      .where('e.autoPublishDate < :date', { date: new Date() })
+      .andWhere('e.closed = false')
+      .getMany();
+  }
+
+  getLockableEvents(): Promise<HLLEvent[]> {
+    return this.createQueryBuilder('e')
+      .leftJoinAndSelect('e.organisator', 'orga')
+      .where('e.registerByDate < :date', { date: new Date() })
+      .andWhere('e.locked = false')
+      .andWhere('e.closed = false')
+      .getMany();
+  }
+
+  getClosableEvents(): Promise<HLLEvent[]> {
+    return this.createQueryBuilder('e')
+      .leftJoinAndSelect('e.organisator', 'orga')
+      .where('e.date < :date', { date: new Date() })
+      .andWhere('e.closed = false')
       .getMany();
   }
 
