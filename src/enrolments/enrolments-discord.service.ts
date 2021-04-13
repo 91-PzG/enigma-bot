@@ -1,14 +1,21 @@
 import { Injectable } from '@nestjs/common';
-import { Enrolment } from '../postgres/entities';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Contact, Enrolment } from '../postgres/entities';
 import { EnrolByDiscordDto } from './dto/enrolByDiscord.dto';
-import { EnrolmentsRepository } from './enrolments.repository';
 
 @Injectable()
 export class EnrolmentsDiscordService {
-  constructor(private repository: EnrolmentsRepository) {}
+  constructor(@InjectRepository(Enrolment) private repository: Repository<Enrolment>) {}
 
   getEnrolments(eventId: number): Promise<Enrolment[]> {
-    return this.repository.getEmbedEnrolments(eventId);
+    return this.repository
+      .createQueryBuilder('e')
+      .leftJoinAndSelect(Contact, 'contact', 'e.memberId = contact.id')
+      .select(['username', 'squadlead', 'commander', '"enrolmentType"', 'division', 'name'])
+      .where('e.eventId = :eventId', { eventId })
+      .orderBy('e.timestamp', 'ASC')
+      .getRawMany();
   }
 
   async enrol(dto: EnrolByDiscordDto) {

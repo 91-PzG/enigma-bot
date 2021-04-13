@@ -53,6 +53,8 @@ export class Enrolment extends BaseEntity {
   @ManyToOne(() => Squad, { nullable: true })
   squad: Squad;
 
+  squadId: number;
+
   @Column({
     type: 'enum',
     enum: HLLRole,

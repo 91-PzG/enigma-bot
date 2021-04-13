@@ -1,4 +1,4 @@
-import { Controller, Get, NotImplementedException } from '@nestjs/common';
+import { Controller, Get, NotImplementedException, Param, ParseIntPipe } from '@nestjs/common';
 import { EnrolmentDto } from './dto/enrolment.dto';
 import { MixedRosterDto, RosterDto } from './dto/roster.dto';
 import { EnrolmentsService } from './enrolments.service';
@@ -7,9 +7,11 @@ import { EnrolmentsService } from './enrolments.service';
 export class EnrolmentsController {
   constructor(private service: EnrolmentsService) {}
 
-  @Get('/:eventid')
-  getEnrolmentForEvent(): RosterDto | MixedRosterDto {
-    throw new NotImplementedException();
+  @Get('/:eventId')
+  getEnrolmentForEvent(
+    @Param('eventId', ParseIntPipe) id: number,
+  ): Promise<RosterDto | MixedRosterDto> {
+    return this.service.getEnrolmentForEvent(id);
   }
 
   @Get('/user/:userid')
