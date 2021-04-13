@@ -15,6 +15,6 @@ export default registerAs(
     baseUrl: process.env.BASE_URL as string,
     thumbnail: process.env.THUMBNAIL as string,
     squadleadEmoji: process.env.SQUADLEAD_EMOJI || '💂',
-    commanderEmoji: process.env.SQUADLEAD_EMOJI || '🤠',
+    commanderEmoji: process.env.COMMANDER_EMOJI || '🤠',
   }),
 );
