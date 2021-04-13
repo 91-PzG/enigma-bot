@@ -85,7 +85,7 @@ export class EnrolmentMessage extends DefaultMessage {
   private formatName(enrolment: Enrolment): string {
     //@ts-ignore
     let name = enrolment.name || enrolment.username;
-    name = this.stripName(name);
+    name = Util.escapeMarkdown(this.stripName(name));
     if (enrolment.squadlead) name += ` ${this.emojis.squadlead}`;
     if (enrolment.commander) name += ` ${this.emojis.commander}`;
     return name;
@@ -96,7 +96,7 @@ export class EnrolmentMessage extends DefaultMessage {
   }
 
   private addPool(header: string, members: string[], inline?: boolean) {
-    this.addField(header, this.sanitizeMemberList(members), inline);
+    this.addField(header, this.joinMemberList(members), inline);
   }
 
   private addDefaultPools() {
@@ -105,7 +105,7 @@ export class EnrolmentMessage extends DefaultMessage {
     this.addPool(`Abmeldungen (${this.abmeldungPool.length})`, this.abmeldungPool, true);
   }
 
-  private sanitizeMemberList(members: string[]): string {
-    return members.length > 0 ? Util.escapeMarkdown(members.join('\n')) : '\u200B';
+  private joinMemberList(members: string[]): string {
+    return members.length > 0 ? members.join('\n') : '\u200B';
   }
 }
