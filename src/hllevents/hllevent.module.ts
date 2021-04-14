@@ -6,6 +6,7 @@ import { HLLDiscordEventRepository } from './discord/hlldiscordevent.repository'
 import { HLLEventsDiscordService } from './discord/hllevent-discord.service';
 import { MessageModule } from './discord/messages/message.module';
 import { RegistrationModule } from './discord/registration/registration.module';
+import { ReminderModule } from './discord/reminder/reminder.module';
 import { HLLEventController } from './hllevent.controller';
 import { HLLEventRepository } from './hllevent.repository';
 import { HLLEventService } from './hllevent.service';
@@ -17,6 +18,7 @@ import { HLLEventService } from './hllevent.service';
     MessageModule,
     EnrolmentsModule,
     RegistrationModule,
+    ReminderModule,
   ],
   controllers: [HLLEventController],
   providers: [HLLEventService, HLLEventsDiscordService],

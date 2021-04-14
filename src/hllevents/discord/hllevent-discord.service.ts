@@ -9,6 +9,7 @@ import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
 import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from './messages/informationMessage.factory';
 import { RegistrationManager } from './registration/registration.manager';
+import { ReminderService } from './reminder/reminder.service';
 
 @Injectable()
 export class HLLEventsDiscordService {
@@ -19,6 +20,7 @@ export class HLLEventsDiscordService {
     private informationMessageFactory: InformationMessageFactory,
     private enrolmentMessageFactory: EnrolmentMessageFactory,
     private registrationManager: RegistrationManager,
+    private reminderService: ReminderService,
   ) {}
 
   @On({ event: 'ready' })
@@ -119,6 +121,11 @@ export class HLLEventsDiscordService {
         event.closed = true;
         event.save();
         this.registrationManager.closeEvent(event.id);
+      });
+    });
+    this.eventRepository.getReminderEvents().then((events) => {
+      events.forEach((event) => {
+        this.reminderService.getMissingEnrolment(event.id);
       });
     });
   }

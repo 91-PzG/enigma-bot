@@ -43,6 +43,13 @@ export class HLLEventRepository extends Repository<HLLEvent> {
       .getMany();
   }
 
+  getReminderEvents(): Promise<HLLEvent[]> {
+    return this.createQueryBuilder('e')
+      .where('e.registerByDate < :date ', { date: (new Date().valueOf())-3600*24 })
+      .andWhere('e.closed = false')
+      .getMany();
+  }
+
   getOpenEvents(): Promise<HLLEvent[]> {
     return this.createQueryBuilder('event')
       .leftJoinAndSelect('event.discordEvent', 'discordEvent')
