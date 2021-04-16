@@ -1,17 +1,9 @@
-import {
-  BaseEntity,
-  Column,
-  Entity,
-  ManyToOne,
-  OneToMany,
-  PrimaryColumn,
-} from 'typeorm';
-import { Division, HLLEvent } from '.';
-import { Enrolment } from './enrolment.entity';
+import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Division, Enrolment, HLLEvent } from '.';
 
 @Entity()
 export class Squad extends BaseEntity {
-  @PrimaryColumn()
+  @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
@@ -29,8 +21,8 @@ export class Squad extends BaseEntity {
   @ManyToOne(() => HLLEvent)
   event: HLLEvent;
 
-  @OneToMany(() => Enrolment, (enrolment) => enrolment.squad, {
-    eager: true,
-  })
+  @Column()
+  eventId: number;
+
   members: Enrolment[];
 }

@@ -4,7 +4,6 @@ import { EnrolmentType } from './enrolmentType.enum';
 import { HLLEvent } from './hllevent.entity';
 import { HLLRole } from './hllRole.enum';
 import { Member } from './member.entity';
-import { Squad } from './squad.entity';
 
 @Entity()
 export class Enrolment extends BaseEntity {
@@ -50,9 +49,7 @@ export class Enrolment extends BaseEntity {
   })
   enrolmentType: EnrolmentType;
 
-  @ManyToOne(() => Squad, { nullable: true })
-  squad: Squad;
-
+  @Column({ nullable: true })
   squadId: number;
 
   @Column({

@@ -1,6 +1,8 @@
 import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import { GetUser } from '../auth/jwt/get-user.decorator';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
 import { Scopes } from '../auth/jwt/guards/scopes.decorator';
+import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
 import { AccessRoles, HLLEvent } from '../postgres/entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
@@ -18,8 +20,11 @@ export class HLLEventController {
   }
 
   @Get('/:id')
-  async getEventById(@Param('id', ParseIntPipe) id: number): Promise<HLLEventGetByIdDto> {
-    return this.setOrganisator(await this.hllEventService.getEventById(id));
+  async getEventById(
+    @Param('id', ParseIntPipe) id: number,
+    @GetUser() user: JwtPayload,
+  ): Promise<HLLEventGetByIdDto> {
+    return this.setOrganisator(await this.hllEventService.getEventById(id, user.userId));
   }
 
   @Scopes(AccessRoles.EVENTORGA)
@@ -41,7 +46,7 @@ export class HLLEventController {
 
   private setOrganisator(event: HLLEvent): HLLEventGetByIdDto {
     const e = event as HLLEventGetByIdDto;
-    e.organisator = event.organisator.name;
+    e.organisator = event.organisator?.name;
     return e;
   }
 }
