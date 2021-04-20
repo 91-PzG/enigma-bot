@@ -7,7 +7,7 @@ type Translation = {
   valuePipe?: (value: any) => string;
 };
 
-const days = ['Mo, ', 'Di, ', 'Mi,', 'Do, ', 'Fr,', 'Sa, ', 'So, '];
+const days = ['So, ', 'Mo, ', 'Di, ', 'Mi,', 'Do, ', 'Fr,', 'Sa, '];
 
 const zeroPad = (num) => String(num).padStart(2, '0');
 
