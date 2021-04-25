@@ -15,7 +15,7 @@ const zeroPad = (num) => String(num).padStart(2, '0');
 
 const dateTransformation = (value: any): string => {
   let date = new Date(value);
-  date = new Date(date.getTime() - msInTwoHours);
+  date = new Date(date.getTime() + msInTwoHours);
 
   return `${days[date.getDay()]}${date.getDate()}.${date.getMonth() + 1}.${
     date.getFullYear() % 100
