@@ -123,9 +123,16 @@ export class HLLEventsDiscordService {
         this.registrationManager.closeEvent(event.id);
       });
     });
-    this.eventRepository.getReminderEvents().then((events) => {
+    this.eventRepository.getReminderEventsOne().then((events) => {
       events.forEach((event) => {
-        this.reminderService.getMissingEnrolment(event.id);
+        this.eventRepository.setReminderOne(event.id);
+        this.reminderService.getMissingEnrolmentOne(event);
+      });
+    });
+    this.eventRepository.getReminderEventsTwo().then((events) => {
+      events.forEach((event) => {
+        this.eventRepository.setReminderTwo(event.id);
+        this.reminderService.getMissingEnrolmentTwo(event);
       });
     });
   }

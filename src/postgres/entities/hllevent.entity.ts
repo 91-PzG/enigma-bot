@@ -121,4 +121,10 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
 
   @Column({ nullable: true })
   discordEventId: number;
+
+  @Column({ default: false })
+  sentReminderOne: boolean;
+
+  @Column({ default: false })
+  sentReminderTwo: boolean;
 }
