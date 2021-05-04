@@ -16,7 +16,7 @@ export class EnrolmentsService {
   getEnrolmentForUserAndEvent(eventId: number, memberId: string): Promise<Enrolment> {
     return this.enrolmentRepository
       .createQueryBuilder('e')
-      .leftJoin(Squad, 'squad', '"squadId" = squad.id')
+      .leftJoinAndSelect(Squad, 'squad', '"squadId" = squad.id')
       .where('e.memberId=:memberId AND e.eventId=:eventId', { memberId, eventId })
       .getOne();
   }
