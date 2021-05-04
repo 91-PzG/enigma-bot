@@ -14,7 +14,11 @@ export class EnrolmentsService {
   ) {}
 
   getEnrolmentForUserAndEvent(eventId: number, memberId: string): Promise<Enrolment> {
-    return this.enrolmentRepository.findOne({ memberId, eventId });
+    return this.enrolmentRepository
+      .createQueryBuilder('e')
+      .leftJoin(Squad, 'squad', '"squadId" = squad.id')
+      .where('e.memberId=:memberId AND e.eventId=:eventId', { memberId, eventId })
+      .getOne();
   }
 
   async getEnrolmentForEvent(id: number): Promise<RosterDto | MixedRosterDto> {
