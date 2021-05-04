@@ -13,12 +13,11 @@ export class EnrolmentsService {
     @InjectRepository(Squad) private squadRepository: Repository<Squad>,
   ) {}
 
-  getEnrolmentForUserAndEvent(eventId: number, memberId: string): Promise<Enrolment> {
-    return this.enrolmentRepository
-      .createQueryBuilder('e')
-      .leftJoinAndSelect(Squad, 'squad', '"squadId" = squad.id')
-      .where('e.memberId=:memberId AND e.eventId=:eventId', { memberId, eventId })
-      .getOne();
+  async getEnrolmentForUserAndEvent(eventId: number, memberId: string): Promise<Enrolment> {
+    const enrolment = await this.enrolmentRepository.findOne({ memberId, eventId });
+    //@ts-ignore
+    if (enrolment.squadId) enrolment.squad = await this.squadRepository.findOne(enrolment.squadId);
+    return enrolment;
   }
 
   async getEnrolmentForEvent(id: number): Promise<RosterDto | MixedRosterDto> {
