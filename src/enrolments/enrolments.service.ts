@@ -16,7 +16,7 @@ export class EnrolmentsService {
   async getEnrolmentForUserAndEvent(eventId: number, memberId: string): Promise<Enrolment> {
     const enrolment = await this.enrolmentRepository.findOne({ memberId, eventId });
     //@ts-ignore
-    if (enrolment.squadId) enrolment.squad = await this.squadRepository.findOne(enrolment.squadId);
+    if (enrolment?.squadId) enrolment.squad = await this.squadRepository.findOne(enrolment.squadId);
     return enrolment;
   }
 
