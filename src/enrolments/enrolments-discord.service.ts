@@ -1,15 +1,18 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Contact, Enrolment } from '../postgres/entities';
+import { Contact, Enrolment, Member } from '../postgres/entities';
 import { EnrolByDiscordDto } from './dto/enrolByDiscord.dto';
 
 @Injectable()
 export class EnrolmentsDiscordService {
-  constructor(@InjectRepository(Enrolment) private repository: Repository<Enrolment>) {}
+  constructor(
+    @InjectRepository(Enrolment) private enrolementRepository: Repository<Enrolment>,
+    @InjectRepository(Member) private memberRepository: Repository<Member>,
+  ) {}
 
   getEnrolments(eventId: number): Promise<Enrolment[]> {
-    return this.repository
+    return this.enrolementRepository
       .createQueryBuilder('e')
       .leftJoinAndSelect(Contact, 'contact', 'e.memberId = contact.id')
       .select(['username', 'squadlead', 'commander', '"enrolmentType"', 'division', 'name'])
@@ -20,7 +23,7 @@ export class EnrolmentsDiscordService {
 
   async enrol(dto: EnrolByDiscordDto) {
     const enrolment =
-      (await this.repository.findOne({
+      (await this.enrolementRepository.findOne({
         eventId: dto.eventId,
         memberId: dto.member.id,
       })) || new Enrolment();
@@ -36,5 +39,18 @@ export class EnrolmentsDiscordService {
     enrolment.memberId = dto.member.id;
 
     enrolment.save();
+
+    this.resetMissedConsecutiveEvents(enrolment.memberId);
+  }
+
+  resetMissedConsecutiveEvents(id: string) {
+    this.memberRepository
+      .createQueryBuilder()
+      .update(Member)
+      .set({
+        missedConsecutiveEvents: 0,
+      })
+      .where('id=:id', { id })
+      .execute();
   }
 }

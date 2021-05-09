@@ -25,6 +25,10 @@ export interface DiscordConfig {
     humanResources: string;
     eventOrga: string;
   };
+  persoWebhook: {
+    id: string;
+    token: string;
+  };
 }
 
 export default registerAs(
@@ -53,6 +57,10 @@ export default registerAs(
     accessRoles: {
       humanResources: process.env.HUMANRESOURCES,
       eventOrga: process.env.EVENTORGA,
+    },
+    persoWebhook: {
+      id: process.env.PERSOWEBHOOK_ID,
+      token: process.env.PERSOWEBHOOK_TOKEN,
     },
   }),
 );

@@ -10,6 +10,7 @@ import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from './messages/informationMessage.factory';
 import { RegistrationManager } from './registration/registration.manager';
 import { ReminderService } from './reminder/reminder.service';
+import { MissedEventsService } from './missedEvents/missedEvents.service';
 
 @Injectable()
 export class HLLEventsDiscordService {
@@ -21,6 +22,7 @@ export class HLLEventsDiscordService {
     private enrolmentMessageFactory: EnrolmentMessageFactory,
     private registrationManager: RegistrationManager,
     private reminderService: ReminderService,
+    private missedEvents: MissedEventsService,
   ) {}
 
   @On({ event: 'ready' })
@@ -100,7 +102,7 @@ export class HLLEventsDiscordService {
     }
   }
 
-  @Cron('*/5 * * * *')
+  @Cron('*/1 * * * *')
   async checkEvents() {
     this.eventRepository.getPublishableEvents().then((events) => {
       events.forEach((event) => {
@@ -118,6 +120,7 @@ export class HLLEventsDiscordService {
     });
     this.eventRepository.getClosableEvents().then((events) => {
       events.forEach((event) => {
+        this.missedEvents.getMissedEvents(event);
         event.closed = true;
         event.save();
         this.registrationManager.closeEvent(event.id);
