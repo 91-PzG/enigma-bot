@@ -54,7 +54,7 @@ describe('Enrolment Repository', () => {
         division: Division.ARTILLERY,
       },
     ];
-    queryBuilder.getRawMany = jest.fn().mockResolvedValue(enrolments);
+    queryBuilder.getMany = jest.fn().mockResolvedValue(enrolments);
 
     it('should return enrolments', async () => {
       expect(await repository.getEnrolmentsForEvent(1)).toEqual(enrolments);

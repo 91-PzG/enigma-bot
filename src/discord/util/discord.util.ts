@@ -6,7 +6,7 @@ import { AccessRoles, Contact, Division, Member, Rank } from '../../postgres/ent
 
 @Injectable()
 export class DiscordUtil {
-  config: DiscordConfig;
+  private config: DiscordConfig;
 
   constructor(config: ConfigService) {
     this.config = config.get('discord');

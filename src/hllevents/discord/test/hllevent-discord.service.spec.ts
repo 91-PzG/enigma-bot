@@ -39,6 +39,8 @@ describe('HLLEventDiscordService', () => {
     };
     const registrationManagerMock: Partial<RegistrationManager> = {
       addEvent: jest.fn(),
+      editEvent:jest.fn(),
+      closeEvent:jest.fn()
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -98,7 +100,7 @@ describe('HLLEventDiscordService', () => {
       event = {
         channelName: 'channelName',
         autoPublishDate: new Date(),
-        save: jest.fn(),
+        save: jest.fn().mockResolvedValue(null),
       };
       informationMessage = 'info';
       enrolmentMessage = 'enrolment';
@@ -193,9 +195,9 @@ describe('HLLEventDiscordService', () => {
   describe('checkEvents', () => {
     it('should call publish events for all events retured from repo', async () => {
       const events = [
-        { organisator: { name: 'abc' } },
-        { organisator: { name: 'def' } },
-        { organisator: { name: 'ghi' } },
+        { organisator: { name: 'abc' },save:jest.fn() },
+        { organisator: { name: 'def' },save:jest.fn() },
+        { organisator: { name: 'ghi' },save:jest.fn() },
       ];
       service.publishMessages = jest.fn();
       //@ts-ignore
