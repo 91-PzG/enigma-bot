@@ -28,6 +28,8 @@ describe('HLLEventDiscordService', () => {
     };
     const eventRepositoryMock: Partial<HLLEventRepository> = {
       getPublishableEvents: jest.fn(),
+      getLockableEvents: jest.fn(),
+      getClosableEvents: jest.fn(),
     };
     const informationFactoryMock: Partial<InformationMessageFactory> = {
       createMessage: jest.fn(),
@@ -197,7 +199,9 @@ describe('HLLEventDiscordService', () => {
       ];
       service.publishMessages = jest.fn();
       //@ts-ignore
-      eventRepository.getPublishableEvents.mockResolvedValue(events);
+      eventRepository.getPublishableEvents.mockResolvedValue(events); //@ts-ignore
+      eventRepository.getLockableEvents.mockResolvedValue(events); //@ts-ignore
+      eventRepository.getClosableEvents.mockResolvedValue(events);
       await service.checkEvents();
       events.forEach((event) => {
         expect(service.publishMessages).toHaveBeenCalledWith(event);
