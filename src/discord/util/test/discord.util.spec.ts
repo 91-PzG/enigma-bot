@@ -1,11 +1,13 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Collection, GuildMember, GuildMemberRoleManager, Role, User } from 'discord.js';
+import { getRepositoryToken } from '@nestjs/typeorm';
+import { Collection, GuildMember, Role, User } from 'discord.js';
+import { Repository } from 'typeorm';
 import { DiscordConfig } from '../../../config/discord.config';
-import { AccessRoles, Division, Member, Rank } from '../../../postgres/entities';
+import { AccessRoles, Contact, Division, Member, Rank } from '../../../postgres/entities';
 import { DiscordUtil } from '../../util/discord.util';
 
-describe('updateUsers command', () => {
+describe('discordutil', () => {
   const discordConfig: Partial<DiscordConfig> = {
     recruitRole: 'recruit',
     reserveRole: 'reserve',
@@ -28,6 +30,8 @@ describe('updateUsers command', () => {
     },
   };
   let discordUtil: DiscordUtil;
+  let memberRepository: jest.Mocked<Repository<Member>>;
+  let contactRepository: jest.Mocked<Repository<Contact>>;
 
   beforeEach(async () => {
     const configServiceMock: Partial<ConfigService> = {
@@ -35,10 +39,23 @@ describe('updateUsers command', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [{ provide: ConfigService, useValue: configServiceMock }, DiscordUtil],
+      providers: [
+        { provide: ConfigService, useValue: configServiceMock },
+        {
+          provide: getRepositoryToken(Member),
+          useValue: { save: jest.fn().mockImplementation((member: Member) => member) },
+        },
+        {
+          provide: getRepositoryToken(Contact),
+          useValue: { save: jest.fn().mockImplementation((contact: Contact) => contact) },
+        },
+        DiscordUtil,
+      ],
     }).compile();
 
     discordUtil = module.get<DiscordUtil>(DiscordUtil);
+    memberRepository = module.get(getRepositoryToken(Member));
+    contactRepository = module.get(getRepositoryToken(Contact));
   });
 
   it('should be defined', () => {
@@ -143,6 +160,12 @@ describe('updateUsers command', () => {
       expect(discordUtil.getRoles(collection, memberMock)).toEqual([AccessRoles.HUMANRESOURCES]);
     });
 
+    it('squadlead', () => {
+      const collection = new Collection<string, Role>();
+      memberMock.roles = [AccessRoles.SQUADLEAD];
+      expect(discordUtil.getRoles(collection, memberMock)).toEqual([AccessRoles.SQUADLEAD]);
+    });
+
     it('clanrat', () => {
       const collection: Collection<string, Role> = new Collection<string, Role>([
         [discordConfig.ranks.clanrat, null],
@@ -161,22 +184,155 @@ describe('updateUsers command', () => {
       expect(discordUtil.getRoles(sergantCollection, memberMock)).toEqual([AccessRoles.OFFICER]);
     });
 
-    it('clanrat', () => {
-      const collection: Collection<string, Role> = new Collection<string, Role>([]);
-      memberMock.roles.includes = jest.fn().mockReturnValue(true);
-      expect(discordUtil.getRoles(collection, memberMock)).toEqual([AccessRoles.SQUADLEAD]);
-    });
-
     it('default to guest', () => {
+      memberMock.roles = null;
       const collection: Collection<string, Role> = new Collection<string, Role>([]);
       expect(discordUtil.getRoles(collection, memberMock)).toEqual([AccessRoles.GUEST]);
     });
   });
 
-  describe('createMember', () => {
-    let user: GuildMember;
+  describe('updateMember', () => {
+    let guildMember: GuildMember;
+    let member: Member;
+
     beforeEach(() => {
-      user = { id: 'id', roles: {} as GuildMemberRoleManager } as GuildMember;
+      const user: Partial<User> = {
+        avatarURL: () => 'avatar.png',
+        valueOf: jest.fn(),
+      };
+      const roles = new Collection<string, Role>([
+        [discordConfig.memberRole, null],
+        [discordConfig.divisions.armor, null],
+        [discordConfig.ranks.officer, null],
+        [discordConfig.accessRoles.eventOrga, null],
+      ]);
+      guildMember = {
+        user,
+        id: 'id',
+        roles: {
+          cache: roles,
+        },
+        displayName: 'displayName',
+      } as GuildMember;
+
+      member = {
+        id: 'id',
+        memberSince: new Date('12.05.2001 19:00:00'),
+        reserve: true,
+        avatar: 'oldavatar.jpg',
+        division: Division.ARTILLERY,
+        rank: Rank.SOLDIER,
+        roles: [AccessRoles.SQUADLEAD, AccessRoles.MEMBER, AccessRoles.CLANRAT],
+        contact: {
+          name: 'oldname',
+        },
+      } as Member;
+
+      memberRepository.save.mockClear();
+      contactRepository.save.mockClear();
+    });
+
+    it('should update all properties on member', async () => {
+      await discordUtil.updateMember(guildMember, member);
+      expect(contactRepository.save).toHaveBeenCalledWith({ name: 'displayName' });
+
+      const expectedMember: Partial<Member> = {
+        id: 'id',
+        memberSince: new Date('12.05.2001 19:00:00'),
+        reserve: false,
+        avatar: 'avatar.png',
+        division: Division.ARMOR,
+        rank: Rank.OFFICER,
+        roles: [
+          AccessRoles.MEMBER,
+          AccessRoles.EVENTORGA,
+          AccessRoles.OFFICER,
+          AccessRoles.SQUADLEAD,
+        ],
+        contact: {
+          name: 'displayName',
+        } as Contact,
+        contactId: 'id',
+      };
+
+      expect(memberRepository.save).toHaveBeenCalledWith(expectedMember);
+    });
+
+    it('should update recruitTill and MemberTill', async () => {
+      member.memberSince = null;
+      await discordUtil.updateMember(guildMember, member);
+
+      const savedMember = memberRepository.save.mock.calls[0][0];
+      expect(savedMember.memberSince).not.toBeNull();
+      expect(savedMember.recruitTill).not.toBeNull();
+    });
+  });
+
+  describe('createMember', () => {
+    let guildMember: GuildMember;
+
+    beforeEach(() => {
+      const user: Partial<User> = {
+        avatarURL: () => 'avatar.png',
+        valueOf: jest.fn(),
+      };
+      const roles = new Collection<string, Role>([
+        [discordConfig.memberRole, null],
+        [discordConfig.divisions.armor, null],
+        [discordConfig.ranks.officer, null],
+        [discordConfig.accessRoles.eventOrga, null],
+      ]);
+      guildMember = {
+        user,
+        id: 'id',
+        roles: {
+          cache: roles,
+        },
+        displayName: 'displayName',
+      } as GuildMember;
+
+      memberRepository.save.mockClear();
+      contactRepository.save.mockClear();
+    });
+
+    it('should set all properties on member', async () => {
+      const member = await discordUtil.createMember(guildMember);
+
+      const expectedMember: Partial<Member> = {
+        id: 'id',
+        memberSince: member.memberSince,
+        contact: {
+          id: 'id',
+          name: 'displayName',
+        } as Contact,
+      };
+
+      expect(member.memberSince).not.toBeNull();
+      expect(member).toEqual(expectedMember);
+      expect(memberRepository.save).toHaveBeenCalledWith(expectedMember);
+    });
+
+    it('should set all properties on recruit', async () => {
+      guildMember.roles.cache = new Collection<string, Role>([[discordConfig.recruitRole, null]]);
+      const member = await discordUtil.createMember(guildMember);
+
+      const expectedMember: Partial<Member> = {
+        id: 'id',
+        contact: {
+          id: 'id',
+          name: 'displayName',
+        } as Contact,
+        rank: Rank.RECRUIT,
+        recruitSince: new Date(),
+      };
+
+      expect(member.recruitSince).not.toBeNull();
+      expect(member).toEqual(expectedMember);
+    });
+
+    it('should save contact', async () => {
+      await discordUtil.createMember(guildMember);
+      expect(contactRepository.save).toHaveBeenCalledWith({ id: 'id', name: 'displayName' });
     });
   });
 });
