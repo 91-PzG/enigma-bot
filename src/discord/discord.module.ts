@@ -1,7 +1,7 @@
 import { Global, Module, Provider } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Member } from '../postgres/entities';
+import { Contact, Member } from '../postgres/entities';
 import { UpdateUsersCommand } from './commands/updateusers.command';
 import { DiscordService } from './discord.service';
 import { GuildMemberUpdate } from './events/guildmemberupdate.event';
@@ -14,7 +14,7 @@ const EVENTS: Provider[] = [GuildMemberUpdate];
 
 @Global()
 @Module({
-  imports: [ConfigModule, TypeOrmModule.forFeature([Member])],
+  imports: [ConfigModule, TypeOrmModule.forFeature([Member, Contact])],
   providers: [DiscordService, DiscordUtil, ServerService, ...COMMANDS, ...EVENTS],
   exports: [DiscordService],
 })
