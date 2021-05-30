@@ -46,6 +46,7 @@ export class HLLEventRepository extends Repository<HLLEvent> {
   getOpenEvents(): Promise<HLLEvent[]> {
     return this.createQueryBuilder('event')
       .leftJoinAndSelect('event.discordEvent', 'discordEvent')
+      .leftJoinAndSelect('event.organisator', 'organisator')
       .where('event."autoPublishDate" IS NULL')
       .andWhere('event.closed = false')
       .andWhere('event."discordEventId" IS NOT NULL')
