@@ -20,7 +20,7 @@ export class EnrolmentsService {
     return enrolment;
   }
 
-  async getEnrolmentForEvent(id: number): Promise<RosterDto | MixedRosterDto> {
+  async getEnrolmentsForEvent(id: number): Promise<RosterDto | MixedRosterDto> {
     const event = await this.eventRepository.findOne(id);
 
     if (!event) throw new NotFoundException(`Event with id ${id}`);
@@ -46,7 +46,7 @@ export class EnrolmentsService {
     await this.enrolmentRepository
       .createQueryBuilder()
       .update()
-      .set({ squadId: null })
+      .set({ squadId: null, position: null })
       .where('squadId=:squadId', { squadId })
       .execute();
     await this.squadRepository.delete(squadId);
@@ -83,7 +83,7 @@ export class EnrolmentsService {
     return this.moveToDivision(newSoldier);
   }
 
-  private shiftSquad(oldPos: number, newPos: number, squadId: number): Promise<any> {
+  shiftSquad(oldPos: number, newPos: number, squadId: number): Promise<any> {
     const left = Math.min(oldPos, newPos);
     const right = Math.max(oldPos, newPos);
     const dir = oldPos > newPos ? 1 : -1;
@@ -109,7 +109,7 @@ export class EnrolmentsService {
     return this.enrolmentRepository
       .createQueryBuilder()
       .update()
-      .set({ division: newSoldier.division, squadId: null })
+      .set({ division: newSoldier.division, squadId: null, position: null })
       .where('id=:id', { id: newSoldier.id })
       .execute();
   }
@@ -136,9 +136,8 @@ export class EnrolmentsService {
 
       if (enrolment.squadId) {
         const squadPos = enrolment['squad_pos'];
-        return (roster[enrolment.division].squads[squadPos].members[
-          enrolment.position
-        ] = enrolment);
+        return (roster[enrolment.division].squads[squadPos].members[enrolment.position] =
+          enrolment);
       }
 
       if (enrolment.enrolmentType == EnrolmentType.ANMELDUNG)
@@ -158,7 +157,7 @@ export class EnrolmentsService {
       .addSelect('squad.position', 'squad_pos')
       .addSelect('contact.name', 'name')
       .where('e.eventId = :eventId', { eventId })
-      .andWhere('not "enrolmentType" = \'AB\'')
+      .andWhere(`not "enrolmentType" = 'AB'`)
       .orderBy('timestamp', 'ASC')
       .getRawMany();
   }

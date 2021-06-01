@@ -11,7 +11,7 @@ export class EnrolmentsController {
   getEnrolmentForEvent(
     @Param('eventId', ParseIntPipe) id: number,
   ): Promise<RosterDto | MixedRosterDto> {
-    return this.service.getEnrolmentForEvent(id);
+    return this.service.getEnrolmentsForEvent(id);
   }
 
   @Get('/user/:userid')

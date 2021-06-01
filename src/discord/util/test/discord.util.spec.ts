@@ -323,7 +323,7 @@ describe('discordutil', () => {
           name: 'displayName',
         } as Contact,
         rank: Rank.RECRUIT,
-        recruitSince: new Date(),
+        recruitSince: member.recruitSince,
       };
 
       expect(member.recruitSince).not.toBeNull();

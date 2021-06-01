@@ -29,33 +29,34 @@ describe('Enrolment Controller', () => {
   });
 
   describe('get Enrolment for Event', () => {
-    const rosterDto:RosterDto = {
-      eventname:"TestEvent",
+    const rosterDto: RosterDto = {
+      eventname: 'TestEvent',
       commander: null,
       infanterie: {
-        pool:[],
-        reserve:[],
-        squads:[]
+        pool: [],
+        reserve: [],
+        squads: [],
       },
       armor: {
-        pool:[],
-        reserve:[],
-        squads:[]
+        pool: [],
+        reserve: [],
+        squads: [],
       },
       artillery: {
-        pool:[],
-        reserve:[],
-        squads:[]
-      },recon: {
-        pool:[],
-        reserve:[],
-        squads:[]
-      }
-    }
-    it('should return value from service',()=>{
-      enrolmentsService.getEnrolmentForEvent=jest.fn().mockReturnValue(rosterDto);
-      expect(controller.getEnrolmentForEvent(1)).toEqual(rosterDto)
-    })
+        pool: [],
+        reserve: [],
+        squads: [],
+      },
+      recon: {
+        pool: [],
+        reserve: [],
+        squads: [],
+      },
+    };
+    it('should return value from service', () => {
+      enrolmentsService.getEnrolmentsForEvent = jest.fn().mockReturnValue(rosterDto);
+      expect(controller.getEnrolmentForEvent(1)).toEqual(rosterDto);
+    });
   });
 
   describe('get Enrolment for User', () => {

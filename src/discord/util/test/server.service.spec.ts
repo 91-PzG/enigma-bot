@@ -8,16 +8,20 @@ import { DiscordService } from '../../discord.service';
 import { ServerService } from '../server.service';
 
 const serverConfig: ServerConfig = {
-  server1: {
-    type: 'hll',
-    host: '176.57.168.74',
-    port: 28215,
-  },
-  server2: {
-    type: 'hll',
-    host: '127.0.0.1',
-    port: 9998,
-  },
+  servers: [
+    {
+      type: 'hll',
+      host: '176.57.168.74',
+      port: 28215,
+      name: 'Server #1',
+    },
+    {
+      type: 'hll',
+      host: '127.0.0.1',
+      port: 9998,
+      name: 'Server #2',
+    },
+  ],
   channel: 'channelId',
 };
 const embedConfig: Partial<EmbedConfig> = {
@@ -33,12 +37,22 @@ const queryResult1: QueryResult = {
   connect: '176.57.168.74:28215',
   ping: 15,
 };
+const queryResult2: QueryResult = {
+  name: '91.PzG| #2 Warfare only | Mic + GER',
+  map: 'foy',
+  password: true,
+  maxplayers: 100,
+  players: [{ name: '91.PzG| Samu' }, { name: 'Hans' }],
+  bots: [],
+  connect: '176.57.168.74:28215',
+  ping: 15,
+};
 
 jest.mock('gamedig', () => {
   return {
     query: jest.fn().mockImplementation((options: QueryOptions) => {
-      if (options.host == serverConfig.server1.host) return queryResult1;
-      return null;
+      if (options.host == serverConfig.servers[0].host) return queryResult1;
+      return queryResult2;
     }),
   };
 });
@@ -95,8 +109,8 @@ describe('server service', () => {
   describe('serverQuery', () => {
     it('should query both servers', async () => {
       await serverService.generateServerMessages();
-      expect(query).toHaveBeenCalledWith(serverConfig.server1);
-      expect(query).toHaveBeenCalledWith(serverConfig.server2);
+      expect(query).toHaveBeenCalledWith(serverConfig.servers[0]);
+      expect(query).toHaveBeenCalledWith(serverConfig.servers[1]);
     });
   });
 
@@ -112,8 +126,8 @@ describe('server service', () => {
       await serverService.generateServerMessages();
       jest.clearAllMocks();
       await serverService.generateServerMessages();
-      expect(serverService.msg1.edit).toHaveBeenCalled();
-      expect(serverService.msg2.edit).toHaveBeenCalled();
+      expect(serverService.messages[0].edit).toHaveBeenCalled();
+      expect(serverService.messages[1].edit).toHaveBeenCalled();
     });
   });
 
@@ -140,7 +154,7 @@ describe('server service', () => {
     it('should log error during message edit', async () => {
       const errorMessage = 'Error while editing message';
       await serverService.generateServerMessages();
-      serverService.msg1.edit = jest.fn().mockRejectedValue(errorMessage);
+      serverService.messages[0].edit = jest.fn().mockRejectedValue(errorMessage);
       await serverService.generateServerMessages();
       expect(serverService.logger.log).toHaveBeenCalledWith(errorMessage);
     });

@@ -116,8 +116,10 @@ export class ServerService {
 
   private generateEmbeds(serverStates: QueryResult[]): MessageEmbed[] {
     const embeds: MessageEmbed[] = [];
-    for (const serverState of serverStates)
-      embeds.push(serverState ? this.generateServerEmbed(serverState) : this.generateErrorEmbed());
+    for (let i = 0; i < this.serverConfig.servers.length; i++) {
+      const serverState = serverStates[i];
+      embeds.push(serverState ? this.generateServerEmbed(serverState) : this.generateErrorEmbed(i));
+    }
     return embeds;
   }
 
@@ -145,10 +147,10 @@ export class ServerService {
     return embed;
   }
 
-  private generateErrorEmbed(): MessageEmbed {
+  private generateErrorEmbed(index: number): MessageEmbed {
     return new MessageEmbed()
       .setColor('#0099ff')
-      .setTitle('Error')
+      .setTitle(this.serverConfig.servers[index].name)
       .setDescription('Server request timed out')
       .setURL('https://91pzg.de/')
       .setThumbnail(this.thumbnail)
@@ -157,8 +159,9 @@ export class ServerService {
 
   private queryServers(): Promise<QueryResult>[] {
     const serverStates: Promise<QueryResult>[] = [];
-    for (const server of this.serverConfig.servers) {
-      const statePromise = new Promise(async (resolve) => {
+    for (let i = 0; i < this.serverConfig.servers.length; i++) {
+      const server = this.serverConfig.servers[i];
+      const statePromise = new Promise<QueryResult>(async (resolve) => {
         try {
           resolve(await query(server));
         } catch (error) {
@@ -166,7 +169,7 @@ export class ServerService {
           resolve(null);
         }
       });
-      serverStates.push(query(server));
+      serverStates[i] = statePromise;
     }
     return serverStates;
   }
