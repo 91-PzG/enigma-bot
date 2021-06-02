@@ -23,7 +23,7 @@ export class EnrolmentsService {
   async getEnrolmentsForEvent(id: number): Promise<RosterDto | MixedRosterDto> {
     const event = await this.eventRepository.findOne(id);
 
-    if (!event) throw new NotFoundException(`Event with id ${id}`);
+    if (!event) throw new NotFoundException(`Event with id ${id} not found`);
 
     const enrolments = await this.getEnrolments(id);
     const squads = await this.getSquads(id);
@@ -47,7 +47,7 @@ export class EnrolmentsService {
       .createQueryBuilder()
       .update()
       .set({ squadId: null, position: null })
-      .where('squadId=:squadId', { squadId })
+      .where('squadId = :squadId', { squadId })
       .execute();
     await this.squadRepository.delete(squadId);
   }
