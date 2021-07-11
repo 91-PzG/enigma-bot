@@ -5,7 +5,7 @@ import { DiscordService } from '../../../../discord/discord.service';
 import { Enrolment, HllDiscordEvent, HLLEvent, Member } from '../../../../postgres/entities';
 import { ReminderService } from '../reminder.service';
 
-describe('reminder.service', () => {
+describe('ReminderService', () => {
   let service: ReminderService;
   let enrolmentRepository: jest.Mocked<Repository<Enrolment>>;
   let discordService: jest.Mocked<DiscordService>;
@@ -14,6 +14,7 @@ describe('reminder.service', () => {
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
   };
+
   beforeEach(async () => {
     const discordServiceMock: Partial<DiscordService> = {
       getMember: jest.fn(),
@@ -51,19 +52,21 @@ describe('reminder.service', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getMissingEnrolmentOne', async () => {
+  describe('getMissingEnrolmentOne', () => {
     const event: Partial<HLLEvent> = {
       name: 'TestEvent',
       discordEvent: { channelId: '23809457397' } as HllDiscordEvent,
     };
     const members: Partial<Member>[] = [{ id: '4234234234' }, { id: '4359830958' }];
 
-    enrolmentRepository.query = jest.fn().mockResolvedValue(members);
-    await service.getMissingEnrolmentOne(event as HLLEvent);
+    beforeEach(() => {
+      enrolmentRepository.query.mockResolvedValue(members);
+    });
 
-    it('should call getMember or all members', () => {
+    it('should call getMember or all members', async () => {
+      await service.getMissingEnrolmentOne(event as HLLEvent);
       members.forEach((member) => {
-        expect(discordService).toHaveBeenCalledWith(member);
+        expect(discordService.getMember).toHaveBeenCalledWith(member.id);
       });
     });
   });
