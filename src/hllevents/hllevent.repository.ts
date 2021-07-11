@@ -47,7 +47,7 @@ export class HLLEventRepository extends Repository<HLLEvent> {
     return this.createQueryBuilder('event')
       .leftJoinAndSelect('event.discordEvent', 'discordEvent')
       .where('event.registerByDate > :date ', { date: new Date(new Date().valueOf() - 3600 * 24) })
-      .andWhere('event.closed = false and event.sentReminderOne = false')
+      .andWhere('event.closed = false and event.sentReminderOne = false and event.mandatory = true')
       .getMany();
   }
   getReminderEventsTwo(): Promise<HLLEvent[]> {
