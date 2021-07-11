@@ -7,12 +7,15 @@ type Translation = {
   valuePipe?: (value: any) => string;
 };
 
-const days = ['Mo, ', 'Di, ', 'Mi,', 'Do, ', 'Fr,', 'Sa, ', 'So, '];
+const msInTwoHours = 1000 * 60 * 60 * 2;
+
+const days = ['So, ', 'Mo, ', 'Di, ', 'Mi, ', 'Do, ', 'Fr, ', 'Sa, '];
 
 const zeroPad = (num) => String(num).padStart(2, '0');
 
 const dateTransformation = (value: any): string => {
-  const date = new Date(value);
+  let date = new Date(value);
+  date = new Date(date.getTime() + msInTwoHours);
 
   return `${days[date.getDay()]}${date.getDate()}.${date.getMonth() + 1}.${
     date.getFullYear() % 100

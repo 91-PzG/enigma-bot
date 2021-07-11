@@ -10,7 +10,7 @@ class mapType {
   [key: string]: { name: string; imageUrl: string };
 }
 
-const mapRegistry: mapType = {
+export const mapRegistry: mapType = {
   ct: {
     name: 'Carentan',
     imageUrl: 'https://pbs.twimg.com/media/Ebc4mugXQAM4UcL.jpg',
@@ -58,8 +58,7 @@ const mapRegistry: mapType = {
 @Injectable()
 export class ServerService {
   startup = true;
-  msg1: Message;
-  msg2: Message;
+  messages: Message[];
   channel: TextChannel;
   thumbnail: string;
   logger = new Logger('Server Status');
@@ -72,46 +71,60 @@ export class ServerService {
 
   @Cron('*/30 * * * * *')
   async generateServerMessages() {
-    const embed1 = this.generateEmbed(1);
-    const embed2 = this.generateEmbed(2);
+    const serverStates: QueryResult[] = await Promise.all(this.queryServers());
+    const embeds = this.generateEmbeds(serverStates);
 
     if (this.startup) {
       this.channel = await this.discordService.getChannelById<TextChannel>(
         this.serverConfig.channel,
       );
-      this.createMessages(embed1, embed2);
+      return this.createMessages(embeds);
     } else {
-      this.editMessages(embed1, embed2);
+      return this.editMessages(embeds);
     }
   }
 
-  private async createMessages(embed1: Promise<MessageEmbed>, embed2: Promise<MessageEmbed>) {
+  private async createMessages(embeds: MessageEmbed[]) {
     await this.discordService.clearChannel(this.channel);
-    try {
-      await this.channel.send(await embed1).then((msg) => (this.msg1 = msg));
-      await this.channel.send(await embed2).then((msg) => (this.msg2 = msg));
-    } catch (error) {
-      this.logger.log(error);
+    this.messages = [];
+    let error = false;
+
+    for (const embed of embeds) {
+      try {
+        this.messages.push(await this.channel.send(embed));
+      } catch (error) {
+        this.logger.log(error);
+        error = true;
+      }
     }
-    this.startup = false;
+
+    this.startup = error;
   }
 
-  private async editMessages(embed1: Promise<MessageEmbed>, embed2: Promise<MessageEmbed>) {
-    try {
-      this.msg1.edit(await embed1);
-      this.msg2.edit(await embed2);
-    } catch (error) {
-      this.startup = true;
-      this.logger.log(error);
+  private async editMessages(embeds: MessageEmbed[]) {
+    let error = false;
+    for (let i = 0; i < embeds.length; i++) {
+      try {
+        this.messages[i] = await this.messages[i].edit(embeds[i]);
+      } catch (error) {
+        this.logger.log(error);
+        error = true;
+      }
     }
+    this.startup = error;
   }
 
-  private async generateEmbed(server: number): Promise<MessageEmbed> {
-    let state = await this.serverQuery(server);
-    if (state == null) return;
+  private generateEmbeds(serverStates: QueryResult[]): MessageEmbed[] {
+    const embeds: MessageEmbed[] = [];
+    for (let i = 0; i < this.serverConfig.servers.length; i++) {
+      const serverState = serverStates[i];
+      embeds.push(serverState ? this.generateServerEmbed(serverState) : this.generateErrorEmbed(i));
+    }
+    return embeds;
+  }
 
+  private generateServerEmbed(state: QueryResult): MessageEmbed {
     const map = mapRegistry[state.map.substring(0, 3).toLowerCase()];
-
     const embed = new MessageEmbed()
       .setColor('#0099ff')
       .setTitle(state.name)
@@ -120,29 +133,44 @@ export class ServerService {
       .addField('Players', `${Math.min(state.players.length, 100)}/100`)
       .addField('Queue', `${Math.max(state.players.length - 100, 0)}/6`)
       .addField(
-        'Clanmember',
+        'Clanmembers',
         `${state.players.filter((f) => f.name != null && f.name.startsWith('91.')).length}/${
           state.players.length
         }`,
       )
       .addField('Ping', state.ping)
-      //@ts-ignore
-      .addField('IP', state.connect)
-      //@ts-ignore
-      .addField('version', state.raw.version)
+      .addField('Socket', state.connect)
+      .addField('Password', state.password ? 'Ja' : 'Nein')
       .addField('Map', map.name)
       .setImage(map.imageUrl)
       .setTimestamp();
-
     return embed;
   }
 
-  private async serverQuery(server: number): Promise<QueryResult> {
-    try {
-      return await query(server === 1 ? this.serverConfig.server1 : this.serverConfig.server2);
-    } catch (error) {
-      this.logger.log(error);
-      return null;
+  private generateErrorEmbed(index: number): MessageEmbed {
+    return new MessageEmbed()
+      .setColor('#0099ff')
+      .setTitle(this.serverConfig.servers[index].name)
+      .setDescription('Server request timed out')
+      .setURL('https://91pzg.de/')
+      .setThumbnail(this.thumbnail)
+      .setTimestamp();
+  }
+
+  private queryServers(): Promise<QueryResult>[] {
+    const serverStates: Promise<QueryResult>[] = [];
+    for (let i = 0; i < this.serverConfig.servers.length; i++) {
+      const server = this.serverConfig.servers[i];
+      const statePromise = new Promise<QueryResult>(async (resolve) => {
+        try {
+          resolve(await query(server));
+        } catch (error) {
+          this.logger.log(error);
+          resolve(null);
+        }
+      });
+      serverStates[i] = statePromise;
     }
+    return serverStates;
   }
 }

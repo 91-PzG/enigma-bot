@@ -1,14 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { InjectRepository } from '@nestjs/typeorm';
 import { Collection, GuildMember, Role } from 'discord.js';
+import { Repository } from 'typeorm';
 import { DiscordConfig } from '../../config/discord.config';
 import { AccessRoles, Contact, Division, Member, Rank } from '../../postgres/entities';
 
 @Injectable()
 export class DiscordUtil {
-  config: DiscordConfig;
+  private config: DiscordConfig;
 
-  constructor(config: ConfigService) {
+  constructor(
+    config: ConfigService,
+    @InjectRepository(Member)
+    private memberRepository: Repository<Member>,
+    @InjectRepository(Contact)
+    private contactRepository: Repository<Contact>,
+  ) {
     this.config = config.get('discord');
   }
 
@@ -62,7 +70,7 @@ export class DiscordUtil {
 
     member.contact = await this.createContact(user);
 
-    return member;
+    return this.memberRepository.save(member);
   }
 
   public async updateMember(user: GuildMember, member: Member) {
@@ -80,15 +88,15 @@ export class DiscordUtil {
     member.roles = this.getRoles(user.roles.cache, member);
 
     member.contact.name = user.displayName;
-    member.contact.save();
+    this.contactRepository.save(member.contact);
 
-    member.save();
+    this.memberRepository.save(member);
   }
 
   private createContact(user: GuildMember): Promise<Contact> {
     const contact = new Contact();
     contact.id = user.id;
     contact.name = user.displayName;
-    return contact.save();
+    return this.contactRepository.save(contact);
   }
 }

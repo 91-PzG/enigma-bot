@@ -110,7 +110,7 @@ describe('EventControler', () => {
       };
 
       hllEventService.getEventById.mockResolvedValue(event);
-      const dto = await hllEventController.getEventById(3);
+      const dto = await hllEventController.getEventById(3, { userId: '', username: '', roles: [] });
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(0);

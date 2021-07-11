@@ -74,6 +74,11 @@ export class HLLEventsDiscordService {
     const discordEvent = await this.discordRepository.findOne(event.discordEventId);
     if (!discordEvent) return false;
 
+    if (typeof event.organisator != 'string') {
+      //@ts-ignore
+      event.organisator = event.organisator?.name || 'error';
+    }
+
     let oldMessage = await this.getMessageFromDiscord(
       event,
       discordEvent.channelId,

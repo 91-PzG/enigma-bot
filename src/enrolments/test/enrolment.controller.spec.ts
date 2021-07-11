@@ -1,10 +1,12 @@
 import { NotImplementedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { RosterDto } from '../dto/roster.dto';
 import { EnrolmentsController } from '../enrolments.controller';
 import { EnrolmentsService } from '../enrolments.service';
 
 describe('Enrolment Controller', () => {
   let controller: EnrolmentsController;
+  let enrolmentsService: jest.Mocked<EnrolmentsService>;
 
   beforeEach(async () => {
     const serviceMock: Partial<EnrolmentsService> = {};
@@ -19,6 +21,7 @@ describe('Enrolment Controller', () => {
     }).compile();
 
     controller = module.get<EnrolmentsController>(EnrolmentsController);
+    enrolmentsService = module.get(EnrolmentsService);
   });
 
   it('should be defined', () => {
@@ -26,8 +29,33 @@ describe('Enrolment Controller', () => {
   });
 
   describe('get Enrolment for Event', () => {
-    it('should throw unimplemented', () => {
-      expect(controller.getEnrolmentForEvent).toThrow(NotImplementedException);
+    const rosterDto: RosterDto = {
+      eventname: 'TestEvent',
+      commander: null,
+      infanterie: {
+        pool: [],
+        reserve: [],
+        squads: [],
+      },
+      armor: {
+        pool: [],
+        reserve: [],
+        squads: [],
+      },
+      artillery: {
+        pool: [],
+        reserve: [],
+        squads: [],
+      },
+      recon: {
+        pool: [],
+        reserve: [],
+        squads: [],
+      },
+    };
+    it('should return value from service', () => {
+      enrolmentsService.getEnrolmentsForEvent = jest.fn().mockReturnValue(rosterDto);
+      expect(controller.getEnrolmentForEvent(1)).toEqual(rosterDto);
     });
   });
 

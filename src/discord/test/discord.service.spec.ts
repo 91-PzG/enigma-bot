@@ -34,6 +34,10 @@ describe('DiscordService', () => {
             artillerie: 'arti',
             recon: 'recon',
           },
+          accessRoles: {
+            humanResources: 'hr',
+            eventOrga: 'eo',
+          },
         }),
       ),
     };

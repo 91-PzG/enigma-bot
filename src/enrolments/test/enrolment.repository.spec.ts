@@ -9,6 +9,7 @@ describe('Enrolment Repository', () => {
     select: jest.fn().mockReturnThis(),
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
     getRawMany: jest.fn(),
@@ -56,7 +57,7 @@ describe('Enrolment Repository', () => {
     queryBuilder.getRawMany = jest.fn().mockResolvedValue(enrolments);
 
     it('should return enrolments', async () => {
-      expect(await repository.getEmbedEnrolments(1)).toEqual(enrolments);
+      expect(await repository.getEnrolmentsForEvent(1)).toEqual(enrolments);
     });
   });
 });

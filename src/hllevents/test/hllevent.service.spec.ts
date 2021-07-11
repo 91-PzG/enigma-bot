@@ -1,4 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { DiscordService } from '../../discord/discord.service';
+import { EnrolmentsService } from '../../enrolments/enrolments.service';
 import { Contact, HLLEvent, IHLLEvent, Member } from '../../postgres/entities';
 import { UsersService } from '../../users/users.service';
 import { HLLEventsDiscordService } from '../discord/hllevent-discord.service';
@@ -8,9 +10,11 @@ import { HLLEventRepository } from '../hllevent.repository';
 import { HLLEventService } from '../hllevent.service';
 
 describe('HLLEventService', () => {
-  let service: HLLEventService;
-  let repository: jest.Mocked<HLLEventRepository>;
+  let eventRepository: jest.Mocked<HLLEventRepository>;
   let usersService: jest.Mocked<UsersService>;
+  let discordService: jest.Mocked<DiscordService>;
+  let enrolmentService: jest.Mocked<EnrolmentsService>;
+  let hllEventService: HLLEventService;
   const events = [
     {
       id: 1,
@@ -45,10 +49,13 @@ describe('HLLEventService', () => {
       getAll: jest.fn(),
       getEventById: jest.fn(),
     };
+    const userServiceMock: Partial<UsersService> = { getMemberById: jest.fn() };
     const hllEventDiscordServiceMock: Partial<HLLEventsDiscordService> = {
       publishMessages: jest.fn(),
       updateInformationMessage: jest.fn(),
     };
+    const enrolmentServiceMock: Partial<EnrolmentsService> = {};
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HLLEventService,
@@ -62,27 +69,31 @@ describe('HLLEventService', () => {
         },
         {
           provide: UsersService,
-          useValue: {
-            getMemberById: jest.fn(),
-          },
+          useValue: userServiceMock,
         },
+        {
+          provide: HLLEventsDiscordService,
+          useValue: hllEventDiscordServiceMock,
+        },
+        { provide: EnrolmentsService, useValue: enrolmentServiceMock },
       ],
     }).compile();
 
-    service = module.get(HLLEventService);
-    repository = module.get(HLLEventRepository);
+    hllEventService = module.get(HLLEventService);
+    eventRepository = module.get(HLLEventRepository);
     usersService = module.get(UsersService);
+    discordService = module.get(HLLEventsDiscordService);
+    enrolmentService = module.get(EnrolmentsService);
   });
 
   it('should be defined', () => {
-    expect(service).toBeDefined();
-    expect(repository).toBeDefined();
+    expect(hllEventService).toBeDefined();
   });
 
   describe('get Event list', () => {
     it('should get all events', async function () {
-      repository.getAll.mockResolvedValue(events as IHLLEvent[]);
-      const eventList = await service.getAll();
+      eventRepository.getAll.mockResolvedValue(events as IHLLEvent[]);
+      const eventList = await hllEventService.getAll();
 
       expect(eventList).toBe(events);
     });
@@ -91,9 +102,9 @@ describe('HLLEventService', () => {
   describe('get Event by id', () => {
     it('should throw notFoundException if event not found', async function () {
       expect.assertions(1);
-      repository.getEventById.mockResolvedValue(undefined);
+      eventRepository.getEventById.mockResolvedValue(undefined);
 
-      await service.getEventById(3).catch((e) => {
+      await hllEventService.getEventById(3).catch((e) => {
         expect(e).toEqual(Error("Event with id '3' not found."));
       });
     });
@@ -122,31 +133,31 @@ describe('HLLEventService', () => {
         briefing: new Date(),
         singlePool: true,
       };
-      repository.getEventById.mockResolvedValue(event as HLLEvent);
-      const foundEvent = await service.getEventById(5);
+      eventRepository.getEventById.mockResolvedValue(event as HLLEvent);
+      const foundEvent = await hllEventService.getEventById(5);
 
       expect(foundEvent).toBe(event);
-      expect(repository.getEventById).toBeCalled();
+      expect(eventRepository.getEventById).toBeCalled();
     });
   });
 
   describe('patch Event', () => {
     it('should reject if event is invalid', async function () {
       expect.assertions(1);
-      service.getEventById = jest.fn().mockRejectedValue('Event Not found');
+      hllEventService.getEventById = jest.fn().mockRejectedValue('Event Not found');
 
-      return expect(service.patchEvent(1, {} as HLLEventUpdateWrapperDto)).rejects.toBe(
+      return expect(hllEventService.patchEvent(1, {} as HLLEventUpdateWrapperDto)).rejects.toBe(
         'Event Not found',
       );
     });
 
     it('should reject if organisator is invalid', async function () {
       expect.assertions(1);
-      service.getEventById = jest.fn().mockResolvedValue({});
+      hllEventService.getEventById = jest.fn().mockResolvedValue({});
       usersService.getMemberById.mockRejectedValue('user not found');
 
       return expect(
-        service.patchEvent(1, {
+        hllEventService.patchEvent(1, {
           control: { organisator: 'hans' },
         } as HLLEventUpdateWrapperDto),
       ).rejects.toEqual(new Error('Invalid Organisator'));
@@ -161,9 +172,9 @@ describe('HLLEventService', () => {
         name: 'name',
         maxPlayerCount: 5,
       };
-      service.getEventById = jest.fn().mockResolvedValue(event);
+      hllEventService.getEventById = jest.fn().mockResolvedValue(event);
 
-      await service.patchEvent(1, {
+      await hllEventService.patchEvent(1, {
         data,
         control: {},
       } as HLLEventUpdateWrapperDto);
@@ -180,7 +191,7 @@ describe('HLLEventService', () => {
 
     beforeEach(() => {
       event = { save: jest.fn().mockResolvedValue({ id: 45 }) };
-      repository.create = jest.fn().mockReturnValue(event);
+      eventRepository.create = jest.fn().mockReturnValue(event);
     });
 
     it('should reject if organisator is invalid', async function () {
@@ -188,7 +199,7 @@ describe('HLLEventService', () => {
       usersService.getMemberById.mockRejectedValue('user not found');
 
       return expect(
-        service.createEvent({
+        hllEventService.createEvent({
           control: { organisator: 'hans' },
         } as HLLEventCreateWrapperDto),
       ).rejects.toEqual(new Error('Invalid Organisator'));
@@ -204,7 +215,7 @@ describe('HLLEventService', () => {
 
       usersService.getMemberById.mockResolvedValue(member);
 
-      await service.createEvent({
+      await hllEventService.createEvent({
         data,
         control: { organisator: 'any' },
       } as HLLEventCreateWrapperDto);

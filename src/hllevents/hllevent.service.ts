@@ -1,4 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { EnrolmentsService } from '../enrolments/enrolments.service';
 import { HLLEvent, IHLLEvent, Member } from '../postgres/entities';
 import { UsersService } from '../users/users.service';
 import { HLLEventsDiscordService } from './discord/hllevent-discord.service';
@@ -12,15 +13,18 @@ export class HLLEventService {
     private eventRepository: HLLEventRepository,
     private userService: UsersService,
     private discordService: HLLEventsDiscordService,
+    private enrolmentService: EnrolmentsService,
   ) {}
 
   getAll(): Promise<IHLLEvent[]> {
     return this.eventRepository.getAll();
   }
 
-  async getEventById(id: number): Promise<HLLEvent> {
+  async getEventById(id: number, userId?: string): Promise<HLLEvent> {
     const event = await this.eventRepository.getEventById(id);
     if (!event) throw new NotFoundException(`Event with id '${id}' not found.`);
+    if (userId)
+      event['enrolment'] = await this.enrolmentService.getEnrolmentForUserAndEvent(id, userId);
     return event;
   }
 
