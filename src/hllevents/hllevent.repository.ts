@@ -43,13 +43,42 @@ export class HLLEventRepository extends Repository<HLLEvent> {
       .getMany();
   }
 
+  getReminderEventsOne(): Promise<HLLEvent[]> {
+    return this.createQueryBuilder('event')
+      .leftJoinAndSelect('event.discordEvent', 'discordEvent')
+      .where('event.registerByDate > :date ', { date: new Date(new Date().valueOf() - 3600 * 24) })
+      .andWhere('event.closed = false and event.sentReminderOne = false')
+      .getMany();
+  }
+  getReminderEventsTwo(): Promise<HLLEvent[]> {
+    return this.createQueryBuilder('event')
+      .leftJoinAndSelect('event.discordEvent', 'discordEvent')
+      .where('event.date > :date ', { date: new Date(new Date().valueOf() - 3600 * 24) })
+      .andWhere('event.closed = false and event.sentReminderTwo = false')
+      .getMany();
+  }
+
   getOpenEvents(): Promise<HLLEvent[]> {
     return this.createQueryBuilder('event')
       .leftJoinAndSelect('event.discordEvent', 'discordEvent')
-      .leftJoinAndSelect('event.organisator', 'organisator')
       .where('event."autoPublishDate" IS NULL')
       .andWhere('event.closed = false')
       .andWhere('event."discordEventId" IS NOT NULL')
       .getMany();
+  }
+
+  setReminderOne(id: number) {
+    this.createQueryBuilder()
+      .update(HLLEvent)
+      .set({ sentReminderOne: true })
+      .where('id = :id', { id })
+      .execute();
+  }
+  setReminderTwo(id: number) {
+    this.createQueryBuilder()
+      .update(HLLEvent)
+      .set({ sentReminderTwo: true })
+      .where('id = :id', { id })
+      .execute();
   }
 }

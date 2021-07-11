@@ -8,6 +8,7 @@ import { HLLEventsDiscordService } from '../hllevent-discord.service';
 import { EnrolmentMessageFactory } from '../messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from '../messages/informationMessage.factory';
 import { RegistrationManager } from '../registration/registration.manager';
+import { ReminderService } from '../reminder/reminder.service';
 
 describe('HLLEventDiscordService', () => {
   let service: HLLEventsDiscordService;
@@ -30,6 +31,8 @@ describe('HLLEventDiscordService', () => {
       getPublishableEvents: jest.fn(),
       getLockableEvents: jest.fn(),
       getClosableEvents: jest.fn(),
+      getReminderEventsOne: jest.fn().mockResolvedValue([]),
+      getReminderEventsTwo: jest.fn().mockResolvedValue([]),
     };
     const informationFactoryMock: Partial<InformationMessageFactory> = {
       createMessage: jest.fn(),
@@ -39,8 +42,12 @@ describe('HLLEventDiscordService', () => {
     };
     const registrationManagerMock: Partial<RegistrationManager> = {
       addEvent: jest.fn(),
-      editEvent:jest.fn(),
-      closeEvent:jest.fn()
+      editEvent: jest.fn(),
+      closeEvent: jest.fn(),
+    };
+    const reminderServiceMock: Partial<ReminderService> = {
+      getMissingEnrolmentOne: jest.fn(),
+      getMissingEnrolmentTwo: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -69,6 +76,10 @@ describe('HLLEventDiscordService', () => {
         {
           provide: EnrolmentMessageFactory,
           useValue: enrolmentFactoryMock,
+        },
+        {
+          provide: ReminderService,
+          useValue: reminderServiceMock,
         },
       ],
     }).compile();
@@ -195,9 +206,9 @@ describe('HLLEventDiscordService', () => {
   describe('checkEvents', () => {
     it('should call publish events for all events retured from repo', async () => {
       const events = [
-        { organisator: { name: 'abc' },save:jest.fn() },
-        { organisator: { name: 'def' },save:jest.fn() },
-        { organisator: { name: 'ghi' },save:jest.fn() },
+        { organisator: { name: 'abc' }, save: jest.fn() },
+        { organisator: { name: 'def' }, save: jest.fn() },
+        { organisator: { name: 'ghi' }, save: jest.fn() },
       ];
       service.publishMessages = jest.fn();
       //@ts-ignore

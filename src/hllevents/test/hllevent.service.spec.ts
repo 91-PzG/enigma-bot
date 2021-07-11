@@ -64,6 +64,10 @@ describe('HLLEventService', () => {
           useValue: hllEventRepositoryMock,
         },
         {
+          provide: HLLEventsDiscordService,
+          useValue: hllEventDiscordServiceMock,
+        },
+        {
           provide: UsersService,
           useValue: userServiceMock,
         },
