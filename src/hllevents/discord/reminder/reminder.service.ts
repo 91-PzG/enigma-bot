@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiscordService } from '../../../discord/discord.service';
-import { Division, Enrolment, EnrolmentType, HLLEvent, Member } from '../../../postgres/entities';
+import { Enrolment, EnrolmentType, HLLEvent, Member } from '../../../postgres/entities';
 
 @Injectable()
 export class ReminderService {
@@ -26,7 +26,7 @@ export class ReminderService {
   }
 
   async getMissingEnrolmentTwo(event: HLLEvent) {
-    const missingMember: Enrolment[] = await this.enrolmentRepository
+    const missingMembers: Enrolment[] = await this.enrolmentRepository
       .createQueryBuilder('e')
       .select('e.memberId')
       .where('e.eventId = :id and e.enrolmentType = :type', {
@@ -35,8 +35,7 @@ export class ReminderService {
       })
       .getMany();
     const eventChannel = event.discordEvent.channelId;
-    missingMember.forEach(async (element) => {
-      console.log(element);
+    missingMembers.forEach(async (element) => {
       const member = await this.discordService.getMember(element.memberId);
       member.send(
         `Vergiss nicht, dass das Event "${event.name}" morgen stattfindet! <#${eventChannel}>`,
