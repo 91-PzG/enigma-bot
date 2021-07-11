@@ -18,13 +18,13 @@ export class ReminderService {
     );
     const eventChannel = event.discordEvent.channelId;
     missingMember.forEach(async (element) => {
-      console.log(element);
       const member = await this.discordService.getMember(element.id);
       member.send(
         `Vergiss nicht dich für das Event "${event.name}" an- oder abzumelden! <#${eventChannel}>`,
       );
     });
   }
+
   async getMissingEnrolmentTwo(event: HLLEvent) {
     const missingMember: Enrolment[] = await this.enrolmentRepository
       .createQueryBuilder('e')
@@ -39,7 +39,7 @@ export class ReminderService {
       console.log(element);
       const member = await this.discordService.getMember(element.memberId);
       member.send(
-        `Vergiss nicht, dass das Event "${event.name}" morgen statt findet! <#${eventChannel}>`,
+        `Vergiss nicht, dass das Event "${event.name}" morgen stattfindet! <#${eventChannel}>`,
       );
     });
   }

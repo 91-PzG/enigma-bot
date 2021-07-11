@@ -31,8 +31,8 @@ describe('HLLEventDiscordService', () => {
       getPublishableEvents: jest.fn(),
       getLockableEvents: jest.fn(),
       getClosableEvents: jest.fn(),
-      getReminderEventsOne: jest.fn().mockResolvedValue(null),
-      getReminderEventsTwo: jest.fn().mockResolvedValue(null),
+      getReminderEventsOne: jest.fn().mockResolvedValue([]),
+      getReminderEventsTwo: jest.fn().mockResolvedValue([]),
     };
     const informationFactoryMock: Partial<InformationMessageFactory> = {
       createMessage: jest.fn(),

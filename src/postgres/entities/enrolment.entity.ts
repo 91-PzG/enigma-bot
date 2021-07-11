@@ -52,8 +52,6 @@ export class Enrolment extends BaseEntity {
   @Column({ nullable: true })
   squadId: number;
 
-  squadId: number;
-
   @Column({
     type: 'enum',
     enum: HLLRole,
