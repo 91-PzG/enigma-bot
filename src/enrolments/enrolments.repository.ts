@@ -1,13 +1,14 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Enrolment } from '../postgres/entities';
+import { Contact, Enrolment } from '../postgres/entities';
 
 @EntityRepository(Enrolment)
 export class EnrolmentsRepository extends Repository<Enrolment> {
-  getEmbedEnrolments(eventId: number): Promise<Enrolment[]> {
-    return this.createQueryBuilder()
-      .select(['username', 'squadlead', 'commander', 'enrolmentType', 'division'])
-      .where('eventId = :eventId', { eventId })
-      .orderBy('timestamp', 'ASC')
+  getEnrolmentsForEvent(eventId: number): Promise<Enrolment[]> {
+    return this.createQueryBuilder('e')
+      .leftJoinAndSelect(Contact, 'contact', 'e.memberId = contact.id')
+      .where('e.eventId = :eventId', { eventId })
+      .andWhere('not e.enrolmentType == AB')
+      .orderBy('e.timestamp', 'ASC')
       .getMany();
   }
 }

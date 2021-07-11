@@ -39,11 +39,14 @@ export class RegistrationService {
     this.logger.debug(`Started collector for event ${event.id} - ${event.name}`);
   }
 
-  async stopCollector() {}
+  async stopCollector() {
+    this.collector.stop();
+  }
 
   private onEnd = async () => {
     await this.event.reload();
     if (!this.closed) {
+      await this.event.reload();
       this.event.closed = true;
       this.event.save();
     }
@@ -52,14 +55,13 @@ export class RegistrationService {
 
   private onCollect = async (reaction: MessageReaction, user: User) => {
     const member = await this.manager.usersService.getActiveMember(user.id);
-
     if (!member) return;
 
-    /*new RegistrationDialog(this.getEnrolmentType(reaction.emoji), user, this.event.name)
-      .startDialog()
-      .then((participationDto: CreateParticipationDto) => {
-        this.updateParticipation(participationDto, jwtUser);
-      })*/
+    this.manager.dialog
+      .startDialog(this.getEnrolmentType(reaction.emoji), user, this.event, member)
+      .then(() => {
+        this.manager.hllEventDiscordService.updateEnrolmentMessage(this.event);
+      });
   };
 
   private getEnrolmentType(emoji: GuildEmoji | ReactionEmoji): EnrolmentType {

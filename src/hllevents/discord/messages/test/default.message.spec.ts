@@ -12,7 +12,7 @@ describe('Default Message', () => {
     event = {
       id: 5,
       //@ts-ignore
-      organisator: { name: 'Hans' },
+      organisator: 'Hans',
     };
     config = {
       color: '#123456',
@@ -34,7 +34,7 @@ describe('Default Message', () => {
   });
 
   it('should set footer', () => {
-    expect(message.footer?.text).toBe(`#${event.id} - Erstellt von ${event.organisator?.name}`);
+    expect(message.footer?.text).toBe(`#${event.id} - Erstellt von ${event.organisator}`);
   });
 
   it('should set Timestamp', () => {

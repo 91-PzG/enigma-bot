@@ -4,23 +4,22 @@ import { EnrolmentType } from './enrolmentType.enum';
 import { HLLEvent } from './hllevent.entity';
 import { HLLRole } from './hllRole.enum';
 import { Member } from './member.entity';
-import { Squad } from './squad.entity';
 
 @Entity()
 export class Enrolment extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ default: false })
   squadlead: boolean;
 
-  @Column()
+  @Column({ default: false })
   commander: boolean;
 
   @Column()
   timestamp: Date;
 
-  @Column()
+  @Column({ nullable: true })
   position: number;
 
   @Column({ nullable: true })
@@ -29,8 +28,14 @@ export class Enrolment extends BaseEntity {
   @ManyToOne(() => HLLEvent)
   event: HLLEvent;
 
+  @Column()
+  eventId: number;
+
   @ManyToOne(() => Member, { nullable: true })
   member: Member;
+
+  @Column()
+  memberId: string;
 
   @Column({
     type: 'enum',
@@ -44,8 +49,8 @@ export class Enrolment extends BaseEntity {
   })
   enrolmentType: EnrolmentType;
 
-  @ManyToOne(() => Squad, { nullable: true })
-  squad: Squad;
+  @Column({ nullable: true })
+  squadId: number;
 
   @Column({
     type: 'enum',

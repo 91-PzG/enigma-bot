@@ -7,6 +7,7 @@ import { HLLDiscordEventRepository } from '../hlldiscordevent.repository';
 import { HLLEventsDiscordService } from '../hllevent-discord.service';
 import { EnrolmentMessageFactory } from '../messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from '../messages/informationMessage.factory';
+import { RegistrationManager } from '../registration/registration.manager';
 
 describe('HLLEventDiscordService', () => {
   let service: HLLEventsDiscordService;
@@ -27,6 +28,8 @@ describe('HLLEventDiscordService', () => {
     };
     const eventRepositoryMock: Partial<HLLEventRepository> = {
       getPublishableEvents: jest.fn(),
+      getLockableEvents: jest.fn(),
+      getClosableEvents: jest.fn(),
     };
     const informationFactoryMock: Partial<InformationMessageFactory> = {
       createMessage: jest.fn(),
@@ -34,10 +37,19 @@ describe('HLLEventDiscordService', () => {
     const enrolmentFactoryMock: Partial<EnrolmentMessageFactory> = {
       createMessage: jest.fn(),
     };
+    const registrationManagerMock: Partial<RegistrationManager> = {
+      addEvent: jest.fn(),
+      editEvent:jest.fn(),
+      closeEvent:jest.fn()
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HLLEventsDiscordService,
+        {
+          provide: RegistrationManager,
+          useValue: registrationManagerMock,
+        },
         {
           provide: DiscordService,
           useValue: discordServiceMock,
@@ -88,7 +100,7 @@ describe('HLLEventDiscordService', () => {
       event = {
         channelName: 'channelName',
         autoPublishDate: new Date(),
-        save: jest.fn(),
+        save: jest.fn().mockResolvedValue(null),
       };
       informationMessage = 'info';
       enrolmentMessage = 'enrolment';
@@ -182,10 +194,16 @@ describe('HLLEventDiscordService', () => {
 
   describe('checkEvents', () => {
     it('should call publish events for all events retured from repo', async () => {
-      const events = ['abc', 'def', 'ghi'];
+      const events = [
+        { organisator: { name: 'abc' },save:jest.fn() },
+        { organisator: { name: 'def' },save:jest.fn() },
+        { organisator: { name: 'ghi' },save:jest.fn() },
+      ];
       service.publishMessages = jest.fn();
       //@ts-ignore
-      eventRepository.getPublishableEvents.mockResolvedValue(events);
+      eventRepository.getPublishableEvents.mockResolvedValue(events); //@ts-ignore
+      eventRepository.getLockableEvents.mockResolvedValue(events); //@ts-ignore
+      eventRepository.getClosableEvents.mockResolvedValue(events);
       await service.checkEvents();
       events.forEach((event) => {
         expect(service.publishMessages).toHaveBeenCalledWith(event);

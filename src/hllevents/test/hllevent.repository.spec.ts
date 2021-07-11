@@ -7,8 +7,11 @@ describe('HLLEventRepository', () => {
   let repository: HLLEventRepository;
   let queryBuilder: Partial<SelectQueryBuilder<HLLEvent>> = {
     select: jest.fn().mockReturnThis(),
+    leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
+    andWhere: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    getOne: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -29,7 +32,7 @@ describe('HLLEventRepository', () => {
   describe('getEventById', () => {
     it('should return stuff', async () => {
       const event = { id: 1 };
-      repository.findOne = jest.fn().mockResolvedValue(event).mockResolvedValueOnce(undefined);
+      queryBuilder.getOne = jest.fn().mockResolvedValue(event).mockResolvedValueOnce(undefined);
       expect(await repository.getEventById(5)).toBeUndefined();
       expect(await repository.getEventById(5)).toEqual(event);
     });
