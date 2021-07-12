@@ -279,8 +279,6 @@ describe('discordutil', () => {
       const roles = new Collection<string, Role>([
         [discordConfig.memberRole, null],
         [discordConfig.divisions.armor, null],
-        [discordConfig.ranks.officer, null],
-        [discordConfig.accessRoles.eventOrga, null],
       ]);
       guildMember = {
         user,
@@ -298,36 +296,46 @@ describe('discordutil', () => {
     it('should set all properties on member', async () => {
       const member = await discordUtil.createMember(guildMember);
 
+      const expectedContact: Partial<Contact> = { id: 'id', name: 'displayName' };
       const expectedMember: Partial<Member> = {
         id: 'id',
+        avatar: 'avatar.png',
+        contactId: 'id',
+        division: Division.ARMOR,
+        reserve: false,
+        roles: [AccessRoles.MEMBER],
         memberSince: member.memberSince,
-        contact: {
-          id: 'id',
-          name: 'displayName',
-        } as Contact,
+        contact: expectedContact as Contact,
+        rank: Rank.SOLDIER,
       };
-
+      console.log(discordUtil.isClanMember(guildMember.roles.cache));
       expect(member.memberSince).not.toBeNull();
       expect(member).toEqual(expectedMember);
-      expect(memberRepository.save).toHaveBeenCalledWith(expectedMember);
+      expect(memberRepository.save).toHaveBeenCalledWith(expectedMember as Member);
     });
 
     it('should set all properties on recruit', async () => {
-      guildMember.roles.cache = new Collection<string, Role>([[discordConfig.recruitRole, null]]);
+      guildMember.roles.cache = new Collection<string, Role>([
+        [discordConfig.recruitRole, null],
+        [discordConfig.memberRole, null],
+      ]);
       const member = await discordUtil.createMember(guildMember);
 
+      const expectedContact: Partial<Contact> = { id: 'id', name: 'displayName' };
       const expectedMember: Partial<Member> = {
         id: 'id',
-        contact: {
-          id: 'id',
-          name: 'displayName',
-        } as Contact,
+        contact: expectedContact as Contact,
         rank: Rank.RECRUIT,
+        division: Division.INFANTERIE,
         recruitSince: member.recruitSince,
+        avatar: 'avatar.png',
+        contactId: 'id',
+        reserve: false,
+        roles: [AccessRoles.MEMBER],
       };
 
       expect(member.recruitSince).not.toBeNull();
-      expect(member).toEqual(expectedMember);
+      expect(member).toEqual(expectedMember as Member);
     });
 
     it('should save contact', async () => {

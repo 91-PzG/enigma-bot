@@ -59,11 +59,10 @@ export class DiscordUtil {
   }
 
   public async createMember(user: GuildMember): Promise<Member> {
-    const member = new Member();
+    const member = this.setMemberProperties(new Member(), user);
     member.id = user.id;
     if (user.roles.cache.has(this.config.recruitRole)) {
       member.recruitSince = new Date();
-      member.rank = Rank.RECRUIT;
     } else {
       member.memberSince = new Date();
     }
@@ -74,23 +73,28 @@ export class DiscordUtil {
   }
 
   public async updateMember(user: GuildMember, member: Member) {
-    member.reserve = user.roles.cache.has(this.config.reserveRole);
-    member.avatar = user.user.avatarURL();
-    member.division = this.getDivision(user.roles.cache);
-    member.rank = this.getRank(user.roles.cache);
-    member.contactId = user.id;
+    member = this.setMemberProperties(member, user);
 
     if (member.rank != 'recruit' && !member.memberSince) {
       member.recruitTill = new Date();
       member.memberSince = new Date();
     }
 
-    member.roles = this.getRoles(user.roles.cache, member);
-
     member.contact.name = user.displayName;
     this.contactRepository.save(member.contact);
 
     this.memberRepository.save(member);
+  }
+
+  private setMemberProperties(member: Member, user: GuildMember): Member {
+    member.reserve = user.roles.cache.has(this.config.reserveRole);
+    member.avatar = user.user.avatarURL();
+    member.division = this.getDivision(user.roles.cache);
+    member.rank = this.getRank(user.roles.cache);
+    member.contactId = user.id;
+    member.roles = this.getRoles(user.roles.cache, member);
+
+    return member;
   }
 
   private createContact(user: GuildMember): Promise<Contact> {
