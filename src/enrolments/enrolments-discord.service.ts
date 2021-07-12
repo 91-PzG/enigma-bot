@@ -61,7 +61,7 @@ export class EnrolmentsDiscordService {
     this.hllEventRepository
       .createQueryBuilder()
       .update()
-      .set({ playerCount: () => 'playerCount +' + count })
+      .set({ playerCount: () => `"playerCount" + ${count}` })
       .where('id=:eventId', { eventId })
       .execute();
   }
