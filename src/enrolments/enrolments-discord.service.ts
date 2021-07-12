@@ -36,9 +36,11 @@ export class EnrolmentsDiscordService {
         enrolment.timestamp = new Date();
         if (enrolment.enrolmentType == EnrolmentType.ANMELDUNG)
           this.changePlayerCount(-1, dto.eventId);
+        if (dto.type == EnrolmentType.ANMELDUNG) this.changePlayerCount(1, dto.eventId);
       }
     } else {
       enrolment = new Enrolment();
+      enrolment.timestamp = new Date();
       if (dto.type == EnrolmentType.ANMELDUNG) this.changePlayerCount(1, dto.eventId);
     }
 
@@ -60,7 +62,7 @@ export class EnrolmentsDiscordService {
       .createQueryBuilder()
       .update()
       .set({ playerCount: () => 'playerCount +' + count })
-      .where('eventId=:eventId', { eventId })
+      .where('id=:eventId', { eventId })
       .execute();
   }
 }
