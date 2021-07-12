@@ -62,7 +62,7 @@ export class EnrolmentsDiscordService {
       .createQueryBuilder()
       .update()
       .set({ playerCount: () => 'playerCount +' + count })
-      .where('eventId=:eventId', { eventId })
+      .where('"eventId"=:eventId', { eventId })
       .execute();
   }
 }
