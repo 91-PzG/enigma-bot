@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
+import { OnCommand } from 'discord-nestjs';
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { query, QueryResult } from 'gamedig';
 import { ServerConfig } from '../../config/server.config';
@@ -63,6 +64,7 @@ export class ServerService {
   thumbnail: string;
   logger = new Logger('Server Status');
   serverConfig: ServerConfig;
+  mapTimestamps: number[] = [];
 
   constructor(private discordService: DiscordService, config: ConfigService) {
     this.thumbnail = config.get('embed').thumbnail;
@@ -82,6 +84,17 @@ export class ServerService {
     } else {
       return this.editMessages(embeds);
     }
+  }
+
+  @OnCommand({
+    name: 'Server',
+    prefix: '[',
+    allowChannels: process.env.SERVERLOG ? [process.env.SERVERLOG] : [],
+  })
+  updateMapRuntime(message: Message) {
+    if (!message.content.includes('MAP_RECORDER') || message.content.endsWith('_RESTART``')) return;
+
+    this.mapTimestamps[2 - parseInt(message.content[9])] = ~~(Date.now() / 60000);
   }
 
   private async createMessages(embeds: MessageEmbed[]) {
@@ -118,12 +131,14 @@ export class ServerService {
     const embeds: MessageEmbed[] = [];
     for (let i = 0; i < this.serverConfig.servers.length; i++) {
       const serverState = serverStates[i];
-      embeds.push(serverState ? this.generateServerEmbed(serverState) : this.generateErrorEmbed(i));
+      embeds.push(
+        serverState ? this.generateServerEmbed(serverState, i) : this.generateErrorEmbed(i),
+      );
     }
     return embeds;
   }
 
-  private generateServerEmbed(state: QueryResult): MessageEmbed {
+  private generateServerEmbed(state: QueryResult, index: number): MessageEmbed {
     const map = mapRegistry[state.map.substring(0, 3).toLowerCase()];
     const embed = new MessageEmbed()
       .setColor('#0099ff')
@@ -140,10 +155,14 @@ export class ServerService {
       )
       .addField('Ping', state.ping)
       .addField('Socket', state.connect)
-      .addField('Password', state.password ? 'Ja' : 'Nein')
+      .addField('Password', state.password ? 'Yes' : 'No')
       .addField('Map', map.name)
       .setImage(map.imageUrl)
       .setTimestamp();
+    if (this.mapTimestamps[index]) {
+      const timeToEnd = 90 - (~~(Date.now() / 60000) - this.mapTimestamps[index]);
+      embed.addField('Remaining Time', `${~~(timeToEnd / 60)}h ${~~(timeToEnd % 60)}min`);
+    }
     return embed;
   }
 
