@@ -95,7 +95,6 @@ export class ServerService {
     if (!message.content.includes('MAP_RECORDER') || message.content.endsWith('_RESTART``')) return;
 
     this.mapTimestamps[2 - parseInt(message.content[9])] = ~~(Date.now() / 60000);
-    console.log(this.mapTimestamps);
   }
 
   private async createMessages(embeds: MessageEmbed[]) {
