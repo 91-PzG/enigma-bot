@@ -90,6 +90,7 @@ export class ServerService {
     name: 'Server',
     prefix: '[',
     allowChannels: process.env.SERVERLOG ? [process.env.SERVERLOG] : [],
+    isIgnoreBotMessage: false,
   })
   updateMapRuntime(message: Message) {
     if (!message.content.includes('MAP_RECORDER') || message.content.endsWith('_RESTART``')) return;
