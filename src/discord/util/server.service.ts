@@ -89,7 +89,7 @@ export class ServerService {
   @OnCommand({
     name: 'Server',
     prefix: '[',
-    allowChannels: process.env.SERVERLOG ? [process.env.SERVERLOG] : [],
+    allowChannels: process.env.SERVER_LOG ? [process.env.SERVER_LOG] : [],
   })
   updateMapRuntime(message: Message) {
     if (!message.content.includes('MAP_RECORDER') || message.content.endsWith('_RESTART``')) return;
