@@ -112,12 +112,10 @@ export class RegistrationDialog {
       for (const emoji of this.emojis) await msg.react(emoji);
 
       const collector = msg.createReactionCollector(this.collectionFilter);
-
-      const timeout = setTimeout(async () => {
+      const timeout = setTimeout(() => {
         collector.stop();
         reject('Zeitlimit überschritten');
       }, 60000);
-
       collector.on('collect', (reaction: MessageReaction) => {
         collector.stop();
         clearTimeout(timeout);
