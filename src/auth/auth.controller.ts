@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { AuthCredentialsDto } from './dtos/auth-credentials.dto';
 import { ChangePasswordDto } from './dtos/change-password.dto';
@@ -9,16 +9,17 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('/signin')
-  signIn(
-    @Body() authCredentialsDto: AuthCredentialsDto,
-  ): Promise<JwtWrapperDto> {
+  signIn(@Body() authCredentialsDto: AuthCredentialsDto): Promise<JwtWrapperDto> {
     return this.authService.signIn(authCredentialsDto);
   }
 
   @Post('/password')
-  changePassword(
-    @Body() changePasswordDto: ChangePasswordDto,
-  ): Promise<JwtWrapperDto> {
+  changePassword(@Body() changePasswordDto: ChangePasswordDto): Promise<JwtWrapperDto> {
     return this.authService.changePassword(changePasswordDto);
+  }
+
+  @Get('/discord')
+  discordSignIn(@Query('token') discordToken: string) {
+    return this.authService.discordSignIn(discordToken);
   }
 }

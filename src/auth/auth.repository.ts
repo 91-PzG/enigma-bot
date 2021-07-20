@@ -62,6 +62,13 @@ export class AuthRepository extends Repository<Member> {
     return this.generateJwtWrapper(member);
   }
 
+  async discordSignIn(id: string): Promise<JwtWrapper> {
+    const member = await this.findOne(id);
+
+    if (!member) throw new NotFoundException('User not found');
+    return this.generateJwtWrapper(member);
+  }
+
   private async getMemberByName(username: string): Promise<Member | undefined> {
     return this.createQueryBuilder('member')
       .select('member')
