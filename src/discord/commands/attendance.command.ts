@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OnCommand } from 'discord-nestjs';
 import { DMChannel, Message, NewsChannel, TextChannel } from 'discord.js';
@@ -18,7 +18,7 @@ export class AttendanceCommand {
   ) {}
 
   @OnCommand({ name: 'anwesend', isRemoveMessage: true })
-  async attendance(message: Message): Promise<any> {
+  async attendanceCommandDiscordWrapper(message: Message): Promise<any> {
     const [, eventId, socket] = message.content.split(' ');
 
     if (!this.validateSocket(socket))
@@ -27,10 +27,16 @@ export class AttendanceCommand {
     if (!(await this.validateEventId(eventId)))
       return this.sendFeedbackMessage(message.channel, 'Ungültige Eventid');
 
+    this.attendanceCommand(Number(eventId), socket)
+      .catch((error: string) => this.sendFeedbackMessage(message.channel, error))
+      .then(() => this.sendFeedbackMessage(message.channel, 'Anwesenheit erfolgreich eingetragen'));
+  }
+
+  async attendanceCommand(eventId: number, socket: string): Promise<any> {
     const queryResult = await this.queryServer(socket);
 
     if (!queryResult)
-      return this.sendFeedbackMessage(message.channel, 'Server kann nicht erreicht werden');
+      throw new NotFoundException(`Der Server unter ${socket} kann nicht erreicht werden`);
 
     const updates: Promise<void>[] = [];
 
@@ -39,7 +45,6 @@ export class AttendanceCommand {
     });
 
     await Promise.all(updates);
-    this.sendFeedbackMessage(message.channel, 'Anwesenheit erfolgreich eingetragen');
   }
 
   private queryServer(socket: string): Promise<QueryResult> {
