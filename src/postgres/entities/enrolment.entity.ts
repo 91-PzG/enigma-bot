@@ -58,4 +58,9 @@ export class Enrolment extends BaseEntity {
     nullable: true,
   })
   role: HLLRole;
+
+  @Column({
+    default: false,
+  })
+  isPresent: boolean;
 }

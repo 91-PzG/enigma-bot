@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { OnCommand } from 'discord-nestjs';
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
-import { query, QueryResult } from 'gamedig';
+import { query, QueryOptions, QueryResult } from 'gamedig';
 import { ServerConfig } from '../../config/server.config';
 import { DiscordService } from '../discord.service';
 
@@ -180,17 +180,18 @@ export class ServerService {
   private queryServers(): Promise<QueryResult>[] {
     const serverStates: Promise<QueryResult>[] = [];
     for (let i = 0; i < this.serverConfig.servers.length; i++) {
-      const server = this.serverConfig.servers[i];
-      const statePromise = new Promise<QueryResult>(async (resolve) => {
-        try {
-          resolve(await query(server));
-        } catch (error) {
-          this.logger.log(error);
-          resolve(null);
-        }
-      });
-      serverStates[i] = statePromise;
+      serverStates[i] = this.queryServer(this.serverConfig.servers[i]);
     }
     return serverStates;
+  }
+
+  queryServer(server: QueryOptions) {
+    return new Promise<QueryResult>(async (resolve) => {
+      try {
+        resolve(await query(server));
+      } catch (error) {
+        resolve(null);
+      }
+    });
   }
 }
