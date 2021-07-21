@@ -2,15 +2,13 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OnCommand } from 'discord-nestjs';
 import { DMChannel, Message, NewsChannel, TextChannel } from 'discord.js';
-import { QueryResult } from 'gamedig';
+import { query, QueryResult } from 'gamedig';
 import { Repository } from 'typeorm';
 import { Enrolment, HLLEvent } from '../../postgres/entities';
-import { ServerService } from '../util/server.service';
 
 @Injectable()
 export class AttendanceCommand {
   constructor(
-    private serverService: ServerService,
     @InjectRepository(HLLEvent)
     private hllEventRepository: Repository<HLLEvent>,
     @InjectRepository(Enrolment)
@@ -20,40 +18,44 @@ export class AttendanceCommand {
   @OnCommand({ name: 'anwesend', isRemoveMessage: true })
   async attendanceCommandDiscordWrapper(message: Message): Promise<any> {
     const [, eventId, socket] = message.content.split(' ');
-
     if (!this.validateSocket(socket))
       return this.sendFeedbackMessage(message.channel, 'Ungültiger Socket');
 
     if (!(await this.validateEventId(eventId)))
       return this.sendFeedbackMessage(message.channel, 'Ungültige Eventid');
 
-    this.attendanceCommand(Number(eventId), socket)
-      .catch((error: string) => this.sendFeedbackMessage(message.channel, error))
-      .then(() => this.sendFeedbackMessage(message.channel, 'Anwesenheit erfolgreich eingetragen'));
+    return this.attendanceCommand(Number(eventId), socket)
+      .then(() => this.sendFeedbackMessage(message.channel, 'Anwesenheit erfolgreich eingetragen'))
+      .catch((error: NotFoundException) =>
+        this.sendFeedbackMessage(message.channel, error.message),
+      );
   }
 
   async attendanceCommand(eventId: number, socket: string): Promise<any> {
     const queryResult = await this.queryServer(socket);
-
     if (!queryResult)
       throw new NotFoundException(`Der Server unter ${socket} kann nicht erreicht werden`);
 
     const updates: Promise<void>[] = [];
 
     queryResult.players.forEach((player) => {
-      updates.push(this.setAttendance(player.name));
+      updates.push(this.setAttendance(player.name, eventId));
     });
 
-    await Promise.all(updates);
+    return Promise.all(updates);
   }
 
   private queryServer(socket: string): Promise<QueryResult> {
     const [host, port] = socket.split(':');
-    return this.serverService.queryServer({
-      type: 'hll',
-      host,
-      port: Number(port),
-    });
+    return new Promise<QueryResult | null>((resolve) =>
+      query({
+        type: 'hll',
+        host,
+        port: Number(port),
+      })
+        .then((result) => resolve(result))
+        .catch(() => resolve(null)),
+    );
   }
 
   private async validateEventId(eventId: string): Promise<boolean> {
@@ -78,7 +80,7 @@ export class AttendanceCommand {
     channel.send(message).then((msg) => msg.delete({ timeout }));
   }
 
-  private setAttendance(playerName: string) {
+  private setAttendance(playerName: string, eventId: number) {
     if (!playerName) return;
     return new Promise<void>(async (resolve) => {
       await this.enrolmentRepository
@@ -86,6 +88,7 @@ export class AttendanceCommand {
         .update()
         .set({ isPresent: true })
         .where('username LIKE :name', { name: playerName + '%' })
+        .andWhere('eventId =: eventId', { eventId })
         .execute();
       resolve();
     });

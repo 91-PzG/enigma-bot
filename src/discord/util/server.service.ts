@@ -3,7 +3,8 @@ import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { OnCommand } from 'discord-nestjs';
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
-import { query, QueryOptions, QueryResult } from 'gamedig';
+import { query, QueryResult } from 'gamedig';
+import { EmbedConfig } from '../../config/embeds.config';
 import { ServerConfig } from '../../config/server.config';
 import { DiscordService } from '../discord.service';
 
@@ -61,13 +62,13 @@ export class ServerService {
   startup = true;
   messages: Message[];
   channel: TextChannel;
-  thumbnail: string;
   logger = new Logger('Server Status');
   serverConfig: ServerConfig;
+  embedConfig: EmbedConfig;
   mapTimestamps: number[] = [];
 
   constructor(private discordService: DiscordService, config: ConfigService) {
-    this.thumbnail = config.get('embed').thumbnail;
+    this.embedConfig = config.get('embed');
     this.serverConfig = config.get('server');
   }
 
@@ -142,10 +143,10 @@ export class ServerService {
   private generateServerEmbed(state: QueryResult, index: number): MessageEmbed {
     const map = mapRegistry[state.map.substring(0, 3).toLowerCase()];
     const embed = new MessageEmbed()
-      .setColor('#0099ff')
+      .setColor(this.embedConfig.color)
       .setTitle(state.name)
-      .setURL('https://91pzg.de/')
-      .setThumbnail(this.thumbnail)
+      .setURL(this.embedConfig.baseUrl)
+      .setThumbnail(this.embedConfig.thumbnail)
       .addField('Players', `${Math.min(state.players.length, 100)}/100`)
       .addField('Queue', `${Math.max(state.players.length - 100, 0)}/6`)
       .addField(
@@ -169,29 +170,28 @@ export class ServerService {
 
   private generateErrorEmbed(index: number): MessageEmbed {
     return new MessageEmbed()
-      .setColor('#0099ff')
+      .setColor(this.embedConfig.color)
       .setTitle(this.serverConfig.servers[index].name)
       .setDescription('Server request timed out')
-      .setURL('https://91pzg.de/')
-      .setThumbnail(this.thumbnail)
+      .setURL(this.embedConfig.baseUrl)
+      .setThumbnail(this.embedConfig.thumbnail)
       .setTimestamp();
   }
 
   private queryServers(): Promise<QueryResult>[] {
     const serverStates: Promise<QueryResult>[] = [];
     for (let i = 0; i < this.serverConfig.servers.length; i++) {
-      serverStates[i] = this.queryServer(this.serverConfig.servers[i]);
+      const server = this.serverConfig.servers[i];
+      const statePromise = new Promise<QueryResult>(async (resolve) => {
+        try {
+          resolve(await query(server));
+        } catch (error) {
+          this.logger.log(error);
+          resolve(null);
+        }
+      });
+      serverStates[i] = statePromise;
     }
     return serverStates;
-  }
-
-  queryServer(server: QueryOptions) {
-    return new Promise<QueryResult>(async (resolve) => {
-      try {
-        resolve(await query(server));
-      } catch (error) {
-        resolve(null);
-      }
-    });
   }
 }

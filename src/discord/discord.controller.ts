@@ -1,17 +1,16 @@
 import { Controller, ParseIntPipe, Post, Query } from '@nestjs/common';
 import { parseSocketPipe } from '../util/parseSocket.pipe';
 import { AttendanceCommand } from './commands/attendance.command';
-import { MixedRosterDto, RosterDto } from './dto/roster.dto';
 
 @Controller('discord')
-export class EnrolmentsController {
+export class DiscordController {
   constructor(private attendanceCommand: AttendanceCommand) {}
 
   @Post('/attendance')
-  getEnrolmentForEvent(
+  setAttendance(
     @Query('eventId', ParseIntPipe) eventId: number,
     @Query('socket', parseSocketPipe) socket: string,
-  ): Promise<RosterDto | MixedRosterDto> {
+  ): Promise<void> {
     return this.attendanceCommand.attendanceCommand(eventId, socket);
   }
 }
