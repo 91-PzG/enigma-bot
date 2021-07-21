@@ -1,11 +1,11 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Message, TextChannel } from 'discord.js';
+import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { query, QueryOptions, QueryResult } from 'gamedig';
 import { EmbedConfig } from '../../../config/embeds.config';
 import { ServerConfig } from '../../../config/server.config';
 import { DiscordService } from '../../discord.service';
-import { ServerService } from '../server.service';
+import { mapRegistry, ServerService } from '../server.service';
 
 const serverConfig: ServerConfig = {
   servers: [
@@ -26,15 +26,17 @@ const serverConfig: ServerConfig = {
 };
 const embedConfig: Partial<EmbedConfig> = {
   thumbnail: 'thumbnail.png',
+  color: '#0099ff',
+  baseUrl: 'https://91-pzg.de/',
 };
 const queryResult1: QueryResult = {
   name: '91.PzG| #1 Warfare only | Mic + GER',
   map: 'foy',
   password: false,
   maxplayers: 100,
-  players: [{ name: '91.PzG| Samu' }, { name: 'Hans' }],
+  players: [{ name: '91.PzG| Samu' }, { name: '91.PzG| Peter' }, { name: 'Hans' }],
   bots: [],
-  connect: '176.57.168.74:28215',
+  connect: '176.57.168.79:28345',
   ping: 15,
 };
 const queryResult2: QueryResult = {
@@ -45,7 +47,7 @@ const queryResult2: QueryResult = {
   players: [{ name: '91.PzG| Samu' }, { name: 'Hans' }],
   bots: [],
   connect: '176.57.168.74:28215',
-  ping: 15,
+  ping: 17,
 };
 
 jest.mock('gamedig', () => {
@@ -58,10 +60,61 @@ jest.mock('gamedig', () => {
 });
 
 describe('server service', () => {
-  let channelMock: Partial<TextChannel>;
+  let channelMock: jest.Mocked<TextChannel>;
   let messageMock: Partial<Message>;
   let serverService: ServerService;
   let discordService: jest.Mocked<DiscordService>;
+  const getEmbed = (queryResult: QueryResult): Partial<MessageEmbed> => {
+    return {
+      type: 'rich',
+      title: queryResult.name,
+      url: embedConfig.baseUrl,
+      color: parseInt(embedConfig.color.replace('#', ''), 16),
+      thumbnail: { url: embedConfig.thumbnail },
+      image: {
+        url: mapRegistry[queryResult.map].imageUrl,
+      },
+      fields: [
+        {
+          name: 'Players',
+          value: `${Math.min(queryResult.players.length, 100)}/100`,
+          inline: false,
+        },
+        {
+          name: 'Queue',
+          value: `${Math.max(queryResult.players.length - 100, 0)}/6`,
+          inline: false,
+        },
+        {
+          name: 'Clanmembers',
+          value: `${
+            queryResult.players.filter((f) => f.name != null && f.name.startsWith('91.')).length
+          }/${queryResult.players.length}`,
+          inline: false,
+        },
+        {
+          name: 'Ping',
+          value: queryResult.ping.toString(),
+          inline: false,
+        },
+        {
+          name: 'Socket',
+          value: queryResult.connect,
+          inline: false,
+        },
+        {
+          name: 'Password',
+          value: queryResult.password ? 'Yes' : 'No',
+          inline: false,
+        },
+        {
+          name: 'Map',
+          value: mapRegistry[queryResult.map].name,
+          inline: false,
+        },
+      ],
+    };
+  };
 
   beforeEach(async () => {
     const configServiceMock: Partial<ConfigService> = {
@@ -80,7 +133,7 @@ describe('server service', () => {
     channelMock = {
       send: jest.fn().mockResolvedValue(messageMock),
       valueOf: jest.fn(),
-    };
+    } as unknown as jest.Mocked<TextChannel>;
 
     const discordServiceMock: Partial<DiscordService> = {
       getChannelById: jest.fn().mockResolvedValue(channelMock),
@@ -133,8 +186,78 @@ describe('server service', () => {
 
   describe('embed', () => {
     it('should set correct fields', async () => {
+      jest.clearAllMocks();
       await serverService.generateServerMessages();
-      //TODO
+
+      const validateEmbed = (embed: MessageEmbed, expectedEmbed: MessageEmbed) => {
+        for (const [key, value] of Object.entries(expectedEmbed)) {
+          expect(embed[key]).toEqual(value);
+        }
+      };
+
+      validateEmbed(
+        channelMock.send.mock.calls[0][0] as unknown as MessageEmbed,
+        getEmbed(queryResult1) as MessageEmbed,
+      );
+      validateEmbed(
+        channelMock.send.mock.calls[1][0] as unknown as MessageEmbed,
+        getEmbed(queryResult2) as MessageEmbed,
+      );
+    });
+
+    it('should add remaining time', async () => {
+      jest.clearAllMocks();
+      const date = ~~(Date.now() / 60000);
+      serverService.mapTimestamps = [date, date];
+      await serverService.generateServerMessages();
+
+      expect(channelMock.send.mock.calls[0][0].fields.pop()).toEqual({
+        name: 'Remaining Time',
+        value: '1h 30min',
+        inline: false,
+      });
+    });
+  });
+
+  describe('updateMapRuntime', () => {
+    const mockMessage = (content: string) => {
+      return { content } as Message;
+    };
+
+    it("shouldn't update timestamps if map changes to restart map", () => {
+      serverService.updateMapRuntime(
+        mockMessage(
+          '[Server #1][MAP_RECORDER] map change detected previous: ``stmereeglise_warfare``  new:``utahbeach_warfare_RESTART``',
+        ),
+      );
+      expect(serverService.mapTimestamps.length).toBe(0);
+    });
+
+    it("shouldn't update timestamps if message doesn't come from map recorder", () => {
+      serverService.updateMapRuntime(
+        mockMessage(
+          '[Server #1][CAM] map change detected previous: ``stmereeglise_warfare``  new:``utahbeach_warfare``',
+        ),
+      );
+      expect(serverService.mapTimestamps.length).toBe(0);
+    });
+
+    it('should set timestamps', () => {
+      serverService.updateMapRuntime(
+        mockMessage(
+          '[Server #1][MAP_RECORDER] map change detected previous: ``stmereeglise_warfare``  new:``utahbeach_warfare``',
+        ),
+      );
+      expect(serverService.mapTimestamps[1]).toBeDefined();
+      expect(serverService.mapTimestamps[0]).toBeUndefined();
+      serverService.mapTimestamps = [];
+      serverService.updateMapRuntime(
+        mockMessage(
+          '[Server #2][MAP_RECORDER] map change detected previous: ``stmereeglise_warfare``  new:``utahbeach_warfare``',
+        ),
+      );
+      expect(serverService.mapTimestamps[0]).toBeDefined();
+      expect(serverService.mapTimestamps[1]).toBeUndefined();
     });
   });
 

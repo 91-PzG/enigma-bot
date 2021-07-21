@@ -13,8 +13,6 @@ export class EnrolmentsGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;
 
-  counter = 5;
-
   constructor(private service: EnrolmentsService) {}
 
   handleConnection(client: any, ...args: any[]) {
