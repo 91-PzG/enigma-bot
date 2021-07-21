@@ -88,7 +88,7 @@ export class AttendanceCommand {
         .update()
         .set({ isPresent: true })
         .where('username LIKE :name', { name: playerName + '%' })
-        .andWhere('eventId =: eventId', { eventId })
+        .andWhere('eventId = :eventId', { eventId })
         .execute();
       resolve();
     });

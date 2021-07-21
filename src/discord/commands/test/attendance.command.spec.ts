@@ -119,7 +119,7 @@ describe('AttandanceCommand', () => {
       const eventId = 5;
       message.content = `!anwesend ${eventId} 200.0.0.1:4322`;
       await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
-      expect(enrolmentUpdateQueryBuilder.andWhere).toHaveBeenLastCalledWith('eventId =: eventId', {
+      expect(enrolmentUpdateQueryBuilder.andWhere).toHaveBeenLastCalledWith('eventId = :eventId', {
         eventId,
       });
     });
