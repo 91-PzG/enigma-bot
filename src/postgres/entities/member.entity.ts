@@ -1,4 +1,3 @@
-import * as bcrypt from 'bcryptjs';
 import { BaseEntity, Column, Entity, JoinColumn, OneToOne, PrimaryColumn } from 'typeorm';
 import { Division } from '.';
 import { AccessRoles } from './accessRoles.enum';
@@ -63,25 +62,4 @@ export class Member extends BaseEntity {
 
   @Column()
   contactId: string;
-
-  @Column({
-    nullable: true,
-    select: false,
-  })
-  password: string;
-
-  @Column({
-    nullable: true,
-    select: false,
-  })
-  salt: string;
-
-  @Column({ default: false })
-  mustChangePassword: boolean;
-
-  async validatePassword(password: string): Promise<boolean> {
-    if (!password) return false;
-    const hash = await bcrypt.hash(password, this.salt);
-    return hash === this.password;
-  }
 }
