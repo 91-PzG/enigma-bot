@@ -1,3 +1,4 @@
+import { NotImplementedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
@@ -178,11 +179,18 @@ describe('UsersService', () => {
       expect(await service.getActiveMember('one')).toEqual(member);
     });
   });
+
   describe('getDivisionforMember', () => {
     it('should return value from db', async () => {
       queryBuilder.getOne.mockResolvedValue(member).mockResolvedValueOnce(undefined);
       expect(await service.getDivisionForMember('one')).toBeUndefined();
       expect(await service.getDivisionForMember('one')).toBe(Division.ARTILLERY);
+    });
+  });
+
+  describe('patchUser', () => {
+    it('should throw NotImplemtedException', () => {
+      expect(() => service.patchUser('5', { comment: '' })).toThrow(new NotImplementedException());
     });
   });
 });

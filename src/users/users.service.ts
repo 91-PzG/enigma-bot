@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
@@ -14,14 +14,14 @@ export class UsersService {
   ) {}
 
   async getUserList(): Promise<UserListDto[]> {
-    return ((await this.memberRepository
+    return (await this.memberRepository
       .createQueryBuilder('member')
       .leftJoin('member.contact', 'contact')
       .select(['member.id AS id', 'contact.name AS username'])
       .where('member.honoraryMember = false')
       .andWhere('member.reserve = false')
       .andWhere('member.memberTill IS NULL')
-      .getRawMany()) as unknown) as Promise<UserListDto[]>;
+      .getRawMany()) as unknown as Promise<UserListDto[]>;
   }
 
   async getMemberById(id: string, user?: JwtPayload): Promise<Member> {
@@ -80,6 +80,6 @@ export class UsersService {
   }
 
   patchUser(id: string, body: PatchUserDto): number {
-    return 0;
+    throw new NotImplementedException();
   }
 }
