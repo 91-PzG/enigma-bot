@@ -10,14 +10,10 @@ describe('AuthController', () => {
   beforeEach(async () => {
     const authServiceMock: Partial<AuthService> = {
       signIn: jest.fn(),
-      changePassword: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        { provide: AuthService, useValue: authServiceMock },
-        AuthController,
-      ],
+      providers: [{ provide: AuthService, useValue: authServiceMock }, AuthController],
     }).compile();
 
     authController = module.get<AuthController>(AuthController);
@@ -29,31 +25,21 @@ describe('AuthController', () => {
   });
 
   describe('signIn', () => {
-    it('should call signIn method of service', async () => {
-      const accessTokenWrapper: JwtWrapperDto = { accessToken: 'access' };
-      authService.signIn.mockResolvedValue(accessTokenWrapper);
-
-      const wrapper = await authController.signIn({
-        username: '',
-        password: '',
-      });
-
-      expect(wrapper).toEqual(accessTokenWrapper);
+    it('should call authService signIn with correct values', () => {
+      const token = 'asdzfasf';
+      authController.signIn(token);
+      expect(authService.signIn).toHaveBeenLastCalledWith(token);
     });
-  });
 
-  describe('changePassword', () => {
-    it('should call changePassword method of service', async () => {
-      const accessTokenWrapper: JwtWrapperDto = { accessToken: 'access' };
-      authService.changePassword.mockResolvedValue(accessTokenWrapper);
-
-      const wrapper = await authController.changePassword({
-        username: '',
-        newPassword: '',
-        oldPassword: '',
+    it('should return value returned from service', () => {
+      expect.assertions(1);
+      const wrapper: JwtWrapperDto = {
+        accessToken: 'access',
+      };
+      authService.signIn.mockResolvedValue(wrapper);
+      authController.signIn('abc').then((value) => {
+        expect(value).toEqual(wrapper);
       });
-
-      expect(wrapper).toEqual(accessTokenWrapper);
     });
   });
 });

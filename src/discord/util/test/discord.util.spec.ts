@@ -308,7 +308,6 @@ describe('discordutil', () => {
         contact: expectedContact as Contact,
         rank: Rank.SOLDIER,
       };
-      console.log(discordUtil.isClanMember(guildMember.roles.cache));
       expect(member.memberSince).not.toBeNull();
       expect(member).toEqual(expectedMember);
       expect(memberRepository.save).toHaveBeenCalledWith(expectedMember as Member);
