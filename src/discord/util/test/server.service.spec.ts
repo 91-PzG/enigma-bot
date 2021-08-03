@@ -31,7 +31,7 @@ const embedConfig: Partial<EmbedConfig> = {
 };
 const queryResult1: QueryResult = {
   name: '91.PzG| #1 Warfare only | Mic + GER',
-  map: 'foy',
+  map: 'Foy',
   password: false,
   maxplayers: 100,
   players: [{ name: '91.PzG| Samu' }, { name: '91.PzG| Peter' }, { name: 'Hans' }],
@@ -41,7 +41,7 @@ const queryResult1: QueryResult = {
 };
 const queryResult2: QueryResult = {
   name: '91.PzG| #2 Warfare only | Mic + GER',
-  map: 'foy',
+  map: 'Stalin',
   password: true,
   maxplayers: 100,
   players: [{ name: '91.PzG| Samu' }, { name: 'Hans' }],
