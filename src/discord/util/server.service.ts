@@ -13,47 +13,60 @@ class mapType {
 }
 
 export const mapRegistry: mapType = {
-  ct: {
+  CT: {
     name: 'Carentan',
-    imageUrl: 'https://pbs.twimg.com/media/Ebc4mugXQAM4UcL.jpg',
+    imageUrl:
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/carentan.webp',
   },
-  foy: {
+  Foy: {
     name: 'Foy',
     imageUrl:
-      'https://vignette.wikia.nocookie.net/hellletloose/images/e/eb/Foy_1.jpg/revision/latest?cb=20200408233012',
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/foy.webp',
   },
-  hil: {
+  Hill400: {
     name: 'Hill 400',
     imageUrl:
-      'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/clans/34012997/96f6c508ef387970e14a7a8c35d969ed3708e28a.jpg',
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/hill400.webp',
   },
-  hur: {
+  Hurtgen: {
     name: 'Hurtgen Forest',
-    imageUrl: 'https://pbs.twimg.com/media/DLGGtLEVYAAiFc4.jpg',
+    imageUrl:
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/hurtgen.webp',
   },
-  oma: {
+  Omaha: {
     name: 'Omaha Beach',
     imageUrl:
-      'https://www.gaming-grounds.de/wp-content/uploads/2019/09/hell-let-loose-ww2-omaha-beach-15.jpg',
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/omaha.webp',
   },
-  phl: {
+  PHL: {
     name: 'Purple Heart Lane',
-    imageUrl: 'https://www.histogames.com/images/news/janvier2020/025/image-2.jpg',
+    imageUrl:
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/phl.webp',
   },
-  sme: {
+  SME: {
     name: 'Sainte-Mère-Église',
     imageUrl:
-      'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/clans/34012997/ecbfb3ec24ffbcd357b97234909321b58ee7a902.jpg',
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/sme.webp',
   },
-  stm: {
+  StMarie: {
     name: 'Sainte-Marie-du-Mont',
     imageUrl:
-      'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/clans/34012997/4870efac69f55b1bfc5240c5587be4848ea46ff1.png',
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/smdm.webp',
   },
-  uta: {
+  Utah: {
     name: 'Utah Beach',
     imageUrl:
-      'https://steamcdn-a.akamaihd.net/steamcommunity/public/images/clans/34012997/2e83730396d8e071392791f0147563dd6e5026f2.jpg',
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/utah.webp',
+  },
+  Kursk: {
+    name: 'Kursk',
+    imageUrl:
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/kursk.webp',
+  },
+  Stalin: {
+    name: 'Stalingrad',
+    imageUrl:
+      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/stalingrad.webp',
   },
 };
 
@@ -141,7 +154,7 @@ export class ServerService {
   }
 
   private generateServerEmbed(state: QueryResult, index: number): MessageEmbed {
-    const map = mapRegistry[state.map.substring(0, 3).toLowerCase()];
+    const map = mapRegistry[state.map];
     const embed = new MessageEmbed()
       .setColor(this.embedConfig.color)
       .setTitle(state.name)
