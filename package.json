@@ -32,7 +32,7 @@
     "@nestjs/platform-socket.io": "^7.6.17",
     "@nestjs/schedule": "^0.4.2",
     "@nestjs/typeorm": "^7.1.5",
-    "@nestjs/websockets": "^7.6.17",
+    "@nestjs/websockets": "^7.6.18",
     "bcryptjs": "^2.4.3",
     "class-transformer": "^0.4.0",
     "class-validator": "^0.13.1",
