@@ -1,5 +1,6 @@
 import { EmbedConfig } from '../../../config/embeds.config';
 import { HLLEvent } from '../../../postgres/entities';
+import { dateTransformationPipe } from '../../../util/dateTransformation.pipe';
 import { DefaultMessage } from './default.message';
 
 type Translation = {
@@ -7,28 +8,13 @@ type Translation = {
   valuePipe?: (value: any) => string;
 };
 
-const msInTwoHours = 1000 * 60 * 60 * 2;
-
-const days = ['So, ', 'Mo, ', 'Di, ', 'Mi, ', 'Do, ', 'Fr, ', 'Sa, '];
-
-const zeroPad = (num) => String(num).padStart(2, '0');
-
-const dateTransformation = (value: any): string => {
-  let date = new Date(value);
-  date = new Date(date.getTime() + msInTwoHours);
-
-  return `${days[date.getDay()]}${date.getDate()}.${date.getMonth() + 1}.${
-    date.getFullYear() % 100
-  } ${zeroPad(date.getHours())}:${zeroPad(date.getMinutes())}`;
-};
-
 const boolTransformation = (value: any): string => {
   return value === 'true' ? 'Ja' : 'Nein';
 };
 
 const translationMatrix: { [key: string]: Translation } = {
-  date: { name: 'Datum:', valuePipe: dateTransformation },
-  registerByDate: { name: 'Anmeldefrist:', valuePipe: dateTransformation },
+  date: { name: 'Datum:', valuePipe: dateTransformationPipe },
+  registerByDate: { name: 'Anmeldefrist:', valuePipe: dateTransformationPipe },
   mandatory: { name: 'Verpflichtend:', valuePipe: boolTransformation },
   rounds: { name: 'Runden:' },
   hllMap: { name: 'Karte:' },
@@ -39,7 +25,7 @@ const translationMatrix: { [key: string]: Translation } = {
   server: { name: 'Server:' },
   password: { name: 'Passwort:' },
   maxPlayerCount: { name: 'max. Spielerzahl:' },
-  briefing: { name: 'Vorbesprechung', valuePipe: dateTransformation },
+  briefing: { name: 'Vorbesprechung', valuePipe: dateTransformationPipe },
   faction: { name: 'Seite' },
 };
 
@@ -60,10 +46,7 @@ export class InformationMessage extends DefaultMessage {
   }
 
   private addOptionalFields() {
-    const fields = Object.entries(this.event).reduce(
-      eventReductor,
-      ([] as unknown) as [string, any],
-    );
+    const fields = Object.entries(this.event).reduce(eventReductor, [] as unknown as [string, any]);
     fields.forEach(([key, value]) => {
       this.addField(key, value, true);
     });

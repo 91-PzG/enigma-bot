@@ -8,6 +8,7 @@
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
+    "build:docker": "nest build && docker build -f ./Dockerfile -t enigma-bot_main:latest .",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -39,6 +40,7 @@
     "discord-nestjs": "^1.1.12",
     "discord.js": "^12.5.1",
     "gamedig": "^3.0.5",
+    "moment": "^2.29.1",
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "pg": "^8.6.0",

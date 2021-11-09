@@ -1,25 +1,14 @@
-FROM node:12.13-alpine As development
-
-WORKDIR /usr/src/enigma
-COPY package*.json ./
-RUN npm install rimraf -g
-RUN npm install 
-COPY . .
-RUN npm run build
-
-FROM node:12.13-alpine as production
+FROM node:14-alpine
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
-WORKDIR /usr/src/enigma
+WORKDIR /icu
+RUN npm init -y && npm install full-icu
+ENV NODE_ICU_DATA=/icu/node_modules/full-icu
 
+WORKDIR /usr/src/app
 COPY package*.json ./
-
-RUN npm install --only=production
-
-COPY . .
-
-COPY --from=development /usr/src/enigma/dist ./dist
-
-CMD [ "npm", "run", "pm2" ]
+RUN npm ci
+COPY ./dist ./dist
+CMD ["node","dist/main"]
