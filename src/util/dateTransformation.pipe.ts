@@ -1,5 +1,5 @@
 export const dateTransformationPipe = (value: any): string => {
-  let date = new Date();
+  let date = new Date(value);
   const dateOptions = {
     day: '2-digit',
     month: '2-digit',

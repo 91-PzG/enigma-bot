@@ -12,7 +12,6 @@ services:
     ports:
       - ${SERVER_PORT}:${SERVER_PORT}
       - 9229:9229
-    command: npm run start:dev
     env_file:
       - .env
     networks:
