@@ -1,6 +1,8 @@
 import { EntityRepository, Repository } from 'typeorm';
 import { HLLEvent, IHLLEvent } from '../postgres/entities';
 
+const MILLISECONDS_IN_DAY = 60 * 60 * 24 * 1000;
+
 @EntityRepository(HLLEvent)
 export class HLLEventRepository extends Repository<HLLEvent> {
   getEventById(id: number): Promise<HLLEvent | undefined> {
@@ -50,10 +52,11 @@ export class HLLEventRepository extends Repository<HLLEvent> {
       .andWhere('event.closed = false and event.sentReminderOne = false and event.mandatory = true')
       .getMany();
   }
+
   getReminderEventsTwo(): Promise<HLLEvent[]> {
     return this.createQueryBuilder('event')
       .leftJoinAndSelect('event.discordEvent', 'discordEvent')
-      .where('event.date < :date ', { date: new Date(new Date().valueOf() + 3600 * 24) })
+      .where('event.date < :date ', { date: new Date(new Date().valueOf() + 3600 * 24 * 1000) })
       .andWhere('event.closed = false and event.sentReminderTwo = false')
       .getMany();
   }
