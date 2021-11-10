@@ -38,6 +38,7 @@ describe('AttandanceCommand', () => {
   const channel: Partial<TextChannel> = {
     send: jest.fn().mockResolvedValue({ delete: jest.fn() }),
     valueOf: jest.fn(),
+    toString: jest.fn(),
   };
   const message: Partial<Message> = {
     channel: channel as TextChannel,

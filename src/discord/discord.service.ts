@@ -26,7 +26,7 @@ export class DiscordService {
   private logger = new Logger('DiscordService');
 
   constructor(config: ConfigService) {
-    this.config = config.get('discord') as DiscordConfig;
+    this.config = config.get('discord');
   }
 
   @Once({ event: 'ready' })
@@ -42,7 +42,9 @@ export class DiscordService {
 
   getEventChannels(): DiscordChannelDto[] {
     return this.client.channels.cache
-      .filter((f) => f.type === 'text' && (f as TextChannel).parentID === this.config.eventCategory)
+      .filter(
+        (f) => f.type === 'GUILD_TEXT' && (f as TextChannel).parentId === this.config.eventCategory,
+      )
       .map((channel) => ({
         id: channel.id,
         name: (channel as TextChannel).name,
@@ -64,7 +66,7 @@ export class DiscordService {
   ): Promise<Message | undefined> {
     const channel = await this.getChannelById<TextChannel>(channelId);
     if (!channel) return undefined;
-    return channel.messages.fetch(messageId, undefined, force);
+    return channel.messages.fetch(messageId, { force });
   }
 
   getEmojiById(emojiId: string): GuildEmoji | undefined {
@@ -89,12 +91,10 @@ export class DiscordService {
     const guild = this.getGuild();
     if (!guild) throw Error('could not find guild');
 
-    const channel = await guild.channels.create(name, {
-      type: 'text',
+    return guild.channels.create(name, {
+      type: 'GUILD_TEXT',
       parent: await this.getChannelById<CategoryChannel>(this.config.eventCategory),
     });
-
-    return channel;
   }
 
   async getRoleByID(id: string): Promise<Role | null | undefined> {

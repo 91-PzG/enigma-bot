@@ -30,7 +30,10 @@ const enrolmentMatrix = {
 export class RegistrationDialog {
   private embedConfig: EmbedConfig;
   private emojis = ['💂‍♂️', '🤠', '🕵️‍♂️', '❌'];
-  private collectionFilter: CollectorFilter = (reaction: MessageReaction, user: User) => {
+  private collectionFilter: CollectorFilter<[MessageReaction, User]> = (
+    reaction: MessageReaction,
+    user: User,
+  ) => {
     if (user.bot) return false;
     return this.emojis.includes(reaction.emoji.name);
   };
@@ -107,11 +110,11 @@ export class RegistrationDialog {
     type: EnrolmentType,
   ): Promise<RoleSelectionType> {
     return new Promise<RoleSelectionType>(async (resolve, reject) => {
-      const msg = await user.send(this.getEmbed(division, type));
+      const msg = await user.send({ embeds: [this.getEmbed(division, type)] });
 
       for (const emoji of this.emojis) await msg.react(emoji);
 
-      const collector = msg.createReactionCollector(this.collectionFilter);
+      const collector = msg.createReactionCollector({ filter: this.collectionFilter });
 
       const timeout = setTimeout(async () => {
         collector.stop();

@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Message, MessageEmbed, TextChannel } from 'discord.js';
+import { Message, MessageEmbed, MessageOptions, TextChannel } from 'discord.js';
 import { query, QueryOptions, QueryResult } from 'gamedig';
 import { EmbedConfig } from '../../../config/embeds.config';
 import { ServerConfig } from '../../../config/server.config';
@@ -69,7 +69,7 @@ describe('server service', () => {
       type: 'rich',
       title: queryResult.name,
       url: embedConfig.baseUrl,
-      color: parseInt(embedConfig.color.replace('#', ''), 16),
+      color: parseInt((embedConfig.color as `#${string}`).replace('#', ''), 16),
       thumbnail: { url: embedConfig.thumbnail },
       image: {
         url: mapRegistry[queryResult.map].imageUrl,
@@ -196,11 +196,11 @@ describe('server service', () => {
       };
 
       validateEmbed(
-        channelMock.send.mock.calls[0][0] as unknown as MessageEmbed,
+        (channelMock.send.mock.calls[0][0] as MessageOptions).embeds[0] as MessageEmbed,
         getEmbed(queryResult1) as MessageEmbed,
       );
       validateEmbed(
-        channelMock.send.mock.calls[1][0] as unknown as MessageEmbed,
+        (channelMock.send.mock.calls[1][0] as MessageOptions).embeds[0] as MessageEmbed,
         getEmbed(queryResult2) as MessageEmbed,
       );
     });
@@ -211,7 +211,7 @@ describe('server service', () => {
       serverService.mapTimestamps = [date, date];
       await serverService.generateServerMessages();
 
-      expect(channelMock.send.mock.calls[0][0].fields.pop()).toEqual({
+      expect((channelMock.send.mock.calls[0][0] as MessageOptions).embeds[0].fields.pop()).toEqual({
         name: 'Remaining Time',
         value: '1h 30min',
         inline: false,

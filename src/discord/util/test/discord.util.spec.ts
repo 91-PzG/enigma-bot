@@ -199,6 +199,7 @@ describe('discordutil', () => {
       const user: Partial<User> = {
         avatarURL: () => 'avatar.png',
         valueOf: jest.fn(),
+        toString: jest.fn(),
       };
       const roles = new Collection<string, Role>([
         [discordConfig.memberRole, null],
@@ -275,6 +276,7 @@ describe('discordutil', () => {
       const user: Partial<User> = {
         avatarURL: () => 'avatar.png',
         valueOf: jest.fn(),
+        toString: jest.fn(),
       };
       const roles = new Collection<string, Role>([
         [discordConfig.memberRole, null],
@@ -314,6 +316,7 @@ describe('discordutil', () => {
     });
 
     it('should set all properties on recruit', async () => {
+      //@ts-ignore
       guildMember.roles.cache = new Collection<string, Role>([
         [discordConfig.recruitRole, null],
         [discordConfig.memberRole, null],

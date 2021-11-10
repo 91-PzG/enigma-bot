@@ -19,7 +19,9 @@ export class UpdateUsersCommand {
   @OnCommand({ name: 'update' })
   async updateUsersCommand(message: Message): Promise<void> {
     if (message.deletable) message.delete();
-    message.channel.send('Updating all users...').then((msg) => msg.delete({ timeout: 5000 }));
+    message.channel.send('Updating all users...').then((msg) => {
+      setTimeout(() => msg.delete(), 5000);
+    });
 
     const users = await this.discordService.getClanMembers();
     users.forEach((user) => this.updateUser(user));

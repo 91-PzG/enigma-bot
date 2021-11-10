@@ -124,8 +124,8 @@ describe('HLLEventDiscordService', () => {
     it('functions should be called with correct values', async () => {
       await service.publishMessages(event as HLLEvent);
       expect(discordService.createEventChannelIfNotExists).toHaveBeenCalledWith(event.channelName);
-      expect(channel.send).toHaveBeenCalledWith(informationMessage);
-      expect(channel.send).toHaveBeenCalledWith(enrolmentMessage);
+      expect(channel.send).toHaveBeenCalledWith({ embeds: [informationMessage] });
+      expect(channel.send).toHaveBeenCalledWith({ embeds: [enrolmentMessage] });
       expect(discordRepository.createEntity).toHaveBeenCalledWith(channel.id, 'idtwo', 'idone');
     });
 
@@ -165,7 +165,7 @@ describe('HLLEventDiscordService', () => {
     });
     it('oldMessage edit should be called with new message', async () => {
       expect(await service.updateEnrolmentMessage(event as HLLEvent)).toBe(true);
-      expect(oldMessage.edit).toHaveBeenCalledWith(newMessage);
+      expect(oldMessage.edit).toHaveBeenCalledWith({ embeds: [newMessage] });
     });
   });
 
@@ -199,7 +199,7 @@ describe('HLLEventDiscordService', () => {
     });
     it('oldMessage edit should be called with new message', async () => {
       expect(await service.updateInformationMessage(event as HLLEvent)).toBe(true);
-      expect(oldMessage.edit).toHaveBeenCalledWith(newMessage);
+      expect(oldMessage.edit).toHaveBeenCalledWith({ embeds: [newMessage] });
     });
   });
 
