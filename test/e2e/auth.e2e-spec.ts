@@ -53,10 +53,7 @@ describe('AuthController (e2e)', () => {
         username: 'SignIn',
         password: 'Test123',
       };
-      const { body } = await request
-        .post('/auth/signin')
-        .send(data)
-        .expect(201);
+      const { body } = await request.post('/auth/signin').send(data).expect(201);
 
       const jwtData: JwtPayload = jwt_decode(body.accessToken);
 
@@ -82,10 +79,7 @@ describe('AuthController (e2e)', () => {
         oldPassword: 'Test123',
         newPassword: 'Pa$$w0rd',
       };
-      const { body } = await request
-        .post('/auth/password')
-        .send(data)
-        .expect(201);
+      const { body } = await request.post('/auth/password').send(data).expect(201);
 
       const jwtData: JwtPayload = jwt_decode(body.accessToken);
 

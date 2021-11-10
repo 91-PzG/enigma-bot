@@ -5,9 +5,7 @@ import { DiscordChannelDto } from '../dtos/discord-channel.dto';
 
 describe('ChannelsController', () => {
   let service: ChannelService;
-  let channels: DiscordChannelDto[] = [
-    { id: '814224154697007115', name: 'test-channel' },
-  ];
+  let channels: DiscordChannelDto[] = [{ id: '814224154697007115', name: 'test-channel' }];
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({

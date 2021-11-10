@@ -6,9 +6,7 @@ import { JwtPayload } from '../jwt-payload.interface';
 @Injectable()
 export class RoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
-  canActivate(
-    ctx: ExecutionContext,
-  ): boolean | Promise<boolean> | Observable<boolean> {
+  canActivate(ctx: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const scopes = this.reflector.get<string[]>('scopes', ctx.getHandler());
     if (!scopes) return true;
 

@@ -20,13 +20,14 @@ Combination of the "Enigma"-Bot and the backend for the 91.PzG Memberportal
 After cloning the repository and installing the dependencies conntact an owner to help you fill out the `.env`-File with the necessary information.
 Also you should request an invite to the development discord where we set up roles event channels etc and discuss the next steps.
 After that you're good to go. To start/debug and test the bot use the following commands (defined in `package.json`):
-* `npm run build` Compiles the project
-* `npm run start` Starts the backend
-* `npm run start:dev` Restarts the backend on each file change (you may need to abort and rerun when changing dependencies or module files) 
-* `npm run:start:debug` Same as above but with more logging enabled
-* `npm run test` Runs all unit tests
-* `npm run test:watch` Works analogous to `start dev` but reruns the test instead of restarting the application
-* `npm run test:e2e` Runs the e2e tests. **Warning!** This rebuilds the database and fills it with test data. (TODO: move e2e tests to different db)  
+
+- `npm run build` Compiles the project
+- `npm run start` Starts the backend
+- `npm run start:dev` Restarts the backend on each file change (you may need to abort and rerun when changing dependencies or module files)
+- `npm run:start:debug` Same as above but with more logging enabled
+- `npm run test` Runs all unit tests
+- `npm run test:watch` Works analogous to `start dev` but reruns the test instead of restarting the application
+- `npm run test:e2e` Runs the e2e tests. **Warning!** This rebuilds the database and fills it with test data. (TODO: move e2e tests to different db)
 
 ## Development Guidelines
 
@@ -42,18 +43,20 @@ The branchnames have to adhere to the following pattern:
 `[type]/[name]`
 
 The following types can be used:
-* feature: adding new functionality
-* refactor: changing code without introducing new features
-* bugfix: fixing a bug
-* docs: update documentation without changing production code
+
+- feature: adding new functionality
+- refactor: changing code without introducing new features
+- bugfix: fixing a bug
+- docs: update documentation without changing production code
 
 #### Release Branches
 
 After all the features that will be included in the next release have been merged into master, you can create a new branch named `release/version`.
 No new features may be added to this release branch. The only acceptable commits to release branches are:
-* small tidying up task
-* bumping the version
-* fixes
+
+- small tidying up task
+- bumping the version
+- fixes
 
 #### Hotfixes
 
@@ -69,7 +72,8 @@ To create a new release merge a release or hotfix branch into master and create 
 To keep our repository tidy all commits have to adhere to the [Conventional Commit Guidelines](https://www.conventionalcommits.org/en/).
 You can find a brief summary below:
 
-* Structure:
+- Structure:
+
 ```
 <type>[optional scope]: <description>
 
@@ -78,22 +82,23 @@ You can find a brief summary below:
 [optional footer(s)]
 ```
 
-* We use the following types:
-  * fix: Fixes a bug
-  * feat: Adds a new feature
-  * refactor: Changes code but doesn't add new features
-  * docs: Updates doc files
-  * test: Updates tests but doesn't touch production code
+- We use the following types:
 
-* Breaking changes:
+  - fix: Fixes a bug
+  - feat: Adds a new feature
+  - refactor: Changes code but doesn't add new features
+  - docs: Updates doc files
+  - test: Updates tests but doesn't touch production code
+
+- Breaking changes:
   If an update introduces breaking changes add a `!` after the type (and scope) and optionally add the `BREAKING CHANGE` footer.
 
-
 The commit message should also follow these rules:
+
 1. Separate subject from body with a blank line
 2. Limit the subject line to 50 characters
 3. Capitalize the subject line
 4. Do not end the subject line with a period
 5. Use the imperative mood in the subject line
-6.Wrap the body at 72 characters
-7. Use the body to explain what and why vs. how
+   6.Wrap the body at 72 characters
+6. Use the body to explain what and why vs. how
