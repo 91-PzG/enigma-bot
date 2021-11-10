@@ -1,13 +1,22 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { OnCommand } from 'discord-nestjs';
-import { DMChannel, Message, NewsChannel, TextChannel } from 'discord.js';
+import {
+  DMChannel,
+  Message,
+  NewsChannel,
+  PartialDMChannel,
+  TextChannel,
+  ThreadChannel,
+} from 'discord.js';
 import { query, QueryResult } from 'gamedig';
 import { Repository } from 'typeorm';
 import { Enrolment, HLLEvent } from '../../postgres/entities';
 
 @Injectable()
 export class AttendanceCommand {
+  logger = new Logger('AttendanceCommand');
+
   constructor(
     @InjectRepository(HLLEvent)
     private hllEventRepository: Repository<HLLEvent>,
@@ -67,17 +76,22 @@ export class AttendanceCommand {
   }
 
   private validateSocket(socket: string): boolean {
-    return /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?):(6553[0-5]|655[0-2][0-9]|65[0-4][0-9][0-9]|6[0-4][0-9][0-9][0-9][0-9]|[1-5](\d){4}|[1-9](\d){0,3})$/.test(
+    return /^(?:(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?)\.){3}(?:25[0-5]|2[0-4][\d]|[01]?[\d][\d]?):(6553[0-5]|655[0-2][\d]|65[0-4][\d][\d]|6[0-4][\d][\d][\d][\d]|[1-5](\d){4}|[1-9](\d){0,3})$/.test(
       socket,
     );
   }
 
   private sendFeedbackMessage(
-    channel: TextChannel | DMChannel | NewsChannel,
+    channel: TextChannel | DMChannel | NewsChannel | PartialDMChannel | ThreadChannel,
     message: string,
     timeout = 5000,
   ): void {
-    channel.send(message).then((msg) => msg.delete({ timeout }));
+    channel
+      .send(message)
+      .then((msg) => {
+        setTimeout(() => msg.delete(), timeout);
+      })
+      .catch(() => this.logger.error(`Failed to send feedback message: ${message}`));
   }
 
   private setAttendance(playerName: string, eventId: number) {

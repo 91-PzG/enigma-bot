@@ -33,7 +33,7 @@ export class RegistrationService {
     public message: Message,
     private manager: RegistrationManager,
   ) {
-    this.collector = this.message.createReactionCollector(this.filter);
+    this.collector = this.message.createReactionCollector({ filter: this.filter });
     this.collector.on('collect', this.onCollect);
     this.collector.on('end', this.onEnd);
     this.logger.debug(`Started collector for event ${event.id} - ${event.name}`);
