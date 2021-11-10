@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import { Division, Enrolment, EnrolmentType, HLLEvent, Squad } from '../../postgres/entities';
+import { Division, Enrolment, EnrolmentType, HLLEvent, Squad } from '../../typeorm/entities';
 import { CreateSquadDto, RenameSquadDto } from '../dto/socket.dto';
 import { EnrolmentsRepository } from '../enrolments.repository';
 import { EnrolmentsService } from '../enrolments.service';

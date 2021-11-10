@@ -1,74 +1,14 @@
+import { On, UseGuards } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
-import { OnCommand } from 'discord-nestjs';
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { query, QueryResult } from 'gamedig';
 import { EmbedConfig } from '../../config/embeds.config';
 import { ServerConfig } from '../../config/server.config';
-import { DiscordService } from '../discord.service';
-
-class mapType {
-  [key: string]: { name: string; imageUrl: string };
-}
-
-export const mapRegistry: mapType = {
-  CT: {
-    name: 'Carentan',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/carentan.webp',
-  },
-  Foy: {
-    name: 'Foy',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/foy.webp',
-  },
-  Hill400: {
-    name: 'Hill 400',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/hill400.webp',
-  },
-  Hurtgen: {
-    name: 'Hurtgen Forest',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/hurtgen.webp',
-  },
-  Omaha: {
-    name: 'Omaha Beach',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/omaha.webp',
-  },
-  PHL: {
-    name: 'Purple Heart Lane',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/phl.webp',
-  },
-  SME: {
-    name: 'Sainte-Mère-Église',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/sme.webp',
-  },
-  StMarie: {
-    name: 'Sainte-Marie-du-Mont',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/smdm.webp',
-  },
-  Utah: {
-    name: 'Utah Beach',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/utah.webp',
-  },
-  Kursk: {
-    name: 'Kursk',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/kursk.webp',
-  },
-  Stalin: {
-    name: 'Stalingrad',
-    imageUrl:
-      'https://raw.githubusercontent.com/MarechJ/hll_rcon_tool/master/rcongui/public/maps/stalingrad.webp',
-  },
-};
+import { DiscordService } from '../../discord/discord.service';
+import { MaprecorderGuard } from './maprecorder.guard';
+import { mapRegistry } from './mapregistry';
 
 @Injectable()
 export class ServerService {
@@ -100,12 +40,8 @@ export class ServerService {
     }
   }
 
-  @OnCommand({
-    name: 'Server',
-    prefix: '[',
-    allowChannels: process.env.SERVER_LOG ? [process.env.SERVER_LOG] : [],
-    isIgnoreBotMessage: false,
-  })
+  @On('messageCreate')
+  @UseGuards(MaprecorderGuard)
   updateMapRuntime(message: Message) {
     if (!message.content.includes('MAP_RECORDER') || message.content.endsWith('_RESTART``')) return;
 
@@ -120,8 +56,8 @@ export class ServerService {
     for (const embed of embeds) {
       try {
         this.messages.push(await this.channel.send({ embeds: [embed] }));
-      } catch (error) {
-        this.logger.log(error);
+      } catch (e) {
+        this.logger.log(e);
         error = true;
       }
     }
@@ -134,8 +70,8 @@ export class ServerService {
     for (let i = 0; i < embeds.length; i++) {
       try {
         this.messages[i] = await this.messages[i].edit({ embeds: [embeds[i]] });
-      } catch (error) {
-        this.logger.log(error);
+      } catch (e) {
+        this.logger.log(e);
         error = true;
       }
     }

@@ -3,7 +3,6 @@ import { ConfigFactory, ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
-import { DiscordModule as DiscordConfigModule, DiscordModuleOption } from 'discord-nestjs';
 import { AuthModule } from './auth/auth.module';
 import { OptionalAuthGuard } from './auth/jwt/guards/optional-auth.guard';
 import { ChannelsModule } from './channels/channels.module';
@@ -17,7 +16,6 @@ import { DiscordModule } from './discord/discord.module';
 import { EnrolmentsModule } from './enrolments/enrolments.module';
 import { HLLEventModule } from './hllevents/hllevent.module';
 import { UsersModule } from './users/users.module';
-import { discordIntents } from './util/discord-intents';
 
 const CONFIG: ConfigFactory<any>[] = [
   databaseConfig,
@@ -38,24 +36,15 @@ const CONFIG: ConfigFactory<any>[] = [
       imports: [ConfigModule],
       useFactory: (service: ConfigService): TypeOrmModuleOptions => ({
         type: 'postgres',
-        entities: [__dirname + '/**/ /*.{entity,view}{.ts,.js}'],
+        entities: [__dirname + '/**/*.{entity,view}.ts'],
         host: service.get('database.host'),
         port: service.get('database.port'),
         username: service.get('database.username'),
         password: service.get('database.password'),
         synchronize: service.get('database.synchronize'),
         database: service.get('database.database'),
+        autoLoadEntities: true,
       }),
-      inject: [ConfigService],
-    }),
-    DiscordConfigModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (service: ConfigService): DiscordModuleOption => ({
-        token: service.get('discord.token'),
-        commandPrefix: service.get('discord.commandPrefix'),
-        intents: discordIntents,
-      }),
-
       inject: [ConfigService],
     }),
     ScheduleModule.forRoot(),

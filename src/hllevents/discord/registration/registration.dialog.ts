@@ -4,7 +4,7 @@ import { CollectorFilter, MessageEmbed, MessageReaction, User } from 'discord.js
 import { EmbedConfig } from '../../../config/embeds.config';
 import { EnrolByDiscordDto } from '../../../enrolments/dto/enrolByDiscord.dto';
 import { EnrolmentsDiscordService } from '../../../enrolments/enrolments-discord.service';
-import { Division, EnrolmentType, HLLEvent, Member } from '../../../postgres/entities';
+import { Division, EnrolmentType, HLLEvent, Member } from '../../../typeorm/entities';
 
 export type RoleSelectionType = {
   squadlead: boolean;

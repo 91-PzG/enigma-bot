@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EnrolmentsService } from '../enrolments/enrolments.service';
-import { HLLEvent, IHLLEvent, Member } from '../postgres/entities';
+import { HLLEvent, IHLLEvent, Member } from '../typeorm/entities';
 import { UsersService } from '../users/users.service';
 import { HLLEventsDiscordService } from './discord/hllevent-discord.service';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';

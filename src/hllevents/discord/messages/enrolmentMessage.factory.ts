@@ -4,7 +4,7 @@ import { GuildEmoji, MessageEmbed } from 'discord.js';
 import { EmbedConfig } from '../../../config/embeds.config';
 import { DiscordService } from '../../../discord/discord.service';
 import { EnrolmentsDiscordService } from '../../../enrolments/enrolments-discord.service';
-import { HLLEvent } from '../../../postgres/entities';
+import { HLLEvent } from '../../../typeorm/entities';
 import { EnrolmentMessage } from './enrolment.message';
 
 export interface EmojiWrapper {

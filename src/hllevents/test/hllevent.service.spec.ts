@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DiscordService } from '../../discord/discord.service';
 import { EnrolmentsService } from '../../enrolments/enrolments.service';
-import { Contact, HLLEvent, IHLLEvent, Member } from '../../postgres/entities';
+import { Contact, HLLEvent, IHLLEvent, Member } from '../../typeorm/entities';
 import { UsersService } from '../../users/users.service';
 import { HLLEventsDiscordService } from '../discord/hllevent-discord.service';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';

@@ -4,7 +4,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Collection, GuildMember, Role } from 'discord.js';
 import { Repository } from 'typeorm';
 import { DiscordConfig } from '../../config/discord.config';
-import { AccessRoles, Contact, Division, Member, Rank } from '../../postgres/entities';
+import { AccessRoles, Contact, Division, Member, Rank } from '../../typeorm/entities';
 
 @Injectable()
 export class DiscordUtil {

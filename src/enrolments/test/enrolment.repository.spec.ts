@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SelectQueryBuilder } from 'typeorm';
-import { Division, Enrolment, EnrolmentType } from '../../postgres/entities';
+import { Division, Enrolment, EnrolmentType } from '../../typeorm/entities';
 import { EnrolmentsRepository } from '../enrolments.repository';
 
 describe('Enrolment Repository', () => {

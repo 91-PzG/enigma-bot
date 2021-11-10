@@ -1,24 +1,44 @@
-import { Global, Module, Provider } from '@nestjs/common';
-import { ConfigModule } from '@nestjs/config';
+import { DiscordModule as NestDiscordModule } from '@discord-nestjs/core';
+import { Global, Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Contact, Enrolment, HLLEvent, Member } from '../postgres/entities';
-import { AttendanceCommand } from './commands/attendance.command';
-import { UpdateUsersCommand } from './commands/updateusers.command';
-import { DiscordController } from './discord.controller';
+import { Intents } from 'discord.js';
+import { BotModule } from '../bot/bot.module';
+import { Contact, Member } from '../typeorm/entities';
 import { DiscordService } from './discord.service';
-import { GuildMemberUpdate } from './events/guildmemberupdate.event';
 import { DiscordUtil } from './util/discord.util';
-import { ServerService } from './util/server.service';
-
-const COMMANDS: Provider[] = [UpdateUsersCommand, AttendanceCommand];
-
-const EVENTS: Provider[] = [GuildMemberUpdate];
 
 @Global()
 @Module({
-  imports: [ConfigModule, TypeOrmModule.forFeature([Member, Contact, HLLEvent, Enrolment])],
-  controllers: [DiscordController],
-  providers: [DiscordService, DiscordUtil, ServerService, ...COMMANDS, ...EVENTS],
-  exports: [DiscordService],
+  imports: [
+    NestDiscordModule.forRootAsync({
+      imports: [ConfigModule, BotModule],
+      useFactory: (service: ConfigService) => ({
+        token: service.get('discord.token'),
+        commands: ['**/*.command.js'],
+        discordClientOptions: {
+          intents: [
+            Intents.FLAGS.GUILDS,
+            Intents.FLAGS.GUILD_MEMBERS,
+            Intents.FLAGS.GUILD_MESSAGES,
+            Intents.FLAGS.DIRECT_MESSAGES,
+            Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS,
+            Intents.FLAGS.GUILD_MESSAGE_REACTIONS,
+          ],
+        },
+        registerCommandOptions: [
+          {
+            forGuild: service.get('discord.guild'),
+          },
+        ],
+      }),
+
+      inject: [ConfigService],
+    }),
+    ConfigModule,
+    TypeOrmModule.forFeature([Contact, Member]),
+  ],
+  providers: [DiscordService, DiscordUtil],
+  exports: [DiscordService, DiscordUtil],
 })
 export class DiscordModule {}

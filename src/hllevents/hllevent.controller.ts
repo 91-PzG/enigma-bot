@@ -3,7 +3,7 @@ import { GetUser } from '../auth/jwt/get-user.decorator';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
 import { Scopes } from '../auth/jwt/guards/scopes.decorator';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
-import { AccessRoles, HLLEvent } from '../postgres/entities';
+import { AccessRoles, HLLEvent } from '../typeorm/entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
 import { HLLEventGetByIdDto } from './dtos/hlleventGetById.dto';

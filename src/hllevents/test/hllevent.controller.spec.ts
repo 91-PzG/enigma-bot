@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { Contact, HLLEvent, IHLLEvent } from '../../postgres/entities';
+import { Contact, HLLEvent, IHLLEvent } from '../../typeorm/entities';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from '../dtos/hlleventGetAll.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';

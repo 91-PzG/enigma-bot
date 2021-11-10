@@ -1,6 +1,6 @@
+import { DiscordClientProvider, Once } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Client as InjectClient, ClientProvider, Once } from 'discord-nestjs';
 import {
   CategoryChannel,
   Channel,
@@ -19,17 +19,15 @@ import { DiscordConfig } from '../config/discord.config';
 
 @Injectable()
 export class DiscordService {
-  @InjectClient()
-  discordProvider: ClientProvider;
   client: Client;
   private config: DiscordConfig;
   private logger = new Logger('DiscordService');
 
-  constructor(config: ConfigService) {
+  constructor(config: ConfigService, private discordProvider: DiscordClientProvider) {
     this.config = config.get('discord');
   }
 
-  @Once({ event: 'ready' })
+  @Once('ready')
   onReady(): void {
     this.client = this.discordProvider.getClient();
     this.logger.log('Discord client connected');

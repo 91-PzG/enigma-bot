@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { EmbedConfig } from '../../../config/embeds.config';
-import { HLLEvent } from '../../../postgres/entities';
+import { HLLEvent } from '../../../typeorm/entities';
 
 export class DefaultMessage extends MessageEmbed {
   constructor(event: HLLEvent, config: EmbedConfig) {

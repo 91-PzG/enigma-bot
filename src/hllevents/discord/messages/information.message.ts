@@ -1,5 +1,5 @@
 import { EmbedConfig } from '../../../config/embeds.config';
-import { HLLEvent } from '../../../postgres/entities';
+import { HLLEvent } from '../../../typeorm/entities';
 import { dateTransformationPipe } from '../../../util/dateTransformation.pipe';
 import { DefaultMessage } from './default.message';
 

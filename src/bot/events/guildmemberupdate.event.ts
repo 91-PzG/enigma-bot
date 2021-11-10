@@ -1,10 +1,10 @@
+import { On, UseGuards } from '@discord-nestjs/core';
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { On } from 'discord-nestjs';
 import { GuildMember } from 'discord.js';
 import { Repository } from 'typeorm';
-import { Member } from '../../postgres/entities';
-import { DiscordUtil } from '../util/discord.util';
+import { DiscordUtil } from '../../discord/util/discord.util';
+import { Member } from '../../typeorm/entities';
 
 @Injectable()
 export class GuildMemberUpdate {
@@ -14,7 +14,8 @@ export class GuildMemberUpdate {
     private util: DiscordUtil,
   ) {}
 
-  @On({ event: 'guildMemberUpdate' })
+  @On('guildMemberUpdate')
+  @UseGuards()
   async guildMemberUpdate(oldMember: GuildMember, newMember: GuildMember) {
     let member: Member;
     if (this.util.isClanMember(oldMember.roles.cache)) {

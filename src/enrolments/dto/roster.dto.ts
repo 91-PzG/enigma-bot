@@ -1,4 +1,4 @@
-import { Enrolment } from '../../postgres/entities';
+import { Enrolment } from '../../typeorm/entities';
 
 export class RosterDto {
   eventname: string;

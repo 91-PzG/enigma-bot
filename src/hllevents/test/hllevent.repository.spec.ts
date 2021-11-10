@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SelectQueryBuilder } from 'typeorm';
-import { HLLEvent } from '../../postgres/entities';
+import { HLLEvent } from '../../typeorm/entities';
 import { HLLEventRepository } from '../hllevent.repository';
 
 describe('HLLEventRepository', () => {

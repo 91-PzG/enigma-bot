@@ -3,9 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { GuildMember, Message, TextChannel } from 'discord.js';
 import { Repository } from 'typeorm';
-import { Member } from '../../../postgres/entities';
-import { DiscordService } from '../../discord.service';
-import { DiscordUtil } from '../../util/discord.util';
+import { DiscordService } from '../../../discord/discord.service';
+import { DiscordUtil } from '../../../discord/util/discord.util';
+import { Member } from '../../../typeorm/entities';
 import { UpdateUsersCommand } from '../updateusers.command';
 
 jest.useFakeTimers();

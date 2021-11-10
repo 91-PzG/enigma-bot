@@ -2,10 +2,11 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { Message, MessageEmbed, MessageOptions, TextChannel } from 'discord.js';
 import { query, QueryOptions, QueryResult } from 'gamedig';
+import { mapRegistry } from '../../../bot/server-service/mapregistry';
+import { ServerService } from '../../../bot/server-service/server.service';
 import { EmbedConfig } from '../../../config/embeds.config';
 import { ServerConfig } from '../../../config/server.config';
 import { DiscordService } from '../../discord.service';
-import { mapRegistry, ServerService } from '../server.service';
 
 const serverConfig: ServerConfig = {
   servers: [
@@ -286,9 +287,7 @@ describe('server service', () => {
       const errorMessage = 'Error while querying from API';
       //@ts-ignore
       query.mockImplementation(() => {
-        return new Promise((resolve, reject) => {
-          reject(errorMessage);
-        });
+        return Promise.reject(errorMessage);
       });
       await serverService.generateServerMessages();
       //@ts-ignore

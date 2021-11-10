@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { HllDiscordEvent } from '../../postgres/entities';
+import { HllDiscordEvent } from '../../typeorm/entities';
 
 @EntityRepository(HllDiscordEvent)
 export class HLLDiscordEventRepository extends Repository<HllDiscordEvent> {

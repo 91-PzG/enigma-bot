@@ -3,7 +3,7 @@ import { GetUser } from '../auth/jwt/get-user.decorator';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
 import { Scopes } from '../auth/jwt/guards/scopes.decorator';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
-import { AccessRoles, Member } from '../postgres/entities';
+import { AccessRoles, Member } from '../typeorm/entities';
 import { PatchUserDto } from './dto/patch-user.dto';
 import { UserListDto } from './dto/user-list.dto';
 import { UsersService } from './users.service';

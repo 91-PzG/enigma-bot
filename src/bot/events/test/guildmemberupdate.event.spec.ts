@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Collection, GuildMember, GuildMemberRoleManager, Role } from 'discord.js';
 import { Repository } from 'typeorm';
-import { Member, Rank } from '../../../postgres/entities';
-import { DiscordUtil } from '../../util/discord.util';
+import { DiscordUtil } from '../../../discord/util/discord.util';
+import { Member, Rank } from '../../../typeorm/entities';
 import { GuildMemberUpdate } from '../guildmemberupdate.event';
 
 describe('Guildmemberupdate event', () => {

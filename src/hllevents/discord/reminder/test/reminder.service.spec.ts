@@ -3,7 +3,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { GuildMember } from 'discord.js';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DiscordService } from '../../../../discord/discord.service';
-import { Enrolment, HllDiscordEvent, HLLEvent, Member } from '../../../../postgres/entities';
+import { Enrolment, HllDiscordEvent, HLLEvent, Member } from '../../../../typeorm/entities';
 import { ReminderService } from '../reminder.service';
 
 describe('ReminderService', () => {

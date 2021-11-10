@@ -1,9 +1,9 @@
+import { Once } from '@discord-nestjs/core';
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { On } from 'discord-nestjs';
 import { Message } from 'discord.js';
 import { DiscordService } from '../../discord/discord.service';
-import { HLLEvent } from '../../postgres/entities';
+import { HLLEvent } from '../../typeorm/entities';
 import { HLLEventRepository } from '../hllevent.repository';
 import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
 import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
@@ -23,7 +23,7 @@ export class HLLEventsDiscordService {
     private reminderService: ReminderService,
   ) {}
 
-  @On({ event: 'ready' })
+  @Once('ready')
   async getOpenEvents() {
     const events = await this.eventRepository.getOpenEvents();
 

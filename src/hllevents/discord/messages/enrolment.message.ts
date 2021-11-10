@@ -1,6 +1,6 @@
 import { Util } from 'discord.js';
 import { EmbedConfig } from '../../../config/embeds.config';
-import { Enrolment, EnrolmentType, HLLEvent } from '../../../postgres/entities';
+import { Enrolment, EnrolmentType, HLLEvent } from '../../../typeorm/entities';
 import { DefaultMessage } from './default.message';
 import { EmojiWrapper } from './enrolmentMessage.factory';
 

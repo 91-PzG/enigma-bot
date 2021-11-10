@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Contact, Enrolment, EnrolmentType, HLLEvent } from '../postgres/entities';
+import { Contact, Enrolment, EnrolmentType, HLLEvent } from '../typeorm/entities';
 import { EnrolByDiscordDto } from './dto/enrolByDiscord.dto';
 import { EnrolmentsService } from './enrolments.service';
 

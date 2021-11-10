@@ -1,6 +1,6 @@
 import { EmbedField } from 'discord.js';
 import { EmbedConfig } from '../../../../config/embeds.config';
-import { HLLEvent } from '../../../../postgres/entities';
+import { HLLEvent } from '../../../../typeorm/entities';
 import { InformationMessage } from '../information.message';
 
 describe('Default Message', () => {

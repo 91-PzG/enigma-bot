@@ -1,20 +1,33 @@
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { TransformPipe } from '@discord-nestjs/common';
+import { Command, DiscordTransformedCommand, Param, Payload, UsePipes } from '@discord-nestjs/core';
+import { Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { OnCommand } from 'discord-nestjs';
-import {
-  DMChannel,
-  Message,
-  NewsChannel,
-  PartialDMChannel,
-  TextChannel,
-  ThreadChannel,
-} from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { query, QueryResult } from 'gamedig';
 import { Repository } from 'typeorm';
-import { Enrolment, HLLEvent } from '../../postgres/entities';
+import { Enrolment, HLLEvent } from '../../typeorm/entities';
 
-@Injectable()
-export class AttendanceCommand {
+class AttendanceDto {
+  @Param({
+    name: 'EventId',
+    description: 'Id of the event (can be found in the footer)',
+    required: true,
+  })
+  eventId: string;
+  @Param({
+    name: 'ServerSocker',
+    description: 'IP and Port of the gameserver (can be found on battlemetrics)',
+    required: true,
+  })
+  socket: string;
+}
+
+@Command({
+  name: 'anwesend',
+  description: 'Anwesenheitsüberprüfung für Events',
+})
+@UsePipes(TransformPipe)
+export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDto> {
   logger = new Logger('AttendanceCommand');
 
   constructor(
@@ -24,20 +37,16 @@ export class AttendanceCommand {
     private enrolmentRepository: Repository<Enrolment>,
   ) {}
 
-  @OnCommand({ name: 'anwesend', isRemoveMessage: true })
-  async attendanceCommandDiscordWrapper(message: Message): Promise<any> {
-    const [, eventId, socket] = message.content.split(' ');
-    if (!this.validateSocket(socket))
-      return this.sendFeedbackMessage(message.channel, 'Ungültiger Socket');
+  async handler(@Payload() dto: AttendanceDto, interaction: CommandInteraction): Promise<any> {
+    if (!this.validateSocket(dto.socket))
+      return this.sendFeedbackMessage(interaction, 'Ungültiger Socket');
 
-    if (!(await this.validateEventId(eventId)))
-      return this.sendFeedbackMessage(message.channel, 'Ungültige Eventid');
+    if (!(await this.validateEventId(dto.eventId)))
+      return this.sendFeedbackMessage(interaction, 'Ungültige Eventid');
 
-    return this.attendanceCommand(Number(eventId), socket)
-      .then(() => this.sendFeedbackMessage(message.channel, 'Anwesenheit erfolgreich eingetragen'))
-      .catch((error: NotFoundException) =>
-        this.sendFeedbackMessage(message.channel, error.message),
-      );
+    this.attendanceCommand(parseInt(dto.eventId, 10), dto.socket)
+      .then(() => this.sendFeedbackMessage(interaction, 'Anwesenheit erfolgreich eingetragen'))
+      .catch((error: NotFoundException) => this.sendFeedbackMessage(interaction, error.message));
   }
 
   async attendanceCommand(eventId: number, socket: string): Promise<any> {
@@ -82,16 +91,11 @@ export class AttendanceCommand {
   }
 
   private sendFeedbackMessage(
-    channel: TextChannel | DMChannel | NewsChannel | PartialDMChannel | ThreadChannel,
-    message: string,
+    interaction: CommandInteraction,
+    content: string,
     timeout = 5000,
   ): void {
-    channel
-      .send(message)
-      .then((msg) => {
-        setTimeout(() => msg.delete(), timeout);
-      })
-      .catch(() => this.logger.error(`Failed to send feedback message: ${message}`));
+    interaction.reply({ content, ephemeral: true });
   }
 
   private setAttendance(playerName: string, eventId: number) {

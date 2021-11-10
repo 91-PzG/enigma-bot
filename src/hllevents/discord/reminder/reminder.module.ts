@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { DiscordModule } from '../../../discord/discord.module';
-import { Enrolment, Member } from '../../../postgres/entities';
+import { Enrolment, Member } from '../../../typeorm/entities';
 import { ReminderService } from './reminder.service';
 
 @Module({

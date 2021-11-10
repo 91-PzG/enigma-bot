@@ -7,7 +7,7 @@ import {
   ReactionEmoji,
   User,
 } from 'discord.js';
-import { EnrolmentType, HLLEvent } from '../../../postgres/entities';
+import { EnrolmentType, HLLEvent } from '../../../typeorm/entities';
 import { RegistrationManager } from './registration.manager';
 
 export class RegistrationService {

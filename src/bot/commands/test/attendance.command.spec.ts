@@ -3,8 +3,8 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Message, TextChannel } from 'discord.js';
 import { query, QueryResult } from 'gamedig';
 import { Repository, SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import { Enrolment, HLLEvent } from '../../../postgres/entities';
-import { DiscordService } from '../../discord.service';
+import { DiscordService } from '../../../discord/discord.service';
+import { Enrolment, HLLEvent } from '../../../typeorm/entities';
 import { AttendanceCommand } from '../attendance.command';
 
 jest.mock('gamedig');

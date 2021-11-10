@@ -1,5 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AttendanceCommand } from '../commands/attendance.command';
+import { AttendanceCommand } from '../../bot/commands/attendance.command';
 import { DiscordController } from '../discord.controller';
 
 describe('DiscordController', () => {

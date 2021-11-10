@@ -2,7 +2,7 @@ import { NotImplementedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
-import { AccessRoles, Contact, Division, Member, Rank } from '../../postgres/entities';
+import { AccessRoles, Contact, Division, Member, Rank } from '../../typeorm/entities';
 import { UserListDto } from '../dto/user-list.dto';
 import { UsersService } from '../users.service';
 

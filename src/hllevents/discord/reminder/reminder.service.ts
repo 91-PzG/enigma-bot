@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiscordService } from '../../../discord/discord.service';
-import { Enrolment, EnrolmentType, HLLEvent, Member } from '../../../postgres/entities';
+import { Enrolment, EnrolmentType, HLLEvent, Member } from '../../../typeorm/entities';
 
 @Injectable()
 export class ReminderService {

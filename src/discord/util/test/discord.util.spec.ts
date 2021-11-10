@@ -4,7 +4,7 @@ import { getRepositoryToken } from '@nestjs/typeorm';
 import { Collection, GuildMember, Role, User } from 'discord.js';
 import { Repository } from 'typeorm';
 import { DiscordConfig } from '../../../config/discord.config';
-import { AccessRoles, Contact, Division, Member, Rank } from '../../../postgres/entities';
+import { AccessRoles, Contact, Division, Member, Rank } from '../../../typeorm/entities';
 import { DiscordUtil } from '../../util/discord.util';
 
 describe('discordutil', () => {

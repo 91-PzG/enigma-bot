@@ -4,7 +4,7 @@ import { Message } from 'discord.js';
 import { RegistrationConfig } from '../../../config/registration.config';
 import { DiscordService } from '../../../discord/discord.service';
 import { EnrolmentsDiscordService } from '../../../enrolments/enrolments-discord.service';
-import { HLLEvent } from '../../../postgres/entities';
+import { HLLEvent } from '../../../typeorm/entities';
 import { UsersService } from '../../../users/users.service';
 import { HLLEventsDiscordService } from '../hllevent-discord.service';
 import { RegistrationDialog } from './registration.dialog';

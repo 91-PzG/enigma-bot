@@ -2,7 +2,7 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { DiscordService } from '../../../../discord/discord.service';
 import { EnrolmentsDiscordService } from '../../../../enrolments/enrolments-discord.service';
-import { HLLEvent } from '../../../../postgres/entities';
+import { HLLEvent } from '../../../../typeorm/entities';
 import { EnrolmentMessageFactory } from '../enrolmentMessage.factory';
 
 describe('Enrolment Message Factory', () => {

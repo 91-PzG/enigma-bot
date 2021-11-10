@@ -1,6 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
-import { Contact, Member } from '../../postgres/entities';
+import { Contact, Member } from '../../typeorm/entities';
 
 export class HLLEventGetByIdDto {
   @IsNumber()

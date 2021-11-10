@@ -8,7 +8,7 @@ import {
   EnrolmentType,
   HLLEvent,
   Member,
-} from '../../postgres/entities';
+} from '../../typeorm/entities';
 import { EnrolByDiscordDto } from '../dto/enrolByDiscord.dto';
 import { EnrolmentsDiscordService } from '../enrolments-discord.service';
 import { EnrolmentsService } from '../enrolments.service';

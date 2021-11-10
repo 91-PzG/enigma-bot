@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Contact, Enrolment } from '../postgres/entities';
+import { Contact, Enrolment } from '../typeorm/entities';
 
 @EntityRepository(Enrolment)
 export class EnrolmentsRepository extends Repository<Enrolment> {
