@@ -119,7 +119,7 @@ export class ServerService {
 
     for (const embed of embeds) {
       try {
-        this.messages.push(await this.channel.send(embed));
+        this.messages.push(await this.channel.send({ embeds: [embed] }));
       } catch (error) {
         this.logger.log(error);
         error = true;
@@ -133,7 +133,7 @@ export class ServerService {
     let error = false;
     for (let i = 0; i < embeds.length; i++) {
       try {
-        this.messages[i] = await this.messages[i].edit(embeds[i]);
+        this.messages[i] = await this.messages[i].edit({ embeds: [embeds[i]] });
       } catch (error) {
         this.logger.log(error);
         error = true;
@@ -168,7 +168,7 @@ export class ServerService {
           state.players.length
         }`,
       )
-      .addField('Ping', state.ping)
+      .addField('Ping', state.ping.toString())
       .addField('Socket', state.connect)
       .addField('Password', state.password ? 'Yes' : 'No')
       .addField('Map', map.name)

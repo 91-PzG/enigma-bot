@@ -59,7 +59,11 @@ describe('ReminderService', () => {
       discordEvent: { channelId: '23809457397' } as HllDiscordEvent,
     };
     const members: Partial<Member>[] = [{ id: '4234234234' }, { id: '4359830958' }];
-    const guildMember: Partial<GuildMember> = { send: jest.fn(), valueOf: jest.fn() };
+    const guildMember: Partial<GuildMember> = {
+      send: jest.fn(),
+      valueOf: jest.fn(),
+      toString: jest.fn(),
+    };
     const message = `Vergiss nicht dich für das Event "${event.name}" an- oder abzumelden! <#${event.discordEvent.channelId}>`;
 
     beforeEach(() => {
@@ -90,7 +94,11 @@ describe('ReminderService', () => {
       { memberId: '4234234234' },
       { memberId: '4359830958' },
     ];
-    const guildMember: Partial<GuildMember> = { send: jest.fn(), valueOf: jest.fn() };
+    const guildMember: Partial<GuildMember> = {
+      send: jest.fn(),
+      valueOf: jest.fn(),
+      toString: jest.fn(),
+    };
     const message = `Vergiss nicht, dass das Event "${event.name}" morgen stattfindet! <#${event.discordEvent.channelId}>`;
 
     beforeEach(() => {

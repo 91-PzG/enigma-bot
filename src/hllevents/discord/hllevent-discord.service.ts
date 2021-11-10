@@ -38,8 +38,8 @@ export class HLLEventsDiscordService {
     const informationMessage = this.informationMessageFactory.createMessage(event);
     const enrolmentMessage = await this.enrolmentMessageFactory.createMessage(event);
 
-    const informationId = (await channel.send(informationMessage)).id;
-    const enrolmentId = (await channel.send(enrolmentMessage)).id;
+    const informationId = (await channel.send({ embeds: [informationMessage] })).id;
+    const enrolmentId = (await channel.send({ embeds: [enrolmentMessage] })).id;
 
     event.discordEvent = await this.discordRepository.createEntity(
       channel.id,
@@ -66,7 +66,7 @@ export class HLLEventsDiscordService {
     if (!oldMessage) return false;
 
     const newMessage = this.informationMessageFactory.createMessage(event);
-    oldMessage.edit(newMessage);
+    oldMessage.edit({ embeds: [newMessage] });
     return true;
   }
 
@@ -87,7 +87,7 @@ export class HLLEventsDiscordService {
     if (!oldMessage) return false;
 
     const newMessage = await this.enrolmentMessageFactory.createMessage(event);
-    oldMessage.edit(newMessage);
+    oldMessage.edit({ embeds: [newMessage] });
     return true;
   }
 
