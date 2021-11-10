@@ -17,6 +17,8 @@ describe('Default Message', () => {
       meetingPoint: 'treffpunkt',
       password: 'pw',
       moderator: 'mod',
+      description: 'description',
+      name: 'eventf',
     };
     config = {
       color: '#123456',

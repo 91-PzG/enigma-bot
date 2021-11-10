@@ -15,6 +15,8 @@ describe('Enrolment Message Factory', () => {
     meetingPoint: 'treffpunkt',
     password: 'pw',
     moderator: 'mod',
+    description: 'description',
+    name: 'name',
   };
   const config = {
     color: '#123456',

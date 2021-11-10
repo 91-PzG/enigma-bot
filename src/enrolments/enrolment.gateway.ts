@@ -24,7 +24,7 @@ export class EnrolmentsGateway implements OnGatewayConnection {
   async createSquad(client: Socket, data: CreateSquadDto) {
     const squad = await this.service.createSquad(
       data,
-      parseInt(client.handshake.query.eventId as string),
+      parseInt(client.handshake.query.eventId as string, 10),
     );
     this.server.to(squad.eventId.toString()).emit('create-squad', {
       id: squad.id,

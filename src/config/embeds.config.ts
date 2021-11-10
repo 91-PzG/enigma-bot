@@ -9,13 +9,12 @@ export interface EmbedConfig {
   commanderEmoji: string;
 }
 
-export default registerAs(
-  'embed',
-  (): EmbedConfig => ({
+export default registerAs('embed', (): EmbedConfig => {
+  return {
     color: process.env.COLOR as `#${string}`,
     baseUrl: process.env.BASE_URL,
     thumbnail: process.env.THUMBNAIL,
     squadleadEmoji: process.env.SQUADLEAD_EMOJI || '💂',
     commanderEmoji: process.env.COMMANDER_EMOJI || '🤠',
-  }),
-);
+  };
+});
