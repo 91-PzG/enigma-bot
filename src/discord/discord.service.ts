@@ -91,17 +91,10 @@ export class DiscordService {
     const guild = this.getGuild();
     if (!guild) throw Error('could not find guild');
 
-    let channel: TextChannel;
-    try {
-      channel = await guild.channels.create(name, {
-        type: 'GUILD_TEXT',
-        parent: await this.getChannelById<CategoryChannel>(this.config.eventCategory),
-      });
-    } catch (error) {
-      this.logger.error(`failed to create channel: ${name}`, error);
-    }
-
-    return channel;
+    return guild.channels.create(name, {
+      type: 'GUILD_TEXT',
+      parent: await this.getChannelById<CategoryChannel>(this.config.eventCategory),
+    });
   }
 
   async getRoleByID(id: string): Promise<Role | null | undefined> {

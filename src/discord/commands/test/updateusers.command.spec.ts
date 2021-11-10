@@ -8,6 +8,8 @@ import { DiscordService } from '../../discord.service';
 import { DiscordUtil } from '../../util/discord.util';
 import { UpdateUsersCommand } from '../updateusers.command';
 
+jest.useFakeTimers();
+
 describe('updateUsers command', () => {
   let updateUsersCommand: UpdateUsersCommand;
   let discordService: jest.Mocked<DiscordService>;
@@ -64,6 +66,7 @@ describe('updateUsers command', () => {
       channel = {
         valueOf: jest.fn(),
         send: jest.fn(),
+        toString: jest.fn(),
       };
       commandMessage = {
         deletable: true,
@@ -71,6 +74,7 @@ describe('updateUsers command', () => {
         delete: jest.fn(),
       };
       channel.send = jest.fn().mockResolvedValue(successMessage);
+      //@ts-ignore
       commandMessage.channel = channel as TextChannel;
     });
 
@@ -93,15 +97,16 @@ describe('updateUsers command', () => {
 
     it('should delete success message', async () => {
       await updateUsersCommand.updateUsersCommand(commandMessage as Message);
-      expect(successMessage.delete).toHaveBeenCalledWith({ timeout: 5000 });
+      jest.runAllTimers();
+      expect(successMessage.delete).toHaveBeenCalled();
     });
 
     describe('updateUser', () => {
       const users: Partial<GuildMember>[] = [
-        { id: '1', valueOf: jest.fn() },
-        { id: '2', valueOf: jest.fn() },
-        { id: '3', valueOf: jest.fn() },
-        { id: '4', valueOf: jest.fn() },
+        { id: '1', valueOf: jest.fn(), toString: jest.fn() },
+        { id: '2', valueOf: jest.fn(), toString: jest.fn() },
+        { id: '3', valueOf: jest.fn(), toString: jest.fn() },
+        { id: '4', valueOf: jest.fn(), toString: jest.fn() },
       ];
 
       beforeEach(async () => {

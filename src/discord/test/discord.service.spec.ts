@@ -73,23 +73,24 @@ describe('DiscordService', () => {
 
   describe('getEventChannels', () => {
     it('should return correct DTOs', () => {
-      const channels: unknown[] = [
+      const channels: any[] = [
         {
-          type: 'dm',
+          type: 'DM',
+          parentId: 'eventCategory',
         },
         {
-          type: 'text',
-          parentID: 'asdsa',
+          type: 'GUILD_TEXT',
+          parentId: 'asdsa',
         },
         {
-          type: 'text',
-          parentID: 'eventCategory',
+          type: 'GUILD_TEXT',
+          parentId: 'eventCategory',
           id: 1,
           name: 'name1',
         },
         {
-          type: 'text',
-          parentID: 'eventCategory',
+          type: 'GUILD_TEXT',
+          parentId: 'eventCategory',
           id: 2,
           name: 'name2',
         },
