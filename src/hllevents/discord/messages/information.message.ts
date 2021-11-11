@@ -46,7 +46,7 @@ export class InformationMessage extends DefaultMessage {
   }
 
   private addOptionalFields() {
-    return
+    return;
     const fields = Object.entries(this.event).reduce(eventReductor, [] as unknown as [string, any]);
     fields.forEach(([key, value]) => {
       this.addField(key, value, true);
