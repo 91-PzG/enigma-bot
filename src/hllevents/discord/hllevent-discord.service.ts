@@ -121,7 +121,7 @@ export class HLLEventsDiscordService {
     );
 
     event.autoPublishDate = null;
-    event.save();
+    //event.save();
   }
 
   async updateInformationMessage(event: HLLEvent): Promise<boolean> {

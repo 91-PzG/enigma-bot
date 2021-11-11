@@ -54,6 +54,8 @@ export class UsersService {
         'member.rank',
         'member.roles',
         'contact.name',
+        'contact.id',
+        'member.contactId',
       ])
       .where('member.id = :id', { id });
   }

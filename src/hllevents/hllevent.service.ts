@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { EnrolmentsService } from '../enrolments/enrolments.service';
 import { HLLEvent, IHLLEvent, Member } from '../typeorm/entities';
 import { UsersService } from '../users/users.service';
@@ -9,6 +9,8 @@ import { HLLEventRepository } from './hllevent.repository';
 
 @Injectable()
 export class HLLEventService {
+  logger = new Logger('HLLEventService');
+
   constructor(
     private eventRepository: HLLEventRepository,
     private userService: UsersService,
@@ -44,7 +46,7 @@ export class HLLEventService {
   }
 
   async createEvent(dto: HLLEventCreateWrapperDto): Promise<HLLEvent> {
-    const event = this.eventRepository.create();
+    let event = this.eventRepository.create();
 
     const organisator = await this.getMemberById(dto.control.organisator);
     event.organisatorId = organisator.id;
@@ -52,9 +54,9 @@ export class HLLEventService {
       event[key] = value;
     });
 
-    await event.save();
-    event.organisator = organisator.contact;
-
+    const id = (await this.eventRepository.save(event)).id;
+    event = await this.eventRepository.getEventById(id);
+    console.log(event);
     if (dto.control.publish) this.discordService.publishMessages(event);
 
     return event;
@@ -65,6 +67,7 @@ export class HLLEventService {
       const user = await this.userService.getMemberById(id);
       return user;
     } catch (error) {
+      this.logger.error(error);
       throw new BadRequestException('Invalid Organisator');
     }
   }
