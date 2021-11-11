@@ -3,7 +3,7 @@ import { GetUser } from '../auth/jwt/get-user.decorator';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
 import { Scopes } from '../auth/jwt/guards/scopes.decorator';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
-import { AccessRoles, HLLEvent } from '../typeorm/entities';
+import { AccessRoles } from '../typeorm/entities';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from './dtos/hlleventGetAll.dto';
 import { HLLEventGetByIdDto } from './dtos/hlleventGetById.dto';
@@ -24,7 +24,7 @@ export class HLLEventController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: JwtPayload,
   ): Promise<HLLEventGetByIdDto> {
-    return this.setOrganisator(await this.hllEventService.getEventById(id, user.userId));
+    return this.hllEventService.getEventById(id, user.userId);
   }
 
   @Scopes(AccessRoles.EVENTORGA)
@@ -34,19 +34,13 @@ export class HLLEventController {
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEventDto: HLLEventUpdateWrapperDto,
   ): Promise<HLLEventGetByIdDto> {
-    return this.setOrganisator(await this.hllEventService.patchEvent(id, updateEventDto));
+    return this.hllEventService.patchEvent(id, updateEventDto);
   }
 
   @Post()
   @UseGuards(RoleGuard)
   @Scopes(AccessRoles.OFFICER, AccessRoles.CLANRAT, AccessRoles.EVENTORGA)
   async createEvent(@Body() createEventDto: HLLEventCreateWrapperDto): Promise<HLLEventGetByIdDto> {
-    return this.setOrganisator(await this.hllEventService.createEvent(createEventDto));
-  }
-
-  private setOrganisator(event: HLLEvent): HLLEventGetByIdDto {
-    const e = event as HLLEventGetByIdDto;
-    e.organisator = event.organisator?.name;
-    return e;
+    return this.hllEventService.createEvent(createEventDto);
   }
 }
