@@ -5,12 +5,14 @@
     "removeComments": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "target": "es2017",
+    "allowSyntheticDefaultImports": true,
+    "target": "ESNext",
     "sourceMap": true,
     "outDir": "./dist",
     "incremental": true,
+    "skipLibCheck": true,
+    "strictNullChecks": false,
     "strictPropertyInitialization": false,
-    "esModuleInterop": true,
     "noImplicitAny": false
   },
   "exclude": ["node_modules", "dist"]

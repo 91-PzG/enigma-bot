@@ -7,7 +7,7 @@ import { query, QueryResult } from 'gamedig';
 import { Repository } from 'typeorm';
 import { Enrolment, HLLEvent } from '../../typeorm/entities';
 
-class AttendanceDto {
+export class AttendanceDto {
   @Param({
     name: 'EventId',
     description: 'Id of the event (can be found in the footer)',
@@ -38,6 +38,8 @@ export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDt
   ) {}
 
   async handler(@Payload() dto: AttendanceDto, interaction: CommandInteraction): Promise<any> {
+    console.log('dto', dto);
+    console.log('interaction', interaction);
     if (!this.validateSocket(dto.socket))
       return this.sendFeedbackMessage(interaction, 'Ungültiger Socket');
 
