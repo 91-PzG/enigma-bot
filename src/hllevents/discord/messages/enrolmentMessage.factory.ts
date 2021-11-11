@@ -26,19 +26,19 @@ export class EnrolmentMessageFactory {
   }
 
   public async createMessage(event: HLLEvent): Promise<MessageEmbed> {
-    if (!this.emojis) this.loadEmojis();
+    if (!this.emojis) await this.loadEmojis();
     const enrolments = await this.enrolmentService.getEnrolments(event.id);
     return new EnrolmentMessage(event, this.emojis, enrolments, this.config);
   }
 
-  private loadEmojis() {
+  private async loadEmojis() {
     this.emojis = {
-      squadlead: this.config.squadleadEmoji
-        ? this.discordService.getEmojiById(this.config.squadleadEmoji)
-        : '💂',
-      commander: this.config.commanderEmoji
-        ? this.discordService.getEmojiById(this.config.commanderEmoji)
-        : '🤠',
+      squadlead: /[\d]+/.test(this.config.squadleadEmoji)
+        ? await this.discordService.getEmojiById(this.config.squadleadEmoji)
+        : this.config.squadleadEmoji,
+      commander: /[\d]+/.test(this.config.commanderEmoji)
+        ? await this.discordService.getEmojiById(this.config.commanderEmoji)
+        : this.config.commanderEmoji,
     };
   }
 }

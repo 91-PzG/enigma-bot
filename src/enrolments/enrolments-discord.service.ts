@@ -54,7 +54,7 @@ export class EnrolmentsDiscordService {
     enrolment.squadId = null;
     enrolment.position = null;
 
-    enrolment.save();
+    return enrolment.save();
   }
 
   private changePlayerCount(count: number, eventId: number) {

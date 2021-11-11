@@ -1,5 +1,6 @@
 import { On, UseGuards } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { ButtonInteraction, Message, MessageActionRow, MessageButton } from 'discord.js';
 import { DiscordService } from '../../discord/discord.service';
@@ -13,7 +14,6 @@ import { HLLEventRepository } from '../hllevent.repository';
 import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
 import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from './messages/informationMessage.factory';
-import { ReminderService } from './reminder/reminder.service';
 
 @Injectable()
 export class HLLEventsDiscordService {
@@ -25,16 +25,22 @@ export class HLLEventsDiscordService {
     private eventRepository: HLLEventRepository,
     private informationMessageFactory: InformationMessageFactory,
     private enrolmentMessageFactory: EnrolmentMessageFactory,
-    private reminderService: ReminderService,
     private enrolmentsService: EnrolmentsDiscordService,
     private usersService: UsersService,
+    private configService: ConfigService,
   ) {}
 
   @On('interactionCreate')
   @UseGuards(ButtonGuard, RegistrationGuard)
   async register(interaction: ButtonInteraction) {
-    const event = await this.validateEvent(interaction);
+    const eventId = parseInt(interaction.customId.split('-')[0], 10);
+    const event = await this.eventRepository.getEventById(eventId);
     if (!event) return;
+    if (event.closed || (event.locked && !interaction.customId.includes('cancel'))) {
+      this.sendError(interaction, `Du kannst dich bei Event #${eventId} nicht mehr anmelden`);
+      this.updateEnrolmentMessage(event, interaction);
+      return;
+    }
 
     const dto = await this.createEnrolmentDto(interaction);
     if (!dto) return;
@@ -42,11 +48,21 @@ export class HLLEventsDiscordService {
     this.enrolmentsService
       .enrol(dto)
       .then(() => {
-        this.updateEnrolmentMessage(event)
-          .then(() => this.sendSuccess(interaction, dto))
-          .catch(() => this.sendError(interaction, 'Fehler beim update der Nachricht.'));
+        this.updateEnrolmentMessage(event, interaction)
+          .then(() => {
+            this.sendSuccess(interaction, dto);
+          })
+          .catch((e) => {
+            this.logger.error(e);
+            this.sendError(
+              interaction,
+              'Fehler beim update der Nachricht. Bitte versuche es später erneut',
+            );
+          });
       })
-      .catch(() => this.sendError(interaction, 'Fehler bei der Anmeldung.'));
+      .catch(() =>
+        this.sendError(interaction, 'Fehler bei der Anmeldung. Bitte versuche es später erneut'),
+      );
   }
 
   private sendSuccess(interaction: ButtonInteraction, dto: EnrolByDiscordDto) {
@@ -59,9 +75,9 @@ export class HLLEventsDiscordService {
     });
   }
 
-  private sendError(interaction: ButtonInteraction, message: string) {
+  private sendError(interaction: ButtonInteraction, content: string) {
     interaction.reply({
-      content: message + ' Bitte versuche es später erneut',
+      content,
       ephemeral: true,
     });
   }
@@ -84,19 +100,6 @@ export class HLLEventsDiscordService {
     };
   }
 
-  private async validateEvent(interaction: ButtonInteraction): Promise<HLLEvent> {
-    const eventId = parseInt(interaction.customId.split('-')[0], 10);
-    const event = await this.eventRepository.getEventById(eventId);
-    if (!event || event.closed || (event.locked && !interaction.customId.includes('cancel'))) {
-      interaction.reply({
-        content: `Du kannst dich bei Event #${eventId} nicht mehr anmelden`,
-        ephemeral: true,
-      });
-      return null;
-    }
-    return event;
-  }
-
   async publishMessages(event: HLLEvent) {
     const channel = await this.discordService.createEventChannelIfNotExists(event.channelName);
 
@@ -107,7 +110,7 @@ export class HLLEventsDiscordService {
     const enrolmentId = (
       await channel.send({
         embeds: [enrolmentMessage],
-        components: [this.createMessageActionRow(event.id)],
+        components: [this.createMessageActionRow(event.id, event.locked, event.closed)],
       })
     ).id;
 
@@ -137,30 +140,26 @@ export class HLLEventsDiscordService {
     return true;
   }
 
-  async updateEnrolmentMessage(event: HLLEvent): Promise<any> {
+  async updateEnrolmentMessage(event: HLLEvent, interaction?: ButtonInteraction): Promise<any> {
     const discordEvent = await this.discordRepository.findOne(event.discordEventId);
     if (!discordEvent) {
       this.logger.debug(`Encountered error fetching discordevent with id ${event.discordEventId}`);
       throw new Error('Discord Event not found');
     }
 
-    if (typeof event.organisator != 'string') {
-      //@ts-ignore
-      event.organisator = event.organisator?.name || 'error';
-    }
+    const embed = await this.enrolmentMessageFactory.createMessage(event);
+    const newMessage = {
+      embeds: [embed],
+      components: [this.createMessageActionRow(event.id, event.locked, event.closed)],
+    };
+    if (interaction) return (interaction.message as Message).edit(newMessage);
 
-    let oldMessage = await this.getMessageFromDiscord(
+    const oldMessage = await this.getMessageFromDiscord(
       event.id,
       discordEvent.channelId,
       discordEvent.enrolmentMsg,
     );
-    if (!oldMessage) {
-      this.logger.debug(`Encountered error fetching message for event ${event.discordEventId}`);
-      throw new Error('Error fetching messages');
-    }
-
-    const newMessage = await this.enrolmentMessageFactory.createMessage(event);
-    return oldMessage.edit({ embeds: [newMessage] });
+    oldMessage.edit(newMessage);
   }
 
   private async getMessageFromDiscord(
@@ -175,32 +174,50 @@ export class HLLEventsDiscordService {
     }
   }
 
-  private createMessageActionRow(eventId: number): MessageActionRow {
+  private createMessageActionRow(
+    eventId: number,
+    locked: boolean,
+    closed: boolean,
+  ): MessageActionRow {
+    const disabled = locked || closed;
+    const emoji = closed
+      ? this.configService.get('embed.closedEmoji')
+      : locked
+      ? this.configService.get('embed.lockedEmoji')
+      : '';
     return new MessageActionRow().addComponents(
       new MessageButton({
         customId: `${eventId}-register`,
         style: 'SUCCESS',
         label: 'Anmelden',
+        emoji,
+        disabled,
       }),
       new MessageButton({
         customId: `${eventId}-squadlead-register`,
         style: 'PRIMARY',
         label: 'Squadlead',
+        emoji,
+        disabled,
       }),
       new MessageButton({
         customId: `${eventId}-commander-register`,
         style: 'SECONDARY',
         label: 'Kommandant',
+        emoji,
+        disabled,
       }),
       new MessageButton({
         customId: `${eventId}-cancel-register`,
         style: 'DANGER',
         label: 'Abmelden',
+        emoji: closed ? emoji : '',
+        disabled: closed,
       }),
     );
   }
 
-  @Cron('*/5 * * * *')
+  @Cron('*/1 * * * *')
   async checkEvents() {
     this.eventRepository.getPublishableEvents().then((events) => {
       events.forEach((event) => {
@@ -213,24 +230,14 @@ export class HLLEventsDiscordService {
       events.forEach((event) => {
         event.locked = true;
         event.save();
+        this.updateEnrolmentMessage(event);
       });
     });
     this.eventRepository.getClosableEvents().then((events) => {
       events.forEach((event) => {
         event.closed = true;
         event.save();
-      });
-    });
-    this.eventRepository.getReminderEventsOne().then((events) => {
-      events.forEach((event) => {
-        this.eventRepository.setReminderOne(event.id);
-        this.reminderService.getMissingEnrolmentOne(event);
-      });
-    });
-    this.eventRepository.getReminderEventsTwo().then((events) => {
-      events.forEach((event) => {
-        this.eventRepository.setReminderTwo(event.id);
-        this.reminderService.getMissingEnrolmentTwo(event);
+        this.updateEnrolmentMessage(event);
       });
     });
   }

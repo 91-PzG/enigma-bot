@@ -38,8 +38,6 @@ export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDt
   ) {}
 
   async handler(@Payload() dto: AttendanceDto, interaction: CommandInteraction): Promise<any> {
-    console.log('dto', dto);
-    console.log('interaction', interaction);
     if (!this.validateSocket(dto.socket))
       return this.sendFeedbackMessage(interaction, 'Ungültiger Socket');
 

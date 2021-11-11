@@ -67,8 +67,8 @@ export class DiscordService {
     return channel.messages.fetch(messageId, { force });
   }
 
-  getEmojiById(emojiId: string): GuildEmoji | undefined {
-    return this.client.emojis.cache.get(emojiId);
+  getEmojiById(emojiId: string): Promise<GuildEmoji> | undefined {
+    return this.getGuild().emojis.fetch(emojiId);
   }
 
   getGuild(): Guild | undefined {

@@ -7,6 +7,8 @@ export interface EmbedConfig {
   thumbnail: string;
   squadleadEmoji: string;
   commanderEmoji: string;
+  lockedEmoji: string;
+  closedEmoji: string;
 }
 
 export default registerAs('embed', (): EmbedConfig => {
@@ -16,5 +18,7 @@ export default registerAs('embed', (): EmbedConfig => {
     thumbnail: process.env.THUMBNAIL,
     squadleadEmoji: process.env.SQUADLEAD_EMOJI || '💂',
     commanderEmoji: process.env.COMMANDER_EMOJI || '🤠',
+    lockedEmoji: '🔒',
+    closedEmoji: '🛑',
   };
 });

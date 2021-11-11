@@ -10,8 +10,6 @@ import { PlayDto } from '../dto/play.dto';
 @UsePipes(TransformPipe)
 export class PlayCommand implements DiscordTransformedCommand<PlayDto> {
   handler(@Payload() dto: PlayDto, interaction: CommandInteraction): string {
-    console.log('DTO', dto);
-
     return 'test.';
   }
 }

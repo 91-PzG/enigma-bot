@@ -8,7 +8,7 @@ import { HLLEventsDiscordService } from '../hllevent-discord.service';
 import { EnrolmentMessageFactory } from '../messages/enrolmentMessage.factory';
 import { InformationMessageFactory } from '../messages/informationMessage.factory';
 import { RegistrationManager } from '../registration/registration.manager';
-import { ReminderService } from '../reminder/reminder.service';
+import { ReminderService } from '../reminder.service';
 
 describe('HLLEventDiscordService', () => {
   let service: HLLEventsDiscordService;
@@ -46,8 +46,8 @@ describe('HLLEventDiscordService', () => {
       closeEvent: jest.fn(),
     };
     const reminderServiceMock: Partial<ReminderService> = {
-      getMissingEnrolmentOne: jest.fn(),
-      getMissingEnrolmentTwo: jest.fn(),
+      sendReminderOne: jest.fn(),
+      sendReminderTwo: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({

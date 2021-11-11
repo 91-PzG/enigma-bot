@@ -10,7 +10,6 @@ import databaseConfig from './config/database.config';
 import discordConfig from './config/discord.config';
 import embedsConfig from './config/embeds.config';
 import jwtConfig from './config/jwt.config';
-import registrationConfig from './config/registration.config';
 import serverConfig from './config/server.config';
 import { DiscordModule } from './discord/discord.module';
 import { EnrolmentsModule } from './enrolments/enrolments.module';
@@ -22,7 +21,6 @@ const CONFIG: ConfigFactory<any>[] = [
   discordConfig,
   jwtConfig,
   embedsConfig,
-  registrationConfig,
   serverConfig,
 ];
 

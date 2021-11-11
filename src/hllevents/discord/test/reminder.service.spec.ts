@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { GuildMember } from 'discord.js';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { DiscordService } from '../../../../discord/discord.service';
-import { Enrolment, HllDiscordEvent, HLLEvent, Member } from '../../../../typeorm/entities';
+import { DiscordService } from '../../../discord/discord.service';
+import { Enrolment, HllDiscordEvent, HLLEvent, Member } from '../../../typeorm/entities';
 import { ReminderService } from '../reminder.service';
 
 describe('ReminderService', () => {
@@ -72,14 +72,14 @@ describe('ReminderService', () => {
     });
 
     it('should call getMember or all members', async () => {
-      await service.getMissingEnrolmentOne(event as HLLEvent);
+      await service.sendReminderOne(event as HLLEvent);
       members.forEach((member) => {
         expect(discordService.getMember).toHaveBeenCalledWith(member.id);
       });
     });
 
     it('should send message to user', async () => {
-      await service.getMissingEnrolmentOne(event as HLLEvent);
+      await service.sendReminderOne(event as HLLEvent);
       expect(guildMember.send).toHaveBeenCalledWith(message);
     });
   });
@@ -107,14 +107,14 @@ describe('ReminderService', () => {
     });
 
     it('should call getMember or all members', async () => {
-      await service.getMissingEnrolmentTwo(event as HLLEvent);
+      await service.sendReminderTwo(event as HLLEvent);
       missingMembers.forEach((member) => {
         expect(discordService.getMember).toHaveBeenCalledWith(member.memberId);
       });
     });
 
     it('should send message to user', async () => {
-      await service.getMissingEnrolmentTwo(event as HLLEvent);
+      await service.sendReminderTwo(event as HLLEvent);
       expect(guildMember.send).toHaveBeenCalledWith(message);
     });
   });
