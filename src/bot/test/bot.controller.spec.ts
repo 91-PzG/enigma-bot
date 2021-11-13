@@ -1,9 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AttendanceCommand } from '../../bot/commands/attendance.command';
-import { DiscordController } from '../discord.controller';
+import { BotController } from '../bot.controller';
+import { AttendanceCommand } from '../commands/attendance.command';
 
-describe('DiscordController', () => {
-  let discordController: DiscordController;
+describe('BotController', () => {
+  let botController: BotController;
   let attendanceCommand: jest.Mocked<AttendanceCommand>;
 
   beforeEach(async () => {
@@ -12,25 +12,22 @@ describe('DiscordController', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        { provide: AttendanceCommand, useValue: attendanceCommandeMock },
-        DiscordController,
-      ],
+      providers: [{ provide: AttendanceCommand, useValue: attendanceCommandeMock }, BotController],
     }).compile();
 
-    discordController = module.get<DiscordController>(DiscordController);
+    botController = module.get<BotController>(BotController);
     attendanceCommand = module.get(AttendanceCommand);
   });
 
   it('should be defined', () => {
-    expect(discordController).toBeDefined();
+    expect(botController).toBeDefined();
   });
 
   describe('setAttendance', () => {
     it('should call attendanceCommand with correct values', () => {
       const eventId = 5;
       const socket = '127.0.0.1:5555';
-      discordController.setAttendance(eventId, socket);
+      botController.setAttendance(eventId, socket);
       expect(attendanceCommand.attendanceCommand).toHaveBeenCalledWith(eventId, socket);
     });
 
@@ -40,7 +37,7 @@ describe('DiscordController', () => {
       const socket = '127.0.0.1:5555';
       const resolvedValue = 'resolvedValue';
       attendanceCommand.attendanceCommand.mockResolvedValue(resolvedValue);
-      discordController.setAttendance(eventId, socket).then((value) => {
+      botController.setAttendance(eventId, socket).then((value) => {
         expect(value).toEqual(resolvedValue);
       });
     });

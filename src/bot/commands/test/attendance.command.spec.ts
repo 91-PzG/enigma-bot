@@ -1,11 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Message, TextChannel } from 'discord.js';
+import { CommandInteraction } from 'discord.js';
 import { query, QueryResult } from 'gamedig';
 import { Repository, SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import { DiscordService } from '../../../discord/discord.service';
 import { Enrolment, HLLEvent } from '../../../typeorm/entities';
-import { AttendanceCommand } from '../attendance.command';
+import { AttendanceCommand, AttendanceDto } from '../attendance.command';
 
 jest.mock('gamedig');
 
@@ -35,21 +34,17 @@ describe('AttandanceCommand', () => {
     connect: '176.57.168.74:28215',
     ping: 15,
   };
-  const channel: Partial<TextChannel> = {
-    send: jest.fn().mockResolvedValue({ delete: jest.fn() }),
-    valueOf: jest.fn(),
-    toString: jest.fn(),
+  let dto: AttendanceDto = {
+    eventId: '',
+    socket: '',
   };
-  const message: Partial<Message> = {
-    channel: channel as TextChannel,
+  const interaction: Partial<CommandInteraction> = {
+    reply: jest.fn(),
     valueOf: jest.fn(),
   };
+  const ephemeral = true;
 
   beforeEach(async () => {
-    const discordServiceMock: Partial<DiscordService> = {
-      getClanMembers: jest.fn().mockResolvedValue([]),
-    };
-
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         {
@@ -81,53 +76,66 @@ describe('AttandanceCommand', () => {
 
   describe('attendanceCommandDiscordWrapper', () => {
     it('should send error message if socket is invalid', async () => {
-      message.content = '!anwesend 39 300.0.0.1:4322';
-      await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
-      expect(channel.send).toHaveBeenLastCalledWith('Ungültiger Socket');
+      dto = { eventId: '39', socket: '300.0.0.1:4322' };
+      await attendanceCommand.handler(dto, interaction as CommandInteraction);
+      expect(interaction.reply).toHaveBeenLastCalledWith({
+        content: 'Ungültiger Socket',
+        ephemeral,
+      });
     });
 
     it('should send error message if eventId is NaN', async () => {
-      message.content = '!anwesend 1f 200.0.0.1:4322';
-      await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
-      expect(channel.send).toHaveBeenLastCalledWith('Ungültige Eventid');
+      dto = { eventId: '1f', socket: '200.0.0.1:4322' };
+      await attendanceCommand.handler(dto, interaction as CommandInteraction);
+      expect(interaction.reply).toHaveBeenLastCalledWith({
+        content: 'Ungültige Eventid',
+        ephemeral,
+      });
     });
 
     it('should send error message if eventId is not in db', async () => {
-      message.content = '!anwesend 10 200.0.0.1:4322';
+      dto = { eventId: '10', socket: '200.0.0.1:4322' };
       hllEventRepository.count.mockResolvedValueOnce(0);
-      await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
-      expect(channel.send).toHaveBeenLastCalledWith('Ungültige Eventid');
+      await attendanceCommand.handler(dto, interaction as CommandInteraction);
+      expect(interaction.reply).toHaveBeenLastCalledWith({
+        content: 'Ungültige Eventid',
+        ephemeral,
+      });
     });
 
     it('should send error message if query fails', async () => {
-      message.content = '!anwesend 11 200.0.0.1:4322';
+      dto = { eventId: '11', socket: '200.0.0.1:4322' };
       mockedQuery.mockRejectedValueOnce(null);
-      await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
-      expect(channel.send).toHaveBeenLastCalledWith(
-        `Der Server unter 200.0.0.1:4322 kann nicht erreicht werden`,
-      );
+      await attendanceCommand.handler(dto, interaction as CommandInteraction);
+      expect(interaction.reply).toHaveBeenLastCalledWith({
+        content: 'Der Server unter 200.0.0.1:4322 kann nicht erreicht werden',
+        ephemeral,
+      });
     });
 
     it('should send success message if query succedes', async () => {
-      message.content = '!anwesend 12 200.0.0.1:4322';
-      await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
-      expect(channel.send).toHaveBeenLastCalledWith('Anwesenheit erfolgreich eingetragen');
+      dto = { eventId: '12', socket: '200.0.0.1:4322' };
+      await attendanceCommand.handler(dto, interaction as CommandInteraction);
+      expect(interaction.reply).toHaveBeenLastCalledWith({
+        content: 'Anwesenheit erfolgreich eingetragen',
+        ephemeral,
+      });
     });
   });
 
   describe('setAttendance', () => {
     it('should add where clause for eventId', async () => {
-      const eventId = 5;
-      message.content = `!anwesend ${eventId} 200.0.0.1:4322`;
-      await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
+      const eventId = '5';
+      dto = { eventId, socket: '200.0.0.1:4322' };
+      await attendanceCommand.handler(dto, interaction as CommandInteraction);
       expect(enrolmentUpdateQueryBuilder.andWhere).toHaveBeenLastCalledWith('eventId = :eventId', {
         eventId,
       });
     });
 
     it('should call where with all player names', async () => {
-      message.content = '!anwesend 10 200.0.0.1:4322';
-      await attendanceCommand.attendanceCommandDiscordWrapper(message as Message);
+      dto = { eventId: '10', socket: '200.0.0.1:4322' };
+      await attendanceCommand.handler(dto, interaction as CommandInteraction);
       for (const player of successfullQuery.players) {
         if (!player.name) continue;
         expect(enrolmentUpdateQueryBuilder.where).toHaveBeenCalledWith('username LIKE :name', {

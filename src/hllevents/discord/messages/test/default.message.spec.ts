@@ -34,7 +34,7 @@ describe('Default Message', () => {
   });
 
   it('should set footer', () => {
-    expect(message.footer?.text).toBe(`#${event.id} - Erstellt von ${event.organisator}`);
+    expect(message.footer?.text).toBe(`#${event.id} - Erstellt von ${event.organisator.name}`);
   });
 
   it('should set Timestamp', () => {

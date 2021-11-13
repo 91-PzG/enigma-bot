@@ -1,97 +1,57 @@
-import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { DiscordService } from '../../../discord/discord.service';
 import { EnrolmentsDiscordService } from '../../../enrolments/enrolments-discord.service';
 import { UsersService } from '../../../users/users.service';
 import { HLLEventRepository } from '../../hllevent.repository';
-import { HLLDiscordEventRepository } from '../hlldiscordevent.repository';
 import { HLLEventsDiscordService } from '../hllevent-discord.service';
-import { EnrolmentMessageFactory } from '../messages/enrolmentMessage.factory';
-import { InformationMessageFactory } from '../messages/informationMessage.factory';
+import { RegistrationService } from '../registration.service';
 
-describe('HLLEventDiscordService', () => {
-  let service: HLLEventsDiscordService;
-  let discordService: jest.Mocked<DiscordService>;
-  let discordRepository: jest.Mocked<HLLDiscordEventRepository>;
+describe('RegistrationService', () => {
+  let service: RegistrationService;
   let eventRepository: jest.Mocked<HLLEventRepository>;
-  let informationFactory: jest.Mocked<InformationMessageFactory>;
-  let enrolmentFactory: jest.Mocked<EnrolmentMessageFactory>;
-  let enrolmentsService: jest.Mocked<EnrolmentsDiscordService>;
+  let hllEventsDiscordService: jest.Mocked<HLLEventsDiscordService>;
+  let enrolmentsDiscordService: jest.Mocked<EnrolmentsDiscordService>;
   let usersService: jest.Mocked<UsersService>;
 
   beforeEach(async () => {
-    const discordServiceMock: Partial<DiscordService> = {
-      createEventChannelIfNotExists: jest.fn(),
-      getMessageById: jest.fn(),
-    };
-    const discordRepositoryMock: Partial<HLLDiscordEventRepository> = {
-      createEntity: jest.fn(),
-      findOne: jest.fn(),
-    };
     const eventRepositoryMock: Partial<HLLEventRepository> = {
-      getPublishableEvents: jest.fn(),
-      getLockableEvents: jest.fn(),
-      getClosableEvents: jest.fn(),
-      getReminderEventsOne: jest.fn().mockResolvedValue([]),
-      getReminderEventsTwo: jest.fn().mockResolvedValue([]),
+      getEventById: jest.fn(),
     };
-    const informationFactoryMock: Partial<InformationMessageFactory> = {
-      createMessage: jest.fn(),
+    const hllEventsDiscordServiceMock: Partial<HLLEventsDiscordService> = {
+      updateEnrolmentMessage: jest.fn(),
     };
-    const enrolmentFactoryMock: Partial<EnrolmentMessageFactory> = {
-      createMessage: jest.fn(),
-    };
-    const enrolmentsServiceMock: Partial<EnrolmentsDiscordService> = {
+    const enrolmentsDiscordServiceMock: Partial<EnrolmentsDiscordService> = {
       enrol: jest.fn(),
     };
     const usersServiceMock: Partial<UsersService> = {
       getActiveMember: jest.fn(),
-    };
-    const configServiceMock: Partial<ConfigService> = {
-      get: jest.fn().mockImplementation((config: string) => {
-        return config.endsWith('closedEmoji') ? '🛑' : '🔒';
-      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HLLEventsDiscordService,
         {
-          provide: DiscordService,
-          useValue: discordServiceMock,
-        },
-        {
-          provide: HLLDiscordEventRepository,
-          useValue: discordRepositoryMock,
-        },
-        {
           provide: HLLEventRepository,
           useValue: eventRepositoryMock,
         },
         {
-          provide: InformationMessageFactory,
-          useValue: informationFactoryMock,
+          provide: HLLEventsDiscordService,
+          useValue: hllEventsDiscordServiceMock,
         },
         {
-          provide: EnrolmentMessageFactory,
-          useValue: enrolmentFactoryMock,
+          provide: EnrolmentsDiscordService,
+          useValue: enrolmentsDiscordServiceMock,
         },
-        { provide: EnrolmentsDiscordService, useValue: enrolmentsServiceMock },
         {
           provide: UsersService,
           useValue: usersServiceMock,
         },
-        { provide: ConfigService, useValue: configServiceMock },
       ],
     }).compile();
 
-    service = module.get<HLLEventsDiscordService>(HLLEventsDiscordService);
+    service = module.get<RegistrationService>(RegistrationService);
     eventRepository = module.get(HLLEventRepository);
-    discordRepository = module.get(HLLDiscordEventRepository);
-    discordService = module.get(DiscordService);
-    informationFactory = module.get(InformationMessageFactory);
-    enrolmentFactory = module.get(EnrolmentMessageFactory);
-    enrolmentsService = module.get(EnrolmentsDiscordService);
+    hllEventsDiscordService = module.get(HLLEventsDiscordService);
+    enrolmentsDiscordService = module.get(EnrolmentsDiscordService);
     usersService = module.get(UsersService);
   });
 

@@ -1,15 +1,9 @@
-import { On, UseGuards } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { ButtonInteraction, Message, MessageActionRow, MessageButton } from 'discord.js';
 import { DiscordService } from '../../discord/discord.service';
-import { EnrolByDiscordDto } from '../../enrolments/dto/enrolByDiscord.dto';
-import { EnrolmentsDiscordService } from '../../enrolments/enrolments-discord.service';
-import { EnrolmentType, HLLEvent } from '../../typeorm/entities';
-import { UsersService } from '../../users/users.service';
-import { ButtonGuard } from '../../util/guards/button.guard';
-import { RegistrationGuard } from '../../util/guards/registration.guard';
+import { HLLEvent } from '../../typeorm/entities';
 import { HLLEventRepository } from '../hllevent.repository';
 import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
 import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
@@ -25,80 +19,8 @@ export class HLLEventsDiscordService {
     private eventRepository: HLLEventRepository,
     private informationMessageFactory: InformationMessageFactory,
     private enrolmentMessageFactory: EnrolmentMessageFactory,
-    private enrolmentsService: EnrolmentsDiscordService,
-    private usersService: UsersService,
     private configService: ConfigService,
   ) {}
-
-  @On('interactionCreate')
-  @UseGuards(ButtonGuard, RegistrationGuard)
-  async register(interaction: ButtonInteraction) {
-    const eventId = parseInt(interaction.customId.split('-')[0], 10);
-    const event = await this.eventRepository.getEventById(eventId);
-    if (!event) return;
-    if (event.closed || (event.locked && !interaction.customId.includes('cancel'))) {
-      this.sendError(interaction, `Du kannst dich bei Event #${eventId} nicht mehr anmelden`);
-      this.updateEnrolmentMessage(event, interaction);
-      return;
-    }
-
-    const dto = await this.createEnrolmentDto(interaction);
-    if (!dto) return;
-
-    this.enrolmentsService
-      .enrol(dto)
-      .then(() => {
-        this.updateEnrolmentMessage(event, interaction)
-          .then(() => {
-            this.sendSuccess(interaction, dto);
-          })
-          .catch((e) => {
-            this.logger.error(e);
-            this.sendError(
-              interaction,
-              'Fehler beim update der Nachricht. Bitte versuche es später erneut',
-            );
-          });
-      })
-      .catch(() =>
-        this.sendError(interaction, 'Fehler bei der Anmeldung. Bitte versuche es später erneut'),
-      );
-  }
-
-  private sendSuccess(interaction: ButtonInteraction, dto: EnrolByDiscordDto) {
-    const roleString = dto.commander ? ' als Kommandant ' : dto.squadlead ? ' als Squadlead ' : ' ';
-    interaction.reply({
-      content: `Du hast dich erfolgreich${roleString}${
-        dto.type === EnrolmentType.ANMELDUNG ? 'an' : 'ab'
-      }gemeldet!`,
-      ephemeral: true,
-    });
-  }
-
-  private sendError(interaction: ButtonInteraction, content: string) {
-    interaction.reply({
-      content,
-      ephemeral: true,
-    });
-  }
-
-  private async createEnrolmentDto(interaction: ButtonInteraction): Promise<EnrolByDiscordDto> {
-    const { customId } = interaction;
-    const member = await this.usersService.getActiveMember(interaction.user.id);
-    const type: EnrolmentType = customId.includes('cancel')
-      ? EnrolmentType.ABMELDUNG
-      : EnrolmentType.ANMELDUNG;
-    const eventId = parseInt(customId.split('-')[0], 10);
-
-    return {
-      type,
-      eventId,
-      member,
-      division: member.division,
-      squadlead: customId.includes('squadlead'),
-      commander: customId.includes('commander'),
-    };
-  }
 
   async publishMessages(event: HLLEvent) {
     const channel = await this.discordService.createEventChannelIfNotExists(event.channelName);

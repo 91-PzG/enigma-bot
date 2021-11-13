@@ -90,11 +90,7 @@ export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDt
     );
   }
 
-  private sendFeedbackMessage(
-    interaction: CommandInteraction,
-    content: string,
-    timeout = 5000,
-  ): void {
+  private sendFeedbackMessage(interaction: CommandInteraction, content: string): void {
     interaction.reply({ content, ephemeral: true });
   }
 
