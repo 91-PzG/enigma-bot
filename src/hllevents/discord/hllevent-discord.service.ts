@@ -11,7 +11,7 @@ import { InformationMessageFactory } from './messages/informationMessage.factory
 
 @Injectable()
 export class HLLEventsDiscordService {
-  logger = new Logger('HLLEventsDiscordService');
+  private logger = new Logger('HLLEventsDiscordService');
 
   constructor(
     private discordService: DiscordService,
@@ -36,14 +36,11 @@ export class HLLEventsDiscordService {
       })
     ).id;
 
-    event.discordEvent = await this.discordRepository.createEntity(
-      channel.id,
-      informationId,
-      enrolmentId,
-    );
+    const discordEventId = (
+      await this.discordRepository.createEntity(channel.id, informationId, enrolmentId)
+    ).id;
 
-    event.autoPublishDate = null;
-    //event.save();
+    this.eventRepository.update(event.id, { discordEventId, autoPublishDate: null });
   }
 
   async updateInformationMessage(event: HLLEvent): Promise<boolean> {
@@ -62,11 +59,11 @@ export class HLLEventsDiscordService {
     return true;
   }
 
-  async updateEnrolmentMessage(event: HLLEvent, interaction?: ButtonInteraction): Promise<any> {
+  async updateEnrolmentMessage(event: HLLEvent, interaction?: ButtonInteraction): Promise<boolean> {
     const discordEvent = await this.discordRepository.findOne(event.discordEventId);
     if (!discordEvent) {
       this.logger.debug(`Encountered error fetching discordevent with id ${event.discordEventId}`);
-      throw new Error('Discord Event not found');
+      return false;
     }
 
     const embed = await this.enrolmentMessageFactory.createMessage(event);
@@ -74,26 +71,34 @@ export class HLLEventsDiscordService {
       embeds: [embed],
       components: [this.createMessageActionRow(event.id, event.locked, event.closed)],
     };
-    if (interaction) return (interaction.message as Message).edit(newMessage);
+    if (interaction) {
+      (interaction.message as Message).edit(newMessage);
+      return true;
+    }
 
     const oldMessage = await this.getMessageFromDiscord(
       event.id,
       discordEvent.channelId,
       discordEvent.enrolmentMsg,
     );
+    if (!oldMessage) {
+      return false;
+    }
     oldMessage.edit(newMessage);
+    return true;
   }
 
   private async getMessageFromDiscord(
     eventId: number,
-    channel: string,
-    message: string,
-  ): Promise<Message | undefined> {
-    try {
-      return await this.discordService.getMessageById(message, channel, true);
-    } catch (error) {
+    channelId: string,
+    messageId: string,
+  ): Promise<Message | void> {
+    const message = await this.discordService.getMessageById(messageId, channelId, true);
+    if (!message) {
       this.eventRepository.update(eventId, { closed: true });
+      return;
     }
+    return message;
   }
 
   private createMessageActionRow(
@@ -140,25 +145,21 @@ export class HLLEventsDiscordService {
   }
 
   @Cron('*/1 * * * *')
-  async checkEvents() {
+  checkEvents() {
     this.eventRepository.getPublishableEvents().then((events) => {
       events.forEach((event) => {
-        //@ts-ignore
-        event.organisator = event.organisator.name;
         this.publishMessages(event);
       });
     });
     this.eventRepository.getLockableEvents().then((events) => {
       events.forEach((event) => {
-        event.locked = true;
-        event.save();
+        this.eventRepository.update(event.id, { locked: true });
         this.updateEnrolmentMessage(event);
       });
     });
     this.eventRepository.getClosableEvents().then((events) => {
       events.forEach((event) => {
-        event.closed = true;
-        event.save();
+        this.eventRepository.update(event.id, { closed: true });
         this.updateEnrolmentMessage(event);
       });
     });

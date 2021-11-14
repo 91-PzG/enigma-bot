@@ -95,7 +95,7 @@ export class DiscordService {
     });
   }
 
-  async getRoleByID(id: string): Promise<Role | null | undefined> {
+  async getRoleById(id: string): Promise<Role | undefined> {
     return this.getGuild()?.roles.fetch(id);
   }
 

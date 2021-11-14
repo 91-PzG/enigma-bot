@@ -1,4 +1,5 @@
-import { HttpService, NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { NotFoundException } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AxiosResponse } from 'axios';

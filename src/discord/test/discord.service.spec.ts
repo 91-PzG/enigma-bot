@@ -1,6 +1,6 @@
+import { DiscordClientProvider } from '@discord-nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { ClientProvider } from 'discord-nestjs';
 import { Collection, GuildMember, TextChannel, User } from 'discord.js';
 import { DiscordChannelDto } from '../../channels/dtos/discord-channel.dto';
 import { DiscordConfig } from '../../config/discord.config';
@@ -43,7 +43,11 @@ describe('DiscordService', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [{ provide: ConfigService, useValue: configServiceMock }, DiscordService],
+      providers: [
+        { provide: ConfigService, useValue: configServiceMock },
+        { provide: DiscordClientProvider, useValue: { getClient: jest.fn().mockReturnValue({}) } },
+        DiscordService,
+      ],
     }).compile();
 
     discordService = module.get<DiscordService>(DiscordService);
@@ -60,11 +64,6 @@ describe('DiscordService', () => {
     });
 
     it('should load client', () => {
-      //@ts-ignore
-      discordService.discordProvider = {
-        getClient: jest.fn().mockReturnValue(new Object()),
-      } as ClientProvider;
-
       discordService.onReady();
 
       expect(discordService.client).toBeTruthy();

@@ -1,5 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { ButtonInteraction, InteractionReplyOptions, User } from 'discord.js';
+import { EnrolByDiscordDto } from '../../../enrolments/dto/enrolByDiscord.dto';
 import { EnrolmentsDiscordService } from '../../../enrolments/enrolments-discord.service';
+import { Division, EnrolmentType, HLLEvent, Member } from '../../../typeorm/entities';
 import { UsersService } from '../../../users/users.service';
 import { HLLEventRepository } from '../../hllevent.repository';
 import { HLLEventsDiscordService } from '../hllevent-discord.service';
@@ -11,24 +14,48 @@ describe('RegistrationService', () => {
   let hllEventsDiscordService: jest.Mocked<HLLEventsDiscordService>;
   let enrolmentsDiscordService: jest.Mocked<EnrolmentsDiscordService>;
   let usersService: jest.Mocked<UsersService>;
+  let interaction: jest.Mocked<Partial<ButtonInteraction>>;
+  let reply: InteractionReplyOptions;
+  let event: Partial<HLLEvent>;
+  let member: Partial<Member>;
 
   beforeEach(async () => {
+    interaction = {
+      reply: jest.fn(),
+      customId: '12-register',
+      user: {
+        id: '1234',
+      } as User,
+      valueOf: jest.fn(),
+    };
+    reply = {
+      ephemeral: true,
+    };
+    event = {
+      locked: false,
+      closed: false,
+      id: 5,
+    };
+    member = {
+      division: Division.INFANTERIE,
+    };
+
     const eventRepositoryMock: Partial<HLLEventRepository> = {
-      getEventById: jest.fn(),
+      getEventById: jest.fn().mockResolvedValue(event),
     };
     const hllEventsDiscordServiceMock: Partial<HLLEventsDiscordService> = {
-      updateEnrolmentMessage: jest.fn(),
+      updateEnrolmentMessage: jest.fn().mockResolvedValue(undefined),
     };
     const enrolmentsDiscordServiceMock: Partial<EnrolmentsDiscordService> = {
-      enrol: jest.fn(),
+      enrol: jest.fn().mockResolvedValue(undefined),
     };
     const usersServiceMock: Partial<UsersService> = {
-      getActiveMember: jest.fn(),
+      getActiveMember: jest.fn().mockResolvedValue(member as Member),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        HLLEventsDiscordService,
+        RegistrationService,
         {
           provide: HLLEventRepository,
           useValue: eventRepositoryMock,
@@ -59,125 +86,125 @@ describe('RegistrationService', () => {
     expect(service).toBeDefined();
   });
 
-  /*describe('publishMessages', () => {
-    let channel: Partial<TextChannel>;
-    let informationMessage: string;
-    let enrolmentMessage: string;
-    let event: Partial<HLLEvent>;
+  describe('register', () => {
+    describe('event error handling', () => {
+      describe('event not found error handling', () => {
+        beforeEach(() => {
+          reply.content = 'Event konnte nicht gefunden werden';
+        });
 
-    beforeEach(() => {
-      //@ts-ignore
-      channel = {
-        id: 'idchannel',
-        send: jest.fn().mockResolvedValue({ id: 'idone' }).mockResolvedValueOnce({ id: 'idtwo' }),
-      };
-      event = {
-        channelName: 'channelName',
-        autoPublishDate: new Date(),
-        save: jest.fn().mockResolvedValue(null),
-      };
-      informationMessage = 'info';
-      enrolmentMessage = 'enrolment';
-      discordService.createEventChannelIfNotExists = jest.fn().mockResolvedValue(channel);
-      informationFactory.createMessage = jest.fn().mockReturnValue(informationMessage);
-      enrolmentFactory.createMessage = jest.fn().mockResolvedValue(enrolmentMessage);
-      discordRepository.createEntity = jest.fn();
-    });
+        it('should throw error if eventId is NaN', async () => {
+          interaction.customId = 'a-squadlead-register';
+          await service.register(interaction as unknown as ButtonInteraction);
+          expect(interaction.reply).toHaveBeenCalledWith(reply);
+        });
 
-    it('functions should be called with correct values', async () => {
-      await service.publishMessages(event as HLLEvent);
-      expect(discordService.createEventChannelIfNotExists).toHaveBeenCalledWith(event.channelName);
-      expect(channel.send).toHaveBeenCalledWith({ embeds: [informationMessage] });
-      expect(channel.send).toHaveBeenCalledWith({ embeds: [enrolmentMessage] });
-      expect(discordRepository.createEntity).toHaveBeenCalledWith(channel.id, 'idtwo', 'idone');
-    });
+        it('should throw error if event is not found', async () => {
+          eventRepository.getEventById.mockResolvedValueOnce(undefined);
+          await service.register(interaction as unknown as ButtonInteraction);
+          expect(interaction.reply).toHaveBeenCalledWith(reply);
+        });
+      });
 
-  });
+      describe('event invalid error handling', () => {
+        beforeEach(() => {
+          reply.content = `Du kannst dich bei Event #${event.id} nicht mehr anmelden`;
+        });
 
-  describe('updateEnrolmentMessage', () => {
-    let oldMessage: Partial<Message>;
-    let newMessage: string;
-    let event: Partial<HLLEvent>;
+        it('should throw error if event is closed', async () => {
+          event.closed = true;
+          await service.register(interaction as unknown as ButtonInteraction);
+          expect(interaction.reply).toHaveBeenCalledWith(reply);
+          expect(hllEventsDiscordService.updateEnrolmentMessage).toHaveBeenCalledWith(
+            event,
+            interaction,
+          );
+        });
 
-    beforeEach(() => {
-      //@ts-ignore
-      oldMessage = { edit: jest.fn() };
-      newMessage = 'newMessage';
-      event = {
-        discordEventId: 5,
-        save: jest.fn(),
-      };
-      discordRepository.findOne = jest
-        .fn()
-        .mockResolvedValue({ channelId: 'channelId', enrolmentMsg: 'enrolmentId' });
-      discordService.getMessageById = jest.fn().mockResolvedValue(oldMessage);
-      enrolmentFactory.createMessage = jest.fn().mockResolvedValue(newMessage);
-    });
-
-    it('should return null if discord event is not found', async () => {
-      discordRepository.findOne.mockResolvedValueOnce(undefined);
-      expect(await service.updateEnrolmentMessage(event as HLLEvent)).toBe(false);
-    });
-    it('should return null if discord message', async () => {
-      discordService.getMessageById.mockRejectedValue(null);
-      expect(await service.updateEnrolmentMessage(event as HLLEvent)).toBe(false);
-    });
-    it('oldMessage edit should be called with new message', async () => {
-      expect(await service.updateEnrolmentMessage(event as HLLEvent)).toBe(true);
-      expect(oldMessage.edit).toHaveBeenCalledWith({ embeds: [newMessage] });
-    });
-  });
-
-  describe('updateInformationMessage', () => {
-    let oldMessage: Partial<Message>;
-    let newMessage: string;
-    let event: Partial<HLLEvent>;
-
-    beforeEach(() => {
-      //@ts-ignore
-      oldMessage = { edit: jest.fn() };
-      newMessage = 'newMessage';
-      event = {
-        discordEventId: 5,
-        save: jest.fn(),
-      };
-      discordRepository.findOne = jest
-        .fn()
-        .mockResolvedValue({ channelId: 'channelId', enrolmentMsg: 'enrolmentId' });
-      discordService.getMessageById = jest.fn().mockResolvedValue(oldMessage);
-      informationFactory.createMessage = jest.fn().mockReturnValue(newMessage);
-    });
-
-    it('should return null if discord event is not found', async () => {
-      discordRepository.findOne.mockResolvedValueOnce(undefined);
-      expect(await service.updateInformationMessage(event as HLLEvent)).toBe(false);
-    });
-    it('should return null if discord message', async () => {
-      discordService.getMessageById.mockRejectedValue(null);
-      expect(await service.updateInformationMessage(event as HLLEvent)).toBe(false);
-    });
-    it('oldMessage edit should be called with new message', async () => {
-      expect(await service.updateInformationMessage(event as HLLEvent)).toBe(true);
-      expect(oldMessage.edit).toHaveBeenCalledWith({ embeds: [newMessage] });
-    });
-  });
-
-  describe('checkEvents', () => {
-    it('should call publish events for all events retured from repo', async () => {
-      const events = [
-        { organisator: { name: 'abc' }, save: jest.fn() },
-        { organisator: { name: 'def' }, save: jest.fn() },
-        { organisator: { name: 'ghi' }, save: jest.fn() },
-      ];
-      service.publishMessages = jest.fn();
-      //@ts-ignore
-      eventRepository.getPublishableEvents.mockResolvedValue(events); //@ts-ignore
-      eventRepository.getLockableEvents.mockResolvedValue(events); //@ts-ignore
-      eventRepository.getClosableEvents.mockResolvedValue(events);
-      await service.checkEvents();
-      events.forEach((event) => {
-        expect(service.publishMessages).toHaveBeenCalledWith(event);
+        it('should throw error if event is locked and user tries to register', async () => {
+          event.locked = true;
+          await service.register(interaction as unknown as ButtonInteraction);
+          expect(interaction.reply).toHaveBeenCalledWith(reply);
+          expect(hllEventsDiscordService.updateEnrolmentMessage).toHaveBeenCalledWith(
+            event,
+            interaction,
+          );
+        });
       });
     });
-  });*/
+
+    describe('member error handling', () => {
+      it('should not enrol if member is not found', async () => {
+        usersService.getActiveMember.mockResolvedValue(undefined);
+        await service.register(interaction as unknown as ButtonInteraction);
+        expect(enrolmentsDiscordService.enrol).toHaveBeenCalledTimes(0);
+      });
+    });
+
+    describe('enrolment error handling', () => {
+      it('should send error if enrol fails', async () => {
+        enrolmentsDiscordService.enrol.mockRejectedValue(undefined);
+        reply.content = 'Fehler bei der Anmeldung. Bitte versuche es später erneut';
+        await service.register(interaction as unknown as ButtonInteraction);
+        expect(interaction.reply).toHaveBeenCalledWith(reply);
+      });
+    });
+
+    describe('message update error handling', () => {
+      it('should send error if message update fails', async () => {
+        reply.content = 'Fehler beim update der Nachricht. Deine Anmeldung wurde erfasst';
+        hllEventsDiscordService.updateEnrolmentMessage.mockRejectedValue(undefined);
+        await service.register(interaction as unknown as ButtonInteraction);
+        expect(interaction.reply).toHaveBeenCalledWith(reply);
+      });
+    });
+
+    describe('success message', () => {
+      it('should send success message', async () => {
+        reply.content = 'Du hast dich erfolgreich angemeldet!';
+        await service.register(interaction as unknown as ButtonInteraction);
+        expect(interaction.reply).toHaveBeenCalledWith(reply);
+      });
+    });
+
+    describe('dto tests', () => {
+      let dto: EnrolByDiscordDto;
+      beforeEach(() => {
+        dto = {
+          type: EnrolmentType.ANMELDUNG,
+          eventId: event.id,
+          member: member as Member,
+          division: member.division,
+          squadlead: false,
+          commander: false,
+        };
+      });
+
+      it('should set cancel enrolment type correctly correctly', async () => {
+        interaction.customId = '12-cancel-register';
+        await service.register(interaction as unknown as ButtonInteraction);
+        dto.type = EnrolmentType.ABMELDUNG;
+        expect(enrolmentsDiscordService.enrol).toHaveBeenCalledWith(dto);
+      });
+
+      it('should set no role correctly', async () => {
+        await service.register(interaction as unknown as ButtonInteraction);
+        expect(enrolmentsDiscordService.enrol).toHaveBeenCalledWith(dto);
+      });
+
+      it('should set squadlead role correctly', async () => {
+        interaction.customId = '12-squadlead-register';
+        await service.register(interaction as unknown as ButtonInteraction);
+        dto.squadlead = true;
+        expect(enrolmentsDiscordService.enrol).toHaveBeenCalledWith(dto);
+      });
+
+      it('should set commander role correctly', async () => {
+        interaction.customId = '12-commander-register';
+        await service.register(interaction as unknown as ButtonInteraction);
+        dto.commander = true;
+        expect(enrolmentsDiscordService.enrol).toHaveBeenCalledWith(dto);
+      });
+    });
+  });
 });

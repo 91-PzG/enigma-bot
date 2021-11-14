@@ -37,17 +37,17 @@ const eventReductor = (acc: [string, any], [key, value]: [string, any]): [string
 };
 
 export class InformationMessage extends DefaultMessage {
-  constructor(private event: HLLEvent, config: EmbedConfig) {
+  constructor(event: HLLEvent, config: EmbedConfig) {
     super(event, config);
     this.setDescription(event.description)
       .setURL(`${config.baseUrl}events/${event.id}`)
       .setTitle(event.name);
-    this.addOptionalFields();
+    this.addOptionalFields(event);
   }
 
-  private addOptionalFields() {
+  private addOptionalFields(event) {
     return;
-    const fields = Object.entries(this.event).reduce(eventReductor, [] as unknown as [string, any]);
+    const fields = Object.entries(event).reduce(eventReductor, [] as unknown as [string, any]);
     fields.forEach(([key, value]) => {
       this.addField(key, value, true);
     });
