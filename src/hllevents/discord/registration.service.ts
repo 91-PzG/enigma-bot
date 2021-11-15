@@ -45,7 +45,6 @@ export class RegistrationService {
             this.sendSuccess(interaction, dto);
           })
           .catch((e) => {
-            this.logger.error(e);
             this.sendError(
               interaction,
               'Fehler beim update der Nachricht. Deine Anmeldung wurde erfasst',
