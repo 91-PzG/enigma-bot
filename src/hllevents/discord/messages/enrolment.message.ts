@@ -25,7 +25,7 @@ export class EnrolmentMessage extends DefaultMessage {
       const name = this.formatName(enrolment);
       if (enrolment.enrolmentType === EnrolmentType.ABMELDUNG) {
         this.abmeldungPool.push(name);
-      } else if (enrolment.squadId) {
+      } else if (this.event.showSquads && enrolment.squadId) {
         this.squadPool[enrolment.division].find(
           (squad: EnrolmentSquad) => squad.id === enrolment.squadId,
         ).members[enrolment.position] = name;
@@ -48,7 +48,7 @@ export class EnrolmentMessage extends DefaultMessage {
   }
 
   private loadEnrolments() {
-    this.initSquads();
+    if (this.event.showSquads) this.initSquads();
     if (this.event.singlePool) this.loadSinglePool();
     else this.loadSeparatePools();
     this.addDefaultPools();
@@ -118,7 +118,8 @@ export class EnrolmentMessage extends DefaultMessage {
 
   private addDefaultPools() {
     this.addField('\u200B', '\u200B');
-    Object.keys(this.squadPool).forEach((division) => this.addSquad(this.squadPool[division]));
+    if (this.event.showSquads)
+      Object.keys(this.squadPool).forEach((division) => this.addSquad(this.squadPool[division]));
     this.addPool(`Abmeldungen (${this.abmeldungPool.length})`, this.abmeldungPool, true);
   }
 

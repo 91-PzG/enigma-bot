@@ -1,4 +1,15 @@
-import { Body, Controller, Get, Param, ParseIntPipe, Patch, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseBoolPipe,
+  ParseIntPipe,
+  Patch,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { GetUser } from '../auth/jwt/get-user.decorator';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
 import { Scopes } from '../auth/jwt/guards/scopes.decorator';
@@ -15,12 +26,12 @@ export class HLLEventController {
   constructor(private hllEventService: HLLEventService) {}
 
   @Get()
-  async getAll(): Promise<HLLEventGetAllDto[]> {
+  getAll(): Promise<HLLEventGetAllDto[]> {
     return this.hllEventService.getAll();
   }
 
   @Get('/:id')
-  async getEventById(
+  getEventById(
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: JwtPayload,
   ): Promise<HLLEventGetByIdDto> {
@@ -30,7 +41,7 @@ export class HLLEventController {
   @Scopes(AccessRoles.EVENTORGA)
   @UseGuards(RoleGuard)
   @Patch('/:id')
-  async patchEvent(
+  patchEvent(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateEventDto: HLLEventUpdateWrapperDto,
   ): Promise<HLLEventGetByIdDto> {
@@ -40,7 +51,17 @@ export class HLLEventController {
   @Post()
   @UseGuards(RoleGuard)
   @Scopes(AccessRoles.OFFICER, AccessRoles.CLANRAT, AccessRoles.EVENTORGA)
-  async createEvent(@Body() createEventDto: HLLEventCreateWrapperDto): Promise<HLLEventGetByIdDto> {
+  createEvent(@Body() createEventDto: HLLEventCreateWrapperDto): Promise<HLLEventGetByIdDto> {
     return this.hllEventService.createEvent(createEventDto);
+  }
+
+  @Patch('/:id')
+  @UseGuards(RoleGuard)
+  @Scopes(AccessRoles.OFFICER, AccessRoles.CLANRAT, AccessRoles.EVENTORGA)
+  switchSquadVisibility(
+    @Param('id', ParseIntPipe) id: number,
+    @Query('showSquads', ParseBoolPipe) showSquads: boolean,
+  ) {
+    return this.hllEventService.switchSquadVisibility(id, showSquads);
   }
 }

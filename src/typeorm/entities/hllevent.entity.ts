@@ -127,4 +127,7 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
 
   @Column({ default: false })
   sentReminderTwo: boolean;
+
+  @Column({ default: false })
+  showSquads: boolean;
 }
