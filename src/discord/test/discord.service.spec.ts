@@ -201,10 +201,14 @@ describe('DiscordService', () => {
   describe('getEmojiById', () => {
     it('should return correct value', () => {
       discordService.client = {
-        emojis: {
+        guilds: {
           //@ts-ignore
           cache: {
-            get: jest.fn().mockReturnValue({}).mockReturnValueOnce(undefined),
+            get: jest.fn().mockReturnValue({
+              emojis: {
+                fetch: jest.fn().mockReturnValue({}).mockReturnValueOnce(undefined),
+              },
+            }),
           },
         },
       };
