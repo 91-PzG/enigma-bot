@@ -30,39 +30,44 @@ export class EnrolmentsDiscordService {
     });
 
     if (enrolment) {
-      if (enrolment.squadId && enrolment.enrolmentType != EnrolmentType.ANMELDUNG)
-        this.enrolmentsService.shiftSquad(enrolment.position, 100, enrolment.squadId);
-      if (enrolment.enrolmentType !== dto.type) {
-        enrolment.timestamp = new Date();
-        if (enrolment.enrolmentType == EnrolmentType.ANMELDUNG)
-          this.changePlayerCount(-1, dto.eventId);
-        if (dto.type == EnrolmentType.ANMELDUNG) this.changePlayerCount(1, dto.eventId);
-      }
+      enrolment = this.updateEnrolment(enrolment, dto);
     } else {
-      enrolment = new Enrolment();
-      enrolment.timestamp = new Date();
-      if (dto.type == EnrolmentType.ANMELDUNG) this.changePlayerCount(1, dto.eventId);
+      enrolment = this.createEnrolment(dto);
     }
 
-    enrolment.squadlead = dto.squadlead;
-    enrolment.commander = dto.commander;
-    enrolment.username = dto.member.contact.name;
-    enrolment.enrolmentType = dto.type;
-    enrolment.division = dto.division;
-    enrolment.eventId = dto.eventId;
-    enrolment.memberId = dto.member.id;
-    enrolment.squadId = null;
-    enrolment.position = null;
+    enrolment.assignDto(dto);
 
-    return enrolment.save();
+    return this.enrolmentRepository.save(enrolment);
   }
 
-  private changePlayerCount(count: number, eventId: number) {
-    this.hllEventRepository
-      .createQueryBuilder()
-      .update()
-      .set({ playerCount: () => `"playerCount" + ${count}` })
-      .where('id=:eventId', { eventId })
-      .execute();
+  private createEnrolment(dto: EnrolByDiscordDto): Enrolment {
+    const enrolment = new Enrolment();
+    enrolment.timestamp = new Date();
+    if (dto.type === EnrolmentType.ANMELDUNG) this.changePlayerCount(1, dto.eventId);
+
+    return enrolment;
+  }
+
+  private updateEnrolment(enrolment: Enrolment, dto: EnrolByDiscordDto): Enrolment {
+    // removes user from squad if he unregisters from the event
+    if (enrolment.squadId && dto.type != EnrolmentType.ANMELDUNG) {
+      this.enrolmentsService.shiftSquad(enrolment.position, 100, enrolment.squadId);
+      enrolment.squadId = null;
+      enrolment.position = null;
+    }
+
+    // updates timestamp if user changes registration type and updates the playerCount
+    if (enrolment.enrolmentType != dto.type) {
+      enrolment.timestamp = new Date();
+      let playerChange = -1;
+      if (dto.type === EnrolmentType.ANMELDUNG) playerChange = 1;
+      this.changePlayerCount(playerChange, enrolment.eventId);
+    }
+
+    return enrolment;
+  }
+
+  private changePlayerCount(change: number, eventId: number) {
+    this.hllEventRepository.update(eventId, { playerCount: () => `"playerCount" + ${change}` });
   }
 }
