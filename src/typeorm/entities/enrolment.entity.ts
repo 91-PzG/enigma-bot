@@ -1,4 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { EnrolByDiscordDto } from '../../enrolments/dto/enrolByDiscord.dto';
 import { Division } from './division.enum';
 import { EnrolmentType } from './enrolmentType.enum';
 import { HLLEvent } from './hllevent.entity';
@@ -26,13 +27,13 @@ export class Enrolment extends BaseEntity {
   username: string;
 
   @ManyToOne(() => HLLEvent)
-  event: HLLEvent;
+  event?: HLLEvent;
 
   @Column()
   eventId: number;
 
   @ManyToOne(() => Member, { nullable: true })
-  member: Member;
+  member?: Member;
 
   @Column()
   memberId: string;
@@ -63,4 +64,14 @@ export class Enrolment extends BaseEntity {
     default: false,
   })
   isPresent: boolean;
+
+  assignDto(dto: EnrolByDiscordDto) {
+    this.squadlead = dto.squadlead;
+    this.commander = dto.commander;
+    this.username = dto.member.contact.name;
+    this.enrolmentType = dto.type;
+    this.division = dto.division;
+    this.eventId = dto.eventId;
+    this.memberId = dto.member.id;
+  }
 }

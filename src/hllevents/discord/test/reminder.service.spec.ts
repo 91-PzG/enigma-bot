@@ -4,12 +4,14 @@ import { GuildMember } from 'discord.js';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DiscordService } from '../../../discord/discord.service';
 import { Enrolment, HllDiscordEvent, HLLEvent, Member } from '../../../typeorm/entities';
+import { HLLEventRepository } from '../../hllevent.repository';
 import { ReminderService } from '../reminder.service';
 
 describe('ReminderService', () => {
   let service: ReminderService;
   let enrolmentRepository: jest.Mocked<Repository<Enrolment>>;
   let discordService: jest.Mocked<DiscordService>;
+  let hllEventRepository: jest.Mocked<HLLEventRepository>;
   let queryBuilder: Partial<SelectQueryBuilder<Enrolment>> = {
     select: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
@@ -20,12 +22,17 @@ describe('ReminderService', () => {
     const discordServiceMock: Partial<DiscordService> = {
       getMember: jest.fn(),
     };
-
     const enrolmentRepositoryMock: Partial<Repository<Enrolment>> = {
       query: jest.fn(),
       createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
     };
-    const memberRepositoryMock: Partial<Repository<Member>> = {};
+    const hllEventRepositoryMock: Partial<HLLEventRepository> = {
+      getReminderEventsOne: jest.fn().mockResolvedValue([]),
+      getReminderEventsTwo: jest.fn().mockReturnValue([]),
+      setReminderOne: jest.fn(),
+      setReminderTwo: jest.fn(),
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ReminderService,
@@ -38,8 +45,8 @@ describe('ReminderService', () => {
           useValue: enrolmentRepositoryMock,
         },
         {
-          provide: getRepositoryToken(Member),
-          useValue: memberRepositoryMock,
+          provide: HLLEventRepository,
+          useValue: hllEventRepositoryMock,
         },
       ],
     }).compile();
@@ -47,75 +54,50 @@ describe('ReminderService', () => {
     service = module.get<ReminderService>(ReminderService);
     enrolmentRepository = module.get(getRepositoryToken(Enrolment));
     discordService = module.get(DiscordService);
+    hllEventRepository = module.get(HLLEventRepository);
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  describe('getMissingEnrolmentOne', () => {
-    const event: Partial<HLLEvent> = {
+  describe('sendReminders', () => {
+    const eventOne: Partial<HLLEvent> = {
       name: 'TestEvent',
       discordEvent: { channelId: '23809457397' } as HllDiscordEvent,
+    };
+    const eventTwo: Partial<HLLEvent> = {
+      name: 'TestEvent#2',
+      discordEvent: { channelId: '12233435766' } as HllDiscordEvent,
     };
     const members: Partial<Member>[] = [{ id: '4234234234' }, { id: '4359830958' }];
+    const enrolments: Partial<Enrolment>[] = [{ memberId: '134134' }, { memberId: '7767' }];
     const guildMember: Partial<GuildMember> = {
       send: jest.fn(),
       valueOf: jest.fn(),
       toString: jest.fn(),
     };
-    const message = `Vergiss nicht dich für das Event "${event.name}" an- oder abzumelden! <#${event.discordEvent.channelId}>`;
+    const messageOne = `Vergiss nicht dich für das Event "${eventOne.name}" an- oder abzumelden! <#${eventOne.discordEvent.channelId}>`;
+    const messageTwo = `Vergiss nicht, dass das Event "${eventTwo.name}" morgen stattfindet! <#${eventTwo.discordEvent.channelId}>`;
 
-    beforeEach(() => {
+    beforeAll(async () => {
       enrolmentRepository.query.mockResolvedValue(members);
+      (queryBuilder.getMany as jest.Mock<any, any>).mockResolvedValue(enrolments);
       discordService.getMember.mockResolvedValue(guildMember as GuildMember);
-    });
+      hllEventRepository.getReminderEventsOne.mockResolvedValue([eventOne as HLLEvent]);
+      hllEventRepository.getReminderEventsTwo.mockResolvedValue([eventTwo as HLLEvent]);
 
-    it('should call getMember or all members', async () => {
-      await service.sendReminderOne(event as HLLEvent);
-      members.forEach((member) => {
-        expect(discordService.getMember).toHaveBeenCalledWith(member.id);
-      });
+      service.checkReminders();
+      await new Promise<void>((resolve) =>
+        setTimeout(() => {
+          resolve();
+        }, 2000),
+      );
     });
 
     it('should send message to user', async () => {
-      await service.sendReminderOne(event as HLLEvent);
-      expect(guildMember.send).toHaveBeenCalledWith(message);
-    });
-  });
-
-  describe('getMissingEnrolmentTwo', () => {
-    const event: Partial<HLLEvent> = {
-      name: 'TestEvent',
-      discordEvent: { channelId: '23809457397' } as HllDiscordEvent,
-      id: 1,
-    };
-    const missingMembers: Partial<Enrolment>[] = [
-      { memberId: '4234234234' },
-      { memberId: '4359830958' },
-    ];
-    const guildMember: Partial<GuildMember> = {
-      send: jest.fn(),
-      valueOf: jest.fn(),
-      toString: jest.fn(),
-    };
-    const message = `Vergiss nicht, dass das Event "${event.name}" morgen stattfindet! <#${event.discordEvent.channelId}>`;
-
-    beforeEach(() => {
-      queryBuilder.getMany = jest.fn().mockResolvedValue(missingMembers);
-      discordService.getMember.mockResolvedValue(guildMember as GuildMember);
-    });
-
-    it('should call getMember or all members', async () => {
-      await service.sendReminderTwo(event as HLLEvent);
-      missingMembers.forEach((member) => {
-        expect(discordService.getMember).toHaveBeenCalledWith(member.memberId);
-      });
-    });
-
-    it('should send message to user', async () => {
-      await service.sendReminderTwo(event as HLLEvent);
-      expect(guildMember.send).toHaveBeenCalledWith(message);
+      expect(guildMember.send).toHaveBeenCalledWith(messageOne);
+      expect(guildMember.send).toHaveBeenCalledWith(messageTwo);
     });
   });
 });

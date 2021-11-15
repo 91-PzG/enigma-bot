@@ -54,6 +54,7 @@ describe('UsersService', () => {
     member.roles = [AccessRoles.MEMBER];
     member.missedConsecutiveEvents = 3;
     member.missedEvents = 5;
+    member.contactId = 'one';
 
     contact.id = 'one';
     contact.comment = 'comment';
@@ -101,7 +102,8 @@ describe('UsersService', () => {
         roles: [AccessRoles.MEMBER],
       };
       const result = {
-        contact: { name: 'hans' },
+        contact: { name: 'hans', id: 'one' },
+        contactId: 'one',
         id: 'one',
         recruitSince: new Date('2020-07-31T18:00:00.000Z'),
         recruitTill: new Date('2020-07-31T18:00:00.000Z'),
@@ -123,7 +125,8 @@ describe('UsersService', () => {
         roles: [AccessRoles.MEMBER],
       };
       const result = {
-        contact: { name: 'hans' },
+        contact: { name: 'hans', id: 'one' },
+        contactId: 'one',
         id: 'one',
         recruitTill: new Date('2020-07-31T18:00:00.000Z'),
         recruitSince: new Date('2020-07-31T18:00:00.000Z'),
@@ -151,7 +154,7 @@ describe('UsersService', () => {
         roles: [AccessRoles.CLANRAT],
       };
       const result = {
-        contact: { name: 'hans', comment: 'comment' },
+        contact: { name: 'hans', comment: 'comment', id: 'one' },
         id: 'one',
         recruitSince: new Date('2020-07-31T18:00:00.000Z'),
         recruitTill: new Date('2020-07-31T18:00:00.000Z'),
@@ -165,6 +168,7 @@ describe('UsersService', () => {
         roles: ['member'],
         missedConsecutiveEvents: 3,
         missedEvents: 5,
+        contactId: 'one',
       };
       expect(await service.getMemberById('one', data as JwtPayload)).toEqual(result);
       data.roles = [AccessRoles.HUMANRESOURCES];

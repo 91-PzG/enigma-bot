@@ -1,15 +1,9 @@
-import { On, UseGuards } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import { ButtonInteraction, Message, MessageActionRow, MessageButton } from 'discord.js';
 import { DiscordService } from '../../discord/discord.service';
-import { EnrolByDiscordDto } from '../../enrolments/dto/enrolByDiscord.dto';
-import { EnrolmentsDiscordService } from '../../enrolments/enrolments-discord.service';
-import { EnrolmentType, HLLEvent } from '../../typeorm/entities';
-import { UsersService } from '../../users/users.service';
-import { ButtonGuard } from '../../util/guards/button.guard';
-import { RegistrationGuard } from '../../util/guards/registration.guard';
+import { HLLEvent } from '../../typeorm/entities';
 import { HLLEventRepository } from '../hllevent.repository';
 import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
 import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
@@ -17,7 +11,7 @@ import { InformationMessageFactory } from './messages/informationMessage.factory
 
 @Injectable()
 export class HLLEventsDiscordService {
-  logger = new Logger('HLLEventsDiscordService');
+  private logger = new Logger('HLLEventsDiscordService');
 
   constructor(
     private discordService: DiscordService,
@@ -25,80 +19,8 @@ export class HLLEventsDiscordService {
     private eventRepository: HLLEventRepository,
     private informationMessageFactory: InformationMessageFactory,
     private enrolmentMessageFactory: EnrolmentMessageFactory,
-    private enrolmentsService: EnrolmentsDiscordService,
-    private usersService: UsersService,
     private configService: ConfigService,
   ) {}
-
-  @On('interactionCreate')
-  @UseGuards(ButtonGuard, RegistrationGuard)
-  async register(interaction: ButtonInteraction) {
-    const eventId = parseInt(interaction.customId.split('-')[0], 10);
-    const event = await this.eventRepository.getEventById(eventId);
-    if (!event) return;
-    if (event.closed || (event.locked && !interaction.customId.includes('cancel'))) {
-      this.sendError(interaction, `Du kannst dich bei Event #${eventId} nicht mehr anmelden`);
-      this.updateEnrolmentMessage(event, interaction);
-      return;
-    }
-
-    const dto = await this.createEnrolmentDto(interaction);
-    if (!dto) return;
-
-    this.enrolmentsService
-      .enrol(dto)
-      .then(() => {
-        this.updateEnrolmentMessage(event, interaction)
-          .then(() => {
-            this.sendSuccess(interaction, dto);
-          })
-          .catch((e) => {
-            this.logger.error(e);
-            this.sendError(
-              interaction,
-              'Fehler beim update der Nachricht. Bitte versuche es später erneut',
-            );
-          });
-      })
-      .catch(() =>
-        this.sendError(interaction, 'Fehler bei der Anmeldung. Bitte versuche es später erneut'),
-      );
-  }
-
-  private sendSuccess(interaction: ButtonInteraction, dto: EnrolByDiscordDto) {
-    const roleString = dto.commander ? ' als Kommandant ' : dto.squadlead ? ' als Squadlead ' : ' ';
-    interaction.reply({
-      content: `Du hast dich erfolgreich${roleString}${
-        dto.type === EnrolmentType.ANMELDUNG ? 'an' : 'ab'
-      }gemeldet!`,
-      ephemeral: true,
-    });
-  }
-
-  private sendError(interaction: ButtonInteraction, content: string) {
-    interaction.reply({
-      content,
-      ephemeral: true,
-    });
-  }
-
-  private async createEnrolmentDto(interaction: ButtonInteraction): Promise<EnrolByDiscordDto> {
-    const { customId } = interaction;
-    const member = await this.usersService.getActiveMember(interaction.user.id);
-    const type: EnrolmentType = customId.includes('cancel')
-      ? EnrolmentType.ABMELDUNG
-      : EnrolmentType.ANMELDUNG;
-    const eventId = parseInt(customId.split('-')[0], 10);
-
-    return {
-      type,
-      eventId,
-      member,
-      division: member.division,
-      squadlead: customId.includes('squadlead'),
-      commander: customId.includes('commander'),
-    };
-  }
 
   async publishMessages(event: HLLEvent) {
     const channel = await this.discordService.createEventChannelIfNotExists(event.channelName);
@@ -114,14 +36,11 @@ export class HLLEventsDiscordService {
       })
     ).id;
 
-    event.discordEvent = await this.discordRepository.createEntity(
-      channel.id,
-      informationId,
-      enrolmentId,
-    );
+    const discordEventId = (
+      await this.discordRepository.createEntity(channel.id, informationId, enrolmentId)
+    ).id;
 
-    event.autoPublishDate = null;
-    //event.save();
+    this.eventRepository.update(event.id, { discordEventId, autoPublishDate: null });
   }
 
   async updateInformationMessage(event: HLLEvent): Promise<boolean> {
@@ -140,11 +59,11 @@ export class HLLEventsDiscordService {
     return true;
   }
 
-  async updateEnrolmentMessage(event: HLLEvent, interaction?: ButtonInteraction): Promise<any> {
+  async updateEnrolmentMessage(event: HLLEvent, interaction?: ButtonInteraction): Promise<boolean> {
     const discordEvent = await this.discordRepository.findOne(event.discordEventId);
     if (!discordEvent) {
       this.logger.debug(`Encountered error fetching discordevent with id ${event.discordEventId}`);
-      throw new Error('Discord Event not found');
+      return false;
     }
 
     const embed = await this.enrolmentMessageFactory.createMessage(event);
@@ -152,26 +71,34 @@ export class HLLEventsDiscordService {
       embeds: [embed],
       components: [this.createMessageActionRow(event.id, event.locked, event.closed)],
     };
-    if (interaction) return (interaction.message as Message).edit(newMessage);
+    if (interaction) {
+      (interaction.message as Message).edit(newMessage);
+      return true;
+    }
 
     const oldMessage = await this.getMessageFromDiscord(
       event.id,
       discordEvent.channelId,
       discordEvent.enrolmentMsg,
     );
+    if (!oldMessage) {
+      return false;
+    }
     oldMessage.edit(newMessage);
+    return true;
   }
 
   private async getMessageFromDiscord(
     eventId: number,
-    channel: string,
-    message: string,
-  ): Promise<Message | undefined> {
-    try {
-      return await this.discordService.getMessageById(message, channel, true);
-    } catch (error) {
+    channelId: string,
+    messageId: string,
+  ): Promise<Message | void> {
+    const message = await this.discordService.getMessageById(messageId, channelId, true);
+    if (!message) {
       this.eventRepository.update(eventId, { closed: true });
+      return;
     }
+    return message;
   }
 
   private createMessageActionRow(
@@ -218,25 +145,21 @@ export class HLLEventsDiscordService {
   }
 
   @Cron('*/1 * * * *')
-  async checkEvents() {
+  checkEvents() {
     this.eventRepository.getPublishableEvents().then((events) => {
       events.forEach((event) => {
-        //@ts-ignore
-        event.organisator = event.organisator.name;
         this.publishMessages(event);
       });
     });
     this.eventRepository.getLockableEvents().then((events) => {
       events.forEach((event) => {
-        event.locked = true;
-        event.save();
+        this.eventRepository.update(event.id, { locked: true });
         this.updateEnrolmentMessage(event);
       });
     });
     this.eventRepository.getClosableEvents().then((events) => {
       events.forEach((event) => {
-        event.closed = true;
-        event.save();
+        this.eventRepository.update(event.id, { closed: true });
         this.updateEnrolmentMessage(event);
       });
     });

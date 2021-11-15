@@ -1,79 +1,34 @@
 import { TransformPipe } from '@discord-nestjs/common';
-import { Command, DiscordTransformedCommand, Param, Payload, UsePipes } from '@discord-nestjs/core';
+import { Command, DiscordTransformedCommand, Payload, UsePipes } from '@discord-nestjs/core';
 import { Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CommandInteraction } from 'discord.js';
-import { query, QueryResult } from 'gamedig';
 import { Repository } from 'typeorm';
-import { Enrolment, HLLEvent } from '../../typeorm/entities';
-
-export class AttendanceDto {
-  @Param({
-    name: 'EventId',
-    description: 'Id of the event (can be found in the footer)',
-    required: true,
-  })
-  eventId: string;
-  @Param({
-    name: 'ServerSocker',
-    description: 'IP and Port of the gameserver (can be found on battlemetrics)',
-    required: true,
-  })
-  socket: string;
-}
+import { HLLEvent } from '../../typeorm/entities';
+import { AttendanceService } from '../attendance.service';
+import { AttendanceDto } from './dto/attendance.dto';
 
 @Command({
-  name: 'anwesend',
-  description: 'Anwesenheitsüberprüfung für Events',
+  name: 'attendance',
+  description: 'Plays a song',
 })
 @UsePipes(TransformPipe)
 export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDto> {
-  logger = new Logger('AttendanceCommand');
-
+  logger = new Logger('PlayCommand');
   constructor(
-    @InjectRepository(HLLEvent)
-    private hllEventRepository: Repository<HLLEvent>,
-    @InjectRepository(Enrolment)
-    private enrolmentRepository: Repository<Enrolment>,
+    @InjectRepository(HLLEvent) private hllEventRepository: Repository<HLLEvent>,
+    private service: AttendanceService,
   ) {}
 
-  async handler(@Payload() dto: AttendanceDto, interaction: CommandInteraction): Promise<any> {
+  async handler(@Payload() dto: AttendanceDto, interaction: CommandInteraction): Promise<void> {
     if (!this.validateSocket(dto.socket))
       return this.sendFeedbackMessage(interaction, 'Ungültiger Socket');
-
     if (!(await this.validateEventId(dto.eventId)))
       return this.sendFeedbackMessage(interaction, 'Ungültige Eventid');
-
-    this.attendanceCommand(parseInt(dto.eventId, 10), dto.socket)
+    return this.service
+      .attendanceCommand(parseInt(dto.eventId, 10), dto.socket)
       .then(() => this.sendFeedbackMessage(interaction, 'Anwesenheit erfolgreich eingetragen'))
       .catch((error: NotFoundException) => this.sendFeedbackMessage(interaction, error.message));
-  }
-
-  async attendanceCommand(eventId: number, socket: string): Promise<any> {
-    const queryResult = await this.queryServer(socket);
-    if (!queryResult)
-      throw new NotFoundException(`Der Server unter ${socket} kann nicht erreicht werden`);
-
-    const updates: Promise<void>[] = [];
-
-    queryResult.players.forEach((player) => {
-      updates.push(this.setAttendance(player.name, eventId));
-    });
-
-    return Promise.all(updates);
-  }
-
-  private queryServer(socket: string): Promise<QueryResult> {
-    const [host, port] = socket.split(':');
-    return new Promise<QueryResult | null>((resolve) =>
-      query({
-        type: 'hll',
-        host,
-        port: Number(port),
-      })
-        .then((result) => resolve(result))
-        .catch(() => resolve(null)),
-    );
   }
 
   private async validateEventId(eventId: string): Promise<boolean> {
@@ -81,7 +36,7 @@ export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDt
 
     if (isNaN(id)) return false;
 
-    return (await this.hllEventRepository.count({ id })) == 1;
+    return (await this.hllEventRepository.count({ id })) === 1;
   }
 
   private validateSocket(socket: string): boolean {
@@ -90,25 +45,7 @@ export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDt
     );
   }
 
-  private sendFeedbackMessage(
-    interaction: CommandInteraction,
-    content: string,
-    timeout = 5000,
-  ): void {
+  private sendFeedbackMessage(interaction: CommandInteraction, content: string): void {
     interaction.reply({ content, ephemeral: true });
-  }
-
-  private setAttendance(playerName: string, eventId: number) {
-    if (!playerName) return;
-    return new Promise<void>(async (resolve) => {
-      await this.enrolmentRepository
-        .createQueryBuilder()
-        .update()
-        .set({ isPresent: true })
-        .where('username LIKE :name', { name: playerName + '%' })
-        .andWhere('eventId = :eventId', { eventId })
-        .execute();
-      resolve();
-    });
   }
 }

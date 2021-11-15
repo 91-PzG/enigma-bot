@@ -22,13 +22,13 @@ export class UpdateUsersCommand implements DiscordCommand {
 
   async handler(interaction: CommandInteraction): Promise<void> {
     interaction.reply({
-      content: 'Update Clanmembers...',
+      content: 'Updating clanmembers...',
       ephemeral: true,
     });
 
     const users = await this.discordService.getClanMembers();
     users.forEach((user) => this.updateUser(user));
-    interaction.followUp({ content: 'Clanmember erfolgreich geupdatet', ephemeral: true });
+    interaction.followUp({ content: 'Successfully updated clanmembers', ephemeral: true });
   }
 
   private async updateUser(user: GuildMember) {

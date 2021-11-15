@@ -1,7 +1,6 @@
-import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { GuildMember, Message, TextChannel } from 'discord.js';
+import { CommandInteraction, GuildMember, InteractionReplyOptions } from 'discord.js';
 import { Repository } from 'typeorm';
 import { DiscordService } from '../../../discord/discord.service';
 import { DiscordUtil } from '../../../discord/util/discord.util';
@@ -24,9 +23,6 @@ describe('updateUsers command', () => {
       createMember: jest.fn(),
       updateMember: jest.fn(),
     };
-    const configServiceMock: Partial<ConfigService> = {
-      get: jest.fn(),
-    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -38,7 +34,6 @@ describe('updateUsers command', () => {
             findOne: jest.fn(),
           },
         },
-        { provide: ConfigService, useValue: configServiceMock },
         UpdateUsersCommand,
       ],
     }).compile();
@@ -54,51 +49,23 @@ describe('updateUsers command', () => {
   });
 
   describe('updateUserCommand', () => {
-    let channel: Partial<TextChannel>;
-    let commandMessage: Partial<Message>;
-    let successMessage: Partial<Message>;
+    let interaction: Partial<CommandInteraction> = {
+      reply: jest.fn(),
+      followUp: jest.fn(),
+      valueOf: jest.fn(),
+    };
+    const reply: InteractionReplyOptions = { ephemeral: true };
 
-    beforeEach(() => {
-      successMessage = {
-        delete: jest.fn(),
-        valueOf: jest.fn(),
-      };
-      channel = {
-        valueOf: jest.fn(),
-        send: jest.fn(),
-        toString: jest.fn(),
-      };
-      commandMessage = {
-        deletable: true,
-        valueOf: jest.fn(),
-        delete: jest.fn(),
-      };
-      channel.send = jest.fn().mockResolvedValue(successMessage);
-      //@ts-ignore
-      commandMessage.channel = channel as TextChannel;
+    it('should send reply', async () => {
+      await updateUsersCommand.handler(interaction as CommandInteraction);
+      reply.content = 'Updating clanmembers...';
+      expect(interaction.reply).toHaveBeenLastCalledWith(reply);
     });
 
-    it('should delete message if deletable', async () => {
-      await updateUsersCommand.updateUsersCommand(commandMessage as Message);
-      expect(commandMessage.delete).toHaveBeenCalled();
-    });
-
-    it('should not delete message if deletable = false', async () => {
-      //@ts-ignore
-      commandMessage.deletable = false;
-      await updateUsersCommand.updateUsersCommand(commandMessage as Message);
-      expect(commandMessage.delete).not.toHaveBeenCalled();
-    });
-
-    it('should send success message', async () => {
-      await updateUsersCommand.updateUsersCommand(commandMessage as Message);
-      expect(channel.send).toHaveBeenCalledWith('Updating all users...');
-    });
-
-    it('should delete success message', async () => {
-      await updateUsersCommand.updateUsersCommand(commandMessage as Message);
-      jest.runAllTimers();
-      expect(successMessage.delete).toHaveBeenCalled();
+    it('should send follow up', async () => {
+      await updateUsersCommand.handler(interaction as CommandInteraction);
+      reply.content = 'Successfully updated clanmembers';
+      expect(interaction.followUp).toHaveBeenLastCalledWith(reply);
     });
 
     describe('updateUser', () => {
@@ -119,14 +86,14 @@ describe('updateUsers command', () => {
       });
 
       it('should call findOne for each user', async () => {
-        await updateUsersCommand.updateUsersCommand(commandMessage as Message);
+        await updateUsersCommand.handler(interaction as CommandInteraction);
         for (const user of users) {
           expect(repostitory.findOne).toHaveBeenCalledWith(user.id);
         }
       });
 
       it('should call createMember if findOne returns null', async () => {
-        await updateUsersCommand.updateUsersCommand(commandMessage as Message);
+        await updateUsersCommand.handler(interaction as CommandInteraction);
         for (const user of users) {
           if (Number.parseInt(user.id) % 2 == 0)
             expect(util.createMember).toHaveBeenCalledWith(user);
@@ -134,7 +101,7 @@ describe('updateUsers command', () => {
       });
 
       it('should call updateMember if findOne returns not null', async () => {
-        await updateUsersCommand.updateUsersCommand(commandMessage as Message);
+        await updateUsersCommand.handler(interaction as CommandInteraction);
         for (const user of users) {
           if (Number.parseInt(user.id) % 2 == 1)
             expect(util.updateMember).toHaveBeenCalledWith(user, { id: 'test', avatar: 'ava' });

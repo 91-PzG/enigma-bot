@@ -48,6 +48,7 @@ describe('HLLEventService', () => {
     const hllEventRepositoryMock: Partial<HLLEventRepository> = {
       getAll: jest.fn(),
       getEventById: jest.fn(),
+      save: jest.fn().mockResolvedValue({ id: 5 }),
     };
     const userServiceMock: Partial<UsersService> = { getMemberById: jest.fn() };
     const hllEventDiscordServiceMock: Partial<HLLEventsDiscordService> = {
@@ -211,7 +212,7 @@ describe('HLLEventService', () => {
         name: 'name',
         maxPlayerCount: 5,
       };
-      const member = { contact: { id: '5' } } as Member;
+      const member = { id: '25435345634' } as Member;
 
       usersService.getMemberById.mockResolvedValue(member);
 
@@ -222,7 +223,7 @@ describe('HLLEventService', () => {
 
       expect(event).toEqual({
         ...data,
-        organisator: member.contact,
+        organisatorId: member.id,
         save: event.save,
       });
     });

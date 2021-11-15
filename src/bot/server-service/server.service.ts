@@ -7,7 +7,7 @@ import { query, QueryResult } from 'gamedig';
 import { EmbedConfig } from '../../config/embeds.config';
 import { ServerConfig } from '../../config/server.config';
 import { DiscordService } from '../../discord/discord.service';
-import { MaprecorderGuard } from './maprecorder.guard';
+import { MaprecorderGuard } from '../../util/guards/maprecorder.guard';
 import { mapRegistry } from './mapregistry';
 
 @Injectable()
