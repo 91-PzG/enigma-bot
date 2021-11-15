@@ -31,8 +31,14 @@ const translationMatrix: { [key: string]: Translation } = {
 
 const eventReductor = (acc: [string, any], [key, value]: [string, any]): [string, any] => {
   const translation = translationMatrix[key];
+  if (typeof value === 'number') {
+    value = value.toString();
+  }
   if (value != undefined && translation)
-    acc.push([translation.name, translation.valuePipe ? translation.valuePipe(value) : value]);
+    acc.push([
+      translation.name,
+      translation.valuePipe ? translation.valuePipe(value as string) : (value as string),
+    ]);
   return acc;
 };
 
@@ -46,10 +52,10 @@ export class InformationMessage extends DefaultMessage {
   }
 
   private addOptionalFields(event) {
-    return;
     const fields = Object.entries(event).reduce(eventReductor, [] as unknown as [string, any]);
+    console.log(fields);
     fields.forEach(([key, value]) => {
-      this.addField(key, value, true);
+      console.log(this.addField(key, value, true));
     });
   }
 }
