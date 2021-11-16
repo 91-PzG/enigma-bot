@@ -5,8 +5,17 @@ ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
 
 # Sets the timezone
-RUN apk add --no-cache tzdata
-ENV TZ Europe/Berlin
+ARG TZ='Europe/Berlin'
+
+ENV DEFAULT_TZ ${TZ}
+
+RUN apk upgrade --update \
+  && apk add -U tzdata \
+  && cp /usr/share/zoneinfo/${DEFAULT_TZ} /etc/localtime \
+  && apk del tzdata \
+  && rm -rf \
+  /var/cache/apk/*
+
 
 #Adds ICU (Localisation)
 WORKDIR /icu
