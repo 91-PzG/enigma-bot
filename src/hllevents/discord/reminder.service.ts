@@ -46,7 +46,7 @@ export class ReminderService {
   private async sendMessage(memberIds: string[], message: string) {
     for (const id in memberIds) {
       const member = await this.discordService.getMember(id);
-      member.send(message);
+      if (member) member.send(message);
     }
   }
 

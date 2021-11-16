@@ -1,3 +1,4 @@
+import { Once } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
@@ -20,13 +21,14 @@ export class HLLEventsDiscordService {
     private informationMessageFactory: InformationMessageFactory,
     private enrolmentMessageFactory: EnrolmentMessageFactory,
     private configService: ConfigService,
-  ) {
-    if (this.configService.get('util.discordCompatibility') === true) {
-      this.discordCompatibilityUpdate();
-    }
-  }
+  ) {}
 
+  @Once('ready')
   async discordCompatibilityUpdate() {
+    if (this.configService.get('util.discordCompatibility') !== 'true') return;
+
+    this.logger.warn('Updating existing events using compatibility mode');
+
     const events = await this.eventRepository.getOpenEvents();
     events.forEach((event) => this.updateEnrolmentMessage(event));
   }

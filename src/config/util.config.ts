@@ -6,7 +6,7 @@ export interface UtilConfig {
 }
 
 export default registerAs(
-  'discord',
+  'util',
   (): UtilConfig => ({
     discordCompatibility: process.env.DISCORD_COMPATIBILITY,
     debugMode: process.env.DEBUG_MODE,

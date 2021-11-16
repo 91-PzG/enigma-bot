@@ -67,6 +67,7 @@ export class HLLEventRepository extends Repository<HLLEvent> {
       .where('event."autoPublishDate" IS NULL')
       .andWhere('event.closed = false')
       .andWhere('event."discordEventId" IS NOT NULL')
+      .leftJoinAndSelect('event.organisator', 'orga')
       .getMany();
   }
 
