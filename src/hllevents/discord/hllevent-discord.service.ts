@@ -20,7 +20,16 @@ export class HLLEventsDiscordService {
     private informationMessageFactory: InformationMessageFactory,
     private enrolmentMessageFactory: EnrolmentMessageFactory,
     private configService: ConfigService,
-  ) {}
+  ) {
+    if (this.configService.get('util.discordCompatibility') === true) {
+      this.discordCompatibilityUpdate();
+    }
+  }
+
+  async discordCompatibilityUpdate() {
+    const events = await this.eventRepository.getOpenEvents();
+    events.forEach((event) => this.updateEnrolmentMessage(event));
+  }
 
   async publishMessages(event: HLLEvent) {
     const channel = await this.discordService.createEventChannelIfNotExists(event.channelName);

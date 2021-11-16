@@ -9,7 +9,7 @@ export class RoleGuard implements CanActivate {
   constructor(private readonly reflector: Reflector, private configService: ConfigService) {}
 
   canActivate(ctx: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
-    if (this.configService.get('jwt.debugMode') === 'true') return true;
+    if (this.configService.get('util.debugMode') === 'true') return true;
 
     const scopes = this.reflector.get<string[]>('scopes', ctx.getHandler());
     if (!scopes) return true;

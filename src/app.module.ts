@@ -11,6 +11,7 @@ import discordConfig from './config/discord.config';
 import embedsConfig from './config/embeds.config';
 import jwtConfig from './config/jwt.config';
 import serverConfig from './config/server.config';
+import utilConfig from './config/util.config';
 import { DiscordModule } from './discord/discord.module';
 import { EnrolmentsModule } from './enrolments/enrolments.module';
 import { HLLEventModule } from './hllevents/hllevent.module';
@@ -22,6 +23,7 @@ const CONFIG: ConfigFactory<any>[] = [
   jwtConfig,
   embedsConfig,
   serverConfig,
+  utilConfig,
 ];
 
 @Module({
