@@ -1,4 +1,5 @@
 import { NotImplementedException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
 import { AccessRoles } from '../../typeorm/entities';
@@ -42,6 +43,7 @@ describe('UsersController', () => {
             }),
           },
         },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('false') } },
       ],
     }).compile();
 

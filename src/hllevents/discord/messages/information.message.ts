@@ -53,9 +53,8 @@ export class InformationMessage extends DefaultMessage {
 
   private addOptionalFields(event) {
     const fields = Object.entries(event).reduce(eventReductor, [] as unknown as [string, any]);
-    console.log(fields);
     fields.forEach(([key, value]) => {
-      console.log(this.addField(key, value, true));
+      this.addField(key, value, true);
     });
   }
 }

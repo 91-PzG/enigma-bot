@@ -15,7 +15,6 @@ describe('DiscordService', () => {
       get: jest.fn().mockImplementation(
         (): DiscordConfig => ({
           token: 'token',
-          commandPrefix: '!',
           clanChat: 'clanChat',
           eventCategory: 'eventCategory',
           guild: 'guild',
