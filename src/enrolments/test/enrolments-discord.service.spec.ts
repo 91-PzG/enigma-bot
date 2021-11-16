@@ -17,12 +17,12 @@ describe('Enrolment Service', () => {
   let service: EnrolmentsDiscordService;
   let enrolmentRepository: jest.Mocked<Repository<Enrolment>>;
   let hllEventRepository: jest.Mocked<Repository<HLLEvent>>;
-  let enrolmentsService: jest.Mocked<EnrolmentsService>;
   let enrolmentQueryBuilder: Partial<SelectQueryBuilder<Enrolment>> = {
     select: jest.fn().mockReturnThis(),
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
     getRawMany: jest.fn(),
   };
 
@@ -56,7 +56,6 @@ describe('Enrolment Service', () => {
     service = module.get<EnrolmentsDiscordService>(EnrolmentsDiscordService);
     enrolmentRepository = module.get(getRepositoryToken(Enrolment));
     hllEventRepository = module.get(getRepositoryToken(HLLEvent));
-    enrolmentsService = module.get(EnrolmentsService);
   });
 
   it('should be defined', () => {

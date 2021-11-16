@@ -17,9 +17,20 @@ export class EnrolmentsDiscordService {
     return this.enrolmentRepository
       .createQueryBuilder('e')
       .leftJoinAndSelect(Contact, 'contact', 'e.memberId = contact.id')
-      .select(['username', 'squadlead', 'commander', '"enrolmentType"', 'division', 'name'])
+      .select([
+        'username',
+        'squadlead',
+        'commander',
+        '"enrolmentType"',
+        'division',
+        'name',
+        '"squadId"',
+        'position',
+      ])
       .where('e.eventId = :eventId', { eventId })
-      .orderBy('e.timestamp', 'ASC')
+      .orderBy('"squadId"', 'ASC')
+      .addOrderBy('position', 'ASC')
+      .addOrderBy('e.timestamp', 'ASC')
       .getRawMany();
   }
 

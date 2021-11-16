@@ -58,6 +58,12 @@ export class HLLEventService {
     return event;
   }
 
+  async switchSquadVisibility(eventId: number, showSquads: boolean) {
+    await this.eventRepository.update(eventId, { showSquads });
+    const event = await this.getEventById(eventId);
+    return this.discordService.updateEnrolmentMessage(event);
+  }
+
   private async getMemberById(id: string): Promise<Member> {
     try {
       const user = await this.userService.getMemberById(id);

@@ -1,32 +1,36 @@
 import { Util } from 'discord.js';
 import { EmbedConfig } from '../../../config/embeds.config';
-import { Enrolment, EnrolmentType, HLLEvent } from '../../../typeorm/entities';
+import { Enrolment, EnrolmentType, HLLEvent, Squad } from '../../../typeorm/entities';
 import { DefaultMessage } from './default.message';
 import { EmojiWrapper } from './enrolmentMessage.factory';
 
-class DivisionEnrolments {
-  infanterie: string[] = [];
-  armor: string[] = [];
-  recon: string[] = [];
-  artillery: string[] = [];
+class DivisionEnrolments<T> {
+  infanterie: T[] = [];
+  armor: T[] = [];
+  recon: T[] = [];
+  artillery: T[] = [];
+}
+
+class EnrolmentSquad {
+  constructor(public name: string, public id: number) {}
+  members: string[] = [];
 }
 
 export class EnrolmentMessage extends DefaultMessage {
-  private reservePool: string[] = [];
   private abmeldungPool: string[] = [];
+  private squadPool: DivisionEnrolments<EnrolmentSquad> = new DivisionEnrolments<EnrolmentSquad>();
 
   private iterator = (fn: (name: string, enrolment: Enrolment) => void) => {
     this.enrolments.forEach((enrolment) => {
       const name = this.formatName(enrolment);
-      switch (enrolment.enrolmentType) {
-        case EnrolmentType.ANMELDUNG:
-          fn(name, enrolment);
-          break;
-        case EnrolmentType.RESERVE:
-          this.reservePool.push(name);
-          break;
-        default:
-          this.abmeldungPool.push(name);
+      if (enrolment.enrolmentType === EnrolmentType.ABMELDUNG) {
+        this.abmeldungPool.push(name);
+      } else if (this.event.showSquads && enrolment.squadId) {
+        this.squadPool[enrolment.division].find(
+          (squad: EnrolmentSquad) => squad.id === enrolment.squadId,
+        ).members[enrolment.position] = name;
+      } else {
+        fn(name, enrolment);
       }
     });
   };
@@ -35,6 +39,7 @@ export class EnrolmentMessage extends DefaultMessage {
     private event: HLLEvent,
     private emojis: EmojiWrapper,
     private enrolments: Enrolment[],
+    private squads: Squad[],
     config: EmbedConfig,
   ) {
     super(event, config);
@@ -43,13 +48,25 @@ export class EnrolmentMessage extends DefaultMessage {
   }
 
   private loadEnrolments() {
+    if (this.event.showSquads) this.initSquads();
     if (this.event.singlePool) this.loadSinglePool();
     else this.loadSeparatePools();
     this.addDefaultPools();
   }
 
+  private initSquads() {
+    this.squads.forEach((squad) => {
+      this.squadPool[squad.division].push(new EnrolmentSquad(squad.name, squad.id));
+    });
+  }
+
   private loadSinglePool() {
-    const an: string[] = [];
+    const an: string[] = this.enrolments
+      .filter(
+        (enrolment) =>
+          enrolment.enrolmentType === EnrolmentType.ANMELDUNG && enrolment.squadId === null,
+      )
+      .map((enrolment) => this.formatName(enrolment));
 
     const fn = (name: string) => {
       an.push(name);
@@ -63,7 +80,7 @@ export class EnrolmentMessage extends DefaultMessage {
   }
 
   private loadSeparatePools() {
-    const divisions: DivisionEnrolments = new DivisionEnrolments();
+    const divisions: DivisionEnrolments<string> = new DivisionEnrolments<string>();
 
     const fn = (name: string, enrolment: Enrolment) => {
       divisions[enrolment.division].push(name);
@@ -92,7 +109,7 @@ export class EnrolmentMessage extends DefaultMessage {
   }
 
   private stripName(name: string) {
-    return name.split('|').slice(1).join('|');
+    return name.includes('91.') ? name.split('|').slice(1).join('|') : name;
   }
 
   private addPool(header: string, members: string[], inline?: boolean) {
@@ -101,8 +118,15 @@ export class EnrolmentMessage extends DefaultMessage {
 
   private addDefaultPools() {
     this.addField('\u200B', '\u200B');
-    this.addPool(`Reserve (${this.reservePool.length})`, this.reservePool, true);
+    if (this.event.showSquads)
+      Object.keys(this.squadPool).forEach((division) => this.addSquad(this.squadPool[division]));
     this.addPool(`Abmeldungen (${this.abmeldungPool.length})`, this.abmeldungPool, true);
+  }
+
+  private addSquad(squads: EnrolmentSquad[]) {
+    squads.forEach((squad) =>
+      this.addPool(`${squad.name} (${squad.members.length})`, squad.members),
+    );
   }
 
   private joinMemberList(members: string[]): string {
