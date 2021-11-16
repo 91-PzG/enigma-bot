@@ -1,4 +1,4 @@
-import { Division, EnrolmentType, HLLRole } from '../../postgres/entities';
+import { Division, EnrolmentType, HLLRole } from '../../typeorm/entities';
 
 export class EnrolmentEventDto {
   name: string;

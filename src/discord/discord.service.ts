@@ -1,6 +1,6 @@
+import { DiscordClientProvider, Once } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Client as InjectClient, ClientProvider, Once } from 'discord-nestjs';
 import {
   CategoryChannel,
   Channel,
@@ -19,17 +19,15 @@ import { DiscordConfig } from '../config/discord.config';
 
 @Injectable()
 export class DiscordService {
-  @InjectClient()
-  discordProvider: ClientProvider;
   client: Client;
   private config: DiscordConfig;
   private logger = new Logger('DiscordService');
 
-  constructor(config: ConfigService) {
+  constructor(config: ConfigService, private discordProvider: DiscordClientProvider) {
     this.config = config.get('discord');
   }
 
-  @Once({ event: 'ready' })
+  @Once('ready')
   onReady(): void {
     this.client = this.discordProvider.getClient();
     this.logger.log('Discord client connected');
@@ -69,8 +67,8 @@ export class DiscordService {
     return channel.messages.fetch(messageId, { force });
   }
 
-  getEmojiById(emojiId: string): GuildEmoji | undefined {
-    return this.client.emojis.cache.get(emojiId);
+  getEmojiById(emojiId: string): Promise<GuildEmoji> | undefined {
+    return this.getGuild().emojis.fetch(emojiId);
   }
 
   getGuild(): Guild | undefined {
@@ -97,7 +95,7 @@ export class DiscordService {
     });
   }
 
-  async getRoleByID(id: string): Promise<Role | null | undefined> {
+  async getRoleById(id: string): Promise<Role | undefined> {
     return this.getGuild()?.roles.fetch(id);
   }
 

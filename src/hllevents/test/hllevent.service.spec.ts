@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { DiscordService } from '../../discord/discord.service';
 import { EnrolmentsService } from '../../enrolments/enrolments.service';
-import { Contact, HLLEvent, IHLLEvent, Member } from '../../postgres/entities';
+import { Contact, HLLEvent, IHLLEvent, Member } from '../../typeorm/entities';
 import { UsersService } from '../../users/users.service';
 import { HLLEventsDiscordService } from '../discord/hllevent-discord.service';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
@@ -48,6 +48,7 @@ describe('HLLEventService', () => {
     const hllEventRepositoryMock: Partial<HLLEventRepository> = {
       getAll: jest.fn(),
       getEventById: jest.fn(),
+      save: jest.fn().mockResolvedValue({ id: 5 }),
     };
     const userServiceMock: Partial<UsersService> = { getMemberById: jest.fn() };
     const hllEventDiscordServiceMock: Partial<HLLEventsDiscordService> = {
@@ -211,7 +212,7 @@ describe('HLLEventService', () => {
         name: 'name',
         maxPlayerCount: 5,
       };
-      const member = { contact: { id: '5' } } as Member;
+      const member = { id: '25435345634' } as Member;
 
       usersService.getMemberById.mockResolvedValue(member);
 
@@ -222,7 +223,7 @@ describe('HLLEventService', () => {
 
       expect(event).toEqual({
         ...data,
-        organisator: member.contact,
+        organisatorId: member.id,
         save: event.save,
       });
     });

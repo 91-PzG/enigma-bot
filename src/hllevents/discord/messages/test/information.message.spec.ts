@@ -1,6 +1,5 @@
-import { EmbedField } from 'discord.js';
 import { EmbedConfig } from '../../../../config/embeds.config';
-import { HLLEvent } from '../../../../postgres/entities';
+import { HLLEvent } from '../../../../typeorm/entities';
 import { InformationMessage } from '../information.message';
 
 describe('Default Message', () => {
@@ -31,7 +30,8 @@ describe('Default Message', () => {
     expect(message).toBeDefined();
   });
 
-  it('add optional fields', () => {
+  // TODO @dtke Readd these tests after optional fields are added again
+  /*it('add optional fields', () => {
     const fields: EmbedField[] = [
       {
         name: 'Dauer:',
@@ -59,5 +59,5 @@ describe('Default Message', () => {
         true,
       );
     });
-  });
+  });*/
 });

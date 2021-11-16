@@ -1,14 +1,15 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
-import { Contact, HLLEvent, IHLLEvent } from '../../postgres/entities';
+import { Contact, HLLEvent, IHLLEvent } from '../../typeorm/entities';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
 import { HLLEventGetAllDto } from '../dtos/hlleventGetAll.dto';
 import { HLLEventUpdateWrapperDto } from '../dtos/hlleventUpdate.dto';
 import { HLLEventController } from '../hllevent.controller';
 import { HLLEventService } from '../hllevent.service';
 
-describe('EventControler', () => {
+describe('EventController', () => {
   let hllEventController: HLLEventController;
   let hllEventService: jest.Mocked<HLLEventService>;
 
@@ -19,7 +20,11 @@ describe('EventControler', () => {
     };
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [{ provide: HLLEventService, useValue: hllEventServiceMock }, HLLEventController],
+      providers: [
+        HLLEventController,
+        { provide: HLLEventService, useValue: hllEventServiceMock },
+        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue('false') } },
+      ],
     }).compile();
 
     hllEventController = module.get<HLLEventController>(HLLEventController);

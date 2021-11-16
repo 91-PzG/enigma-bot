@@ -1,27 +1,26 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { EnrolmentsModule } from '../enrolments/enrolments.module';
+import { Enrolment, Member } from '../typeorm/entities';
 import { UsersModule } from '../users/users.module';
 import { HLLDiscordEventRepository } from './discord/hlldiscordevent.repository';
 import { HLLEventsDiscordService } from './discord/hllevent-discord.service';
 import { MessageModule } from './discord/messages/message.module';
-import { RegistrationModule } from './discord/registration/registration.module';
-import { ReminderModule } from './discord/reminder/reminder.module';
+import { RegistrationService } from './discord/registration.service';
+import { ReminderService } from './discord/reminder.service';
 import { HLLEventController } from './hllevent.controller';
 import { HLLEventRepository } from './hllevent.repository';
 import { HLLEventService } from './hllevent.service';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([HLLEventRepository, HLLDiscordEventRepository]),
+    TypeOrmModule.forFeature([HLLEventRepository, HLLDiscordEventRepository, Enrolment, Member]),
     UsersModule,
     MessageModule,
     EnrolmentsModule,
-    RegistrationModule,
-    ReminderModule,
   ],
   controllers: [HLLEventController],
-  providers: [HLLEventService, HLLEventsDiscordService],
+  providers: [HLLEventService, HLLEventsDiscordService, ReminderService, RegistrationService],
   exports: [HLLEventsDiscordService],
 })
 export class HLLEventModule {}

@@ -1,6 +1,6 @@
 import { MessageEmbed } from 'discord.js';
 import { EmbedConfig } from '../../../config/embeds.config';
-import { HLLEvent } from '../../../postgres/entities';
+import { HLLEvent } from '../../../typeorm/entities';
 
 export class DefaultMessage extends MessageEmbed {
   constructor(event: HLLEvent, config: EmbedConfig) {
@@ -8,6 +8,6 @@ export class DefaultMessage extends MessageEmbed {
     this.setColor(config.color)
       .setThumbnail(config.thumbnail)
       .setTimestamp()
-      .setFooter(`#${event.id} - Erstellt von ${event.organisator}`);
+      .setFooter(`#${event.id} - Erstellt von ${event.organisator.name}`);
   }
 }

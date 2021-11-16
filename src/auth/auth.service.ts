@@ -1,4 +1,5 @@
-import { HttpService, Injectable, NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { AuthRepository } from './auth.repository';
 import { DiscordUserDataDto } from './dtos/discord-user-data.dto';

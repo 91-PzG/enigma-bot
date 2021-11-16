@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { EntityRepository, Repository } from 'typeorm';
-import { Member } from '../postgres/entities';
+import { Member } from '../typeorm/entities';
 import { JwtPayload, JwtWrapper } from './jwt/jwt-payload.interface';
 
 @EntityRepository(Member)

@@ -128,40 +128,9 @@ def bump_package_lock_json(version, nightly):
 
     print("✅ SUCCESS")
 
-
-def bump_environment_common_ts(version, nightly):
-    print("\n> Loading environment.common.ts")
-    with open("./src/environments/environment.common.ts", "r") as f:
-        file = f.read()
-
-    begin_version_line = file.find("version: '")
-    begin_version = begin_version_line + len("version: '")
-    end_version = file.find("'", begin_version)
-    env_com_version = file[begin_version:end_version]
-
-    print("Old Version: " + env_com_version)
-    version = get_new_version(version, env_com_version, nightly)
-    print("New Version: " + version)
-
-    if nightly is False:
-        check_version = new_version_greater(version, env_com_version)
-    else:
-        check_version = True
-
-    if not (check_version):
-        throw_error("New version is <= old version")
-
-    with open("./src/environments/environment.common.ts", "w") as f:
-        f.write(file[0:begin_version] + version + file[end_version:])
-
-    print("✅ SUCCESS")
-
-
 def bump_version(version, nightly):
     bump_package_json(version, nightly)
     bump_package_lock_json(version, nightly)
-    bump_environment_common_ts(version, nightly)
-
 
 if __name__ == "__main__":
     print("### Robot Coral CI ###\n")

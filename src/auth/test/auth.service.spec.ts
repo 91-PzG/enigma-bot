@@ -1,10 +1,11 @@
-import { HttpService, NotFoundException } from '@nestjs/common';
+import { HttpService } from '@nestjs/axios';
+import { NotFoundException } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AxiosResponse } from 'axios';
 import jwtDecode from 'jwt-decode';
 import { of } from 'rxjs';
-import { AccessRoles } from '../../postgres/entities';
+import { AccessRoles } from '../../typeorm/entities';
 import { AuthRepository } from '../auth.repository';
 import { AuthService } from '../auth.service';
 

@@ -1,5 +1,5 @@
 import { EmbedConfig } from '../../../../config/embeds.config';
-import { HLLEvent } from '../../../../postgres/entities';
+import { HLLEvent } from '../../../../typeorm/entities';
 import { DefaultMessage } from '../default.message';
 
 describe('Default Message', () => {
@@ -34,7 +34,7 @@ describe('Default Message', () => {
   });
 
   it('should set footer', () => {
-    expect(message.footer?.text).toBe(`#${event.id} - Erstellt von ${event.organisator}`);
+    expect(message.footer?.text).toBe(`#${event.id} - Erstellt von ${event.organisator.name}`);
   });
 
   it('should set Timestamp', () => {

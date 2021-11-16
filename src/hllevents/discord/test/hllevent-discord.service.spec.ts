@@ -1,62 +1,122 @@
+import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Message, TextChannel } from 'discord.js';
+import {
+  ButtonInteraction,
+  Message,
+  MessageActionRow,
+  MessageButton,
+  TextChannel,
+} from 'discord.js';
 import { DiscordService } from '../../../discord/discord.service';
-import { HLLEvent } from '../../../postgres/entities';
+import { HllDiscordEvent, HLLEvent } from '../../../typeorm/entities';
 import { HLLEventRepository } from '../../hllevent.repository';
 import { HLLDiscordEventRepository } from '../hlldiscordevent.repository';
 import { HLLEventsDiscordService } from '../hllevent-discord.service';
+import { EnrolmentMessage } from '../messages/enrolment.message';
 import { EnrolmentMessageFactory } from '../messages/enrolmentMessage.factory';
+import { InformationMessage } from '../messages/information.message';
 import { InformationMessageFactory } from '../messages/informationMessage.factory';
-import { RegistrationManager } from '../registration/registration.manager';
-import { ReminderService } from '../reminder/reminder.service';
 
 describe('HLLEventDiscordService', () => {
   let service: HLLEventsDiscordService;
   let discordService: jest.Mocked<DiscordService>;
   let discordRepository: jest.Mocked<HLLDiscordEventRepository>;
   let eventRepository: jest.Mocked<HLLEventRepository>;
-  let informationFactory: jest.Mocked<InformationMessageFactory>;
-  let enrolmentFactory: jest.Mocked<EnrolmentMessageFactory>;
+  let informationMessage: InformationMessage;
+  let enrolmentMessage: EnrolmentMessage;
+  let discordEvent: HllDiscordEvent;
+  let event: HLLEvent;
+  let oldMessage: Message;
+  let components: MessageActionRow;
+  let channel: TextChannel;
+  const lockedEmoji = '🔒';
+  const closedEmoji = '🛑';
+  const discordEventId = 2;
 
   beforeEach(async () => {
+    informationMessage = {
+      id: '1234',
+    } as unknown as InformationMessage;
+    enrolmentMessage = {
+      id: '4321',
+    } as unknown as EnrolmentMessage;
+    discordEvent = {
+      channelId: 'channel-id',
+      enrolmentMsg: 'enrolment-msg',
+      informationMsg: 'information-msg',
+    } as unknown as HllDiscordEvent;
+    event = {
+      id: 1,
+      locked: false,
+      closed: false,
+      channelName: 'channelName',
+    } as unknown as HLLEvent;
+    oldMessage = {
+      edit: jest.fn(),
+    } as unknown as Message;
+    channel = {
+      send: jest.fn().mockResolvedValue({ id: '54321' }),
+    } as unknown as TextChannel;
+    components = new MessageActionRow().addComponents(
+      new MessageButton({
+        customId: `${event.id}-register`,
+        style: 'SUCCESS',
+        label: 'Anmelden',
+        emoji: null,
+        disabled: false,
+      }),
+      new MessageButton({
+        customId: `${event.id}-squadlead-register`,
+        style: 'PRIMARY',
+        label: 'Squadlead',
+        emoji: null,
+        disabled: false,
+      }),
+      new MessageButton({
+        customId: `${event.id}-commander-register`,
+        style: 'SECONDARY',
+        label: 'Kommandant',
+        emoji: null,
+        disabled: false,
+      }),
+      new MessageButton({
+        customId: `${event.id}-cancel-register`,
+        style: 'DANGER',
+        label: 'Abmelden',
+        emoji: null,
+        disabled: false,
+      }),
+    );
+
     const discordServiceMock: Partial<DiscordService> = {
-      createEventChannelIfNotExists: jest.fn(),
-      getMessageById: jest.fn(),
+      createEventChannelIfNotExists: jest.fn().mockResolvedValue(channel),
+      getMessageById: jest.fn().mockResolvedValue(oldMessage),
     };
     const discordRepositoryMock: Partial<HLLDiscordEventRepository> = {
-      createEntity: jest.fn(),
-      findOne: jest.fn(),
+      createEntity: jest.fn().mockResolvedValue({ id: discordEventId }),
+      findOne: jest.fn().mockResolvedValue(discordEvent),
     };
     const eventRepositoryMock: Partial<HLLEventRepository> = {
       getPublishableEvents: jest.fn(),
       getLockableEvents: jest.fn(),
       getClosableEvents: jest.fn(),
-      getReminderEventsOne: jest.fn().mockResolvedValue([]),
-      getReminderEventsTwo: jest.fn().mockResolvedValue([]),
+      update: jest.fn().mockResolvedValue(undefined),
     };
     const informationFactoryMock: Partial<InformationMessageFactory> = {
-      createMessage: jest.fn(),
+      createMessage: jest.fn().mockReturnValue(informationMessage),
     };
     const enrolmentFactoryMock: Partial<EnrolmentMessageFactory> = {
-      createMessage: jest.fn(),
+      createMessage: jest.fn().mockResolvedValue(enrolmentMessage),
     };
-    const registrationManagerMock: Partial<RegistrationManager> = {
-      addEvent: jest.fn(),
-      editEvent: jest.fn(),
-      closeEvent: jest.fn(),
-    };
-    const reminderServiceMock: Partial<ReminderService> = {
-      getMissingEnrolmentOne: jest.fn(),
-      getMissingEnrolmentTwo: jest.fn(),
+    const configServiceMock: Partial<ConfigService> = {
+      get: jest.fn().mockImplementation((config: string) => {
+        return config.endsWith('closedEmoji') ? closedEmoji : lockedEmoji;
+      }),
     };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         HLLEventsDiscordService,
-        {
-          provide: RegistrationManager,
-          useValue: registrationManagerMock,
-        },
         {
           provide: DiscordService,
           useValue: discordServiceMock,
@@ -77,10 +137,7 @@ describe('HLLEventDiscordService', () => {
           provide: EnrolmentMessageFactory,
           useValue: enrolmentFactoryMock,
         },
-        {
-          provide: ReminderService,
-          useValue: reminderServiceMock,
-        },
+        { provide: ConfigService, useValue: configServiceMock },
       ],
     }).compile();
 
@@ -88,8 +145,6 @@ describe('HLLEventDiscordService', () => {
     eventRepository = module.get(HLLEventRepository);
     discordRepository = module.get(HLLDiscordEventRepository);
     discordService = module.get(DiscordService);
-    informationFactory = module.get(InformationMessageFactory);
-    enrolmentFactory = module.get(EnrolmentMessageFactory);
   });
 
   it('should be defined', () => {
@@ -97,127 +152,203 @@ describe('HLLEventDiscordService', () => {
   });
 
   describe('publishMessages', () => {
-    let channel: Partial<TextChannel>;
-    let informationMessage: string;
-    let enrolmentMessage: string;
-    let event: Partial<HLLEvent>;
+    describe('sendMessages', () => {
+      describe('informationMesage', () => {
+        it('should send information message to channel', async () => {
+          await service.publishMessages(event);
+          expect(channel.send).toBeCalledWith({ embeds: [informationMessage] });
+        });
+      });
 
-    beforeEach(() => {
-      //@ts-ignore
-      channel = {
-        id: 'idchannel',
-        send: jest.fn().mockResolvedValue({ id: 'idone' }).mockResolvedValueOnce({ id: 'idtwo' }),
-      };
-      event = {
-        channelName: 'channelName',
-        autoPublishDate: new Date(),
-        save: jest.fn().mockResolvedValue(null),
-      };
-      informationMessage = 'info';
-      enrolmentMessage = 'enrolment';
-      discordService.createEventChannelIfNotExists = jest.fn().mockResolvedValue(channel);
-      informationFactory.createMessage = jest.fn().mockReturnValue(informationMessage);
-      enrolmentFactory.createMessage = jest.fn().mockResolvedValue(enrolmentMessage);
-      discordRepository.createEntity = jest.fn();
+      describe('enrolmentMesage', () => {
+        it('should send enrolment message to channel', async () => {
+          await service.publishMessages(event);
+          expect(channel.send).toBeCalledWith({
+            embeds: [enrolmentMessage],
+            components: [components],
+          });
+        });
+
+        describe('buttons', () => {
+          it('should disable all buttons if event is closed', async () => {
+            event.closed = true;
+            components.components.forEach((component: MessageButton) => {
+              component.disabled = true;
+              component.emoji = {
+                id: null,
+                name: closedEmoji,
+                animated: false,
+              };
+            });
+            await service.publishMessages(event);
+            expect(channel.send).toBeCalledWith({
+              embeds: [enrolmentMessage],
+              components: [components],
+            });
+          });
+
+          it('should disable some buttons if event is locked', async () => {
+            event.locked = true;
+            components.components
+              .filter((component) => !component.customId.includes('cancel'))
+              .forEach((component: MessageButton) => {
+                component.disabled = true;
+                component.emoji = {
+                  id: null,
+                  name: lockedEmoji,
+                  animated: false,
+                };
+              });
+            await service.publishMessages(event);
+            expect(channel.send).toBeCalledWith({
+              embeds: [enrolmentMessage],
+              components: [components],
+            });
+          });
+        });
+      });
     });
 
-    it('functions should be called with correct values', async () => {
-      await service.publishMessages(event as HLLEvent);
-      expect(discordService.createEventChannelIfNotExists).toHaveBeenCalledWith(event.channelName);
-      expect(channel.send).toHaveBeenCalledWith({ embeds: [informationMessage] });
-      expect(channel.send).toHaveBeenCalledWith({ embeds: [enrolmentMessage] });
-      expect(discordRepository.createEntity).toHaveBeenCalledWith(channel.id, 'idtwo', 'idone');
-    });
-
-    /*it('should remove publishdate from event', () => {
-      service.publishMessages(event as HLLEvent);
-      expect(event.save).toHaveBeenCalled();
-    });*/
-  });
-
-  describe('updateEnrolmentMessage', () => {
-    let oldMessage: Partial<Message>;
-    let newMessage: string;
-    let event: Partial<HLLEvent>;
-
-    beforeEach(() => {
-      //@ts-ignore
-      oldMessage = { edit: jest.fn() };
-      newMessage = 'newMessage';
-      event = {
-        discordEventId: 5,
-        save: jest.fn(),
-      };
-      discordRepository.findOne = jest
-        .fn()
-        .mockResolvedValue({ channelId: 'channelId', enrolmentMsg: 'enrolmentId' });
-      discordService.getMessageById = jest.fn().mockResolvedValue(oldMessage);
-      enrolmentFactory.createMessage = jest.fn().mockResolvedValue(newMessage);
-    });
-
-    it('should return null if discord event is not found', async () => {
-      discordRepository.findOne.mockResolvedValueOnce(undefined);
-      expect(await service.updateEnrolmentMessage(event as HLLEvent)).toBe(false);
-    });
-    it('should return null if discord message', async () => {
-      discordService.getMessageById.mockRejectedValue(null);
-      expect(await service.updateEnrolmentMessage(event as HLLEvent)).toBe(false);
-    });
-    it('oldMessage edit should be called with new message', async () => {
-      expect(await service.updateEnrolmentMessage(event as HLLEvent)).toBe(true);
-      expect(oldMessage.edit).toHaveBeenCalledWith({ embeds: [newMessage] });
+    describe('update Event', () => {
+      it('should update event', async () => {
+        await service.publishMessages(event);
+        expect(eventRepository.update).toHaveBeenCalledWith(event.id, {
+          discordEventId,
+          autoPublishDate: null,
+        });
+      });
     });
   });
 
-  describe('updateInformationMessage', () => {
-    let oldMessage: Partial<Message>;
-    let newMessage: string;
-    let event: Partial<HLLEvent>;
+  describe('update messages', () => {
+    describe('updateEnrolmentMessage', () => {
+      it('should not throw error if no discord event is found', () => {
+        discordRepository.findOne.mockResolvedValue(undefined);
+        const expectation = () => service.updateEnrolmentMessage(event);
+        expect(expectation).not.toThrow();
+      });
 
-    beforeEach(() => {
-      //@ts-ignore
-      oldMessage = { edit: jest.fn() };
-      newMessage = 'newMessage';
-      event = {
-        discordEventId: 5,
-        save: jest.fn(),
-      };
-      discordRepository.findOne = jest
-        .fn()
-        .mockResolvedValue({ channelId: 'channelId', enrolmentMsg: 'enrolmentId' });
-      discordService.getMessageById = jest.fn().mockResolvedValue(oldMessage);
-      informationFactory.createMessage = jest.fn().mockReturnValue(newMessage);
+      it('should close event', async () => {
+        discordService.getMessageById.mockResolvedValue(undefined);
+        await service.updateEnrolmentMessage(event);
+        expect(eventRepository.update).toHaveBeenCalledWith(event.id, { closed: true });
+      });
+
+      it('should update message', async () => {
+        await service.updateEnrolmentMessage(event);
+        expect(oldMessage.edit).toHaveBeenCalledWith({
+          embeds: [enrolmentMessage],
+          components: [components],
+        });
+      });
+
+      it('should update interaction message', async () => {
+        const interaction = {
+          message: {
+            edit: jest.fn(),
+          },
+        };
+        await service.updateEnrolmentMessage(event, interaction as unknown as ButtonInteraction);
+        expect(interaction.message.edit).toHaveBeenCalledWith({
+          embeds: [enrolmentMessage],
+          components: [components],
+        });
+      });
     });
 
-    it('should return null if discord event is not found', async () => {
-      discordRepository.findOne.mockResolvedValueOnce(undefined);
-      expect(await service.updateInformationMessage(event as HLLEvent)).toBe(false);
-    });
-    it('should return null if discord message', async () => {
-      discordService.getMessageById.mockRejectedValue(null);
-      expect(await service.updateInformationMessage(event as HLLEvent)).toBe(false);
-    });
-    it('oldMessage edit should be called with new message', async () => {
-      expect(await service.updateInformationMessage(event as HLLEvent)).toBe(true);
-      expect(oldMessage.edit).toHaveBeenCalledWith({ embeds: [newMessage] });
+    describe('updateInformationMessage', () => {
+      it('should not throw error if no discord event is found', () => {
+        discordRepository.findOne.mockResolvedValue(undefined);
+        const expectation = () => service.updateInformationMessage(event);
+        expect(expectation).not.toThrow();
+      });
+
+      it('should close event', async () => {
+        discordService.getMessageById.mockResolvedValue(undefined);
+        await service.updateInformationMessage(event);
+        expect(eventRepository.update).toHaveBeenCalledWith(event.id, { closed: true });
+      });
+
+      it('should update message', async () => {
+        await service.updateInformationMessage(event);
+        expect(oldMessage.edit).toHaveBeenCalledWith({
+          embeds: [informationMessage],
+        });
+      });
     });
   });
 
   describe('checkEvents', () => {
-    it('should call publish events for all events retured from repo', async () => {
-      const events = [
-        { organisator: { name: 'abc' }, save: jest.fn() },
-        { organisator: { name: 'def' }, save: jest.fn() },
-        { organisator: { name: 'ghi' }, save: jest.fn() },
-      ];
+    const publishEvents = [
+      {
+        id: 1,
+        locked: false,
+        closed: false,
+        channelName: 'channelName',
+      },
+      {
+        id: 2,
+        locked: false,
+        closed: false,
+        channelName: 'channelName',
+      },
+    ];
+    const lockEvents = [
+      {
+        id: 3,
+        locked: false,
+        closed: false,
+        channelName: 'channelName',
+      },
+      {
+        id: 4,
+        locked: false,
+        closed: false,
+        channelName: 'channelName',
+      },
+    ];
+    const closeEvents = [
+      {
+        id: 5,
+        locked: false,
+        closed: false,
+        channelName: 'channelName',
+      },
+      {
+        id: 6,
+        locked: false,
+        closed: false,
+        channelName: 'channelName',
+      },
+    ];
+
+    beforeEach(() => {
+      eventRepository.getPublishableEvents.mockResolvedValue(publishEvents as HLLEvent[]);
+      eventRepository.getLockableEvents.mockResolvedValue(lockEvents as HLLEvent[]);
+      eventRepository.getClosableEvents.mockResolvedValue(closeEvents as HLLEvent[]);
       service.publishMessages = jest.fn();
-      //@ts-ignore
-      eventRepository.getPublishableEvents.mockResolvedValue(events); //@ts-ignore
-      eventRepository.getLockableEvents.mockResolvedValue(events); //@ts-ignore
-      eventRepository.getClosableEvents.mockResolvedValue(events);
-      await service.checkEvents();
-      events.forEach((event) => {
-        expect(service.publishMessages).toHaveBeenCalledWith(event);
+      service.updateEnrolmentMessage = jest.fn();
+    });
+
+    it('should lock or close or publish each event', async () => {
+      jest.setTimeout(10000);
+      expect.assertions(closeEvents.length * 2 + lockEvents.length * 2 + publishEvents.length);
+      service.checkEvents();
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          for (const e of closeEvents) {
+            expect(service.updateEnrolmentMessage).toHaveBeenCalledWith(e);
+            expect(eventRepository.update).toHaveBeenCalledWith(e.id, { closed: true });
+          }
+          for (const e of lockEvents) {
+            expect(service.updateEnrolmentMessage).toHaveBeenCalledWith(e);
+            expect(eventRepository.update).toHaveBeenCalledWith(e.id, { locked: true });
+          }
+          for (const e of publishEvents) {
+            expect(service.publishMessages).toHaveBeenCalledWith(e);
+          }
+          resolve();
+        }, 2000);
       });
     });
   });

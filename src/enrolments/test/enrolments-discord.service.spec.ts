@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
+import { Repository, SelectQueryBuilder } from 'typeorm';
 import {
   Contact,
   Division,
@@ -8,42 +8,32 @@ import {
   EnrolmentType,
   HLLEvent,
   Member,
-} from '../../postgres/entities';
+} from '../../typeorm/entities';
 import { EnrolByDiscordDto } from '../dto/enrolByDiscord.dto';
 import { EnrolmentsDiscordService } from '../enrolments-discord.service';
 import { EnrolmentsService } from '../enrolments.service';
 
-jest.mock('../../postgres/entities/enrolment.entity.ts');
-
 describe('Enrolment Service', () => {
   let service: EnrolmentsDiscordService;
   let enrolmentRepository: jest.Mocked<Repository<Enrolment>>;
-  let hllEventRepository: jest.Mocked<Repository<Enrolment>>;
-  let enrolmentsService: jest.Mocked<EnrolmentsService>;
-  let hllEventUpdateQueryBuilder: Partial<UpdateQueryBuilder<HLLEvent>> = {
-    execute: jest.fn(),
-    set: jest.fn().mockReturnThis(),
-    where: jest.fn().mockReturnThis(),
-  };
+  let hllEventRepository: jest.Mocked<Repository<HLLEvent>>;
   let enrolmentQueryBuilder: Partial<SelectQueryBuilder<Enrolment>> = {
     select: jest.fn().mockReturnThis(),
     leftJoinAndSelect: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
     orderBy: jest.fn().mockReturnThis(),
+    addOrderBy: jest.fn().mockReturnThis(),
     getRawMany: jest.fn(),
-  };
-  let hllEventQueryBuilder: Partial<SelectQueryBuilder<HLLEvent>> = {
-    update: jest.fn().mockReturnValue(hllEventUpdateQueryBuilder),
   };
 
   beforeEach(async () => {
     const enrolmentRepositoryMock: Partial<Repository<Enrolment>> = {
       createQueryBuilder: jest.fn().mockReturnValue(enrolmentQueryBuilder),
       findOne: jest.fn(),
+      save: jest.fn(),
     };
     const hllEventRepositoryMock: Partial<Repository<HLLEvent>> = {
-      createQueryBuilder: jest.fn().mockReturnValue(hllEventQueryBuilder),
-      findOne: jest.fn(),
+      update: jest.fn(),
     };
     const enrolmentsServiceMock: Partial<EnrolmentsService> = {
       shiftSquad: jest.fn(),
@@ -66,7 +56,6 @@ describe('Enrolment Service', () => {
     service = module.get<EnrolmentsDiscordService>(EnrolmentsDiscordService);
     enrolmentRepository = module.get(getRepositoryToken(Enrolment));
     hllEventRepository = module.get(getRepositoryToken(HLLEvent));
-    enrolmentsService = module.get(EnrolmentsService);
   });
 
   it('should be defined', () => {
@@ -104,93 +93,85 @@ describe('Enrolment Service', () => {
   });
 
   describe('enrol', () => {
+    let enrolment: Enrolment;
+    let enrolmentCopy: Enrolment;
     let dto: EnrolByDiscordDto;
+
+    const createEnrolment = (): Enrolment => {
+      const e = new Enrolment();
+      e.id = 4;
+      e.squadlead = false;
+      e.commander = false;
+      e.timestamp = new Date('2020-12-12T14:45:20');
+      e.position = 0;
+      e.squadId = 7;
+      e.username = 'username';
+      e.eventId = 1;
+      e.memberId = '5343';
+      e.division = Division.INFANTERIE;
+      e.enrolmentType = EnrolmentType.ANMELDUNG;
+      e.role = null;
+      e.isPresent = false;
+      return e;
+    };
+
     beforeEach(() => {
-      //@ts-ignore
-      Enrolment.mockClear();
       dto = {
         type: EnrolmentType.ANMELDUNG,
         eventId: 1,
-        member: { id: 'id', contact: { name: 'hans' } as Contact } as Member,
+        member: { id: '5343', contact: { name: 'hans' } as Contact } as Member,
         division: Division.INFANTERIE,
         squadlead: true,
         commander: false,
       };
+      enrolment = createEnrolment();
+      enrolmentCopy = createEnrolment();
     });
 
-    it('should try to get enrolment from db', async () => {
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(new Enrolment());
-      await service.enrol(dto);
-      expect(enrolmentRepository.findOne).toHaveBeenCalled();
-    });
-
-    it('should create new Enrolment if no entry is found', async () => {
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(null);
-      await service.enrol(dto);
-      expect(enrolmentRepository.findOne).toHaveBeenCalled();
-      expect(Enrolment).toHaveBeenCalledTimes(1);
-    });
-
-    it('should save Enrolment', async () => {
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(null);
-      await service.enrol(dto);
-      //@ts-ignore
-      expect(Enrolment.mock.instances[0].save).toHaveBeenCalledTimes(1);
-    });
-
-    it('should set correct properties', async () => {
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(null);
-      await service.enrol(dto);
-      //@ts-ignore
-      const enrolmentMock: Enrolment = Enrolment.mock.instances[0];
-      const enrolment = {
-        squadlead: true,
-        commander: false,
-        username: 'hans',
-        enrolmentType: EnrolmentType.ANMELDUNG,
-        division: Division.INFANTERIE,
-        eventId: 1,
-        memberId: 'id',
-        timestamp: enrolmentMock.timestamp,
-      };
-      Object.entries(enrolment).forEach(([key, value]) => {
-        expect(enrolmentMock[key]).toBe(value);
+    describe('update existing enrolment', () => {
+      it('should update enrolment if it already exists', async () => {
+        enrolmentRepository.findOne = jest.fn().mockResolvedValue(enrolment);
+        await service.enrol(dto);
+        enrolmentCopy.squadlead = dto.squadlead;
+        enrolmentCopy.username = dto.member.contact.name;
+        expect(enrolmentRepository.save).toHaveBeenCalledWith(enrolmentCopy);
       });
-    });
 
-    it("shouldn't update timestamp if enrolmentType stays the same", async () => {
-      const enrolment = new Enrolment();
-      enrolment.timestamp = new Date('13.02.2020 14:45:20');
-      enrolment.enrolmentType = EnrolmentType.ANMELDUNG;
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(enrolment);
-      await service.enrol(dto);
-      expect(enrolment.timestamp).toEqual(enrolment.timestamp);
-    });
+      it('should remove user from squad if he unregisters', async () => {
+        dto.type = EnrolmentType.ABMELDUNG;
+        enrolmentRepository.findOne = jest.fn().mockResolvedValue(enrolment);
+        await service.enrol(dto);
+        expect(hllEventRepository.update).toHaveBeenCalled();
+        enrolmentCopy.squadlead = dto.squadlead;
+        enrolmentCopy.username = dto.member.contact.name;
+        enrolmentCopy.squadId = null;
+        enrolmentCopy.position = null;
+        enrolmentCopy.enrolmentType = EnrolmentType.ABMELDUNG;
+        enrolmentCopy.timestamp = enrolmentRepository.save.mock.calls[0][0].timestamp as Date;
+        expect(enrolmentRepository.save).toHaveBeenCalledWith(enrolmentCopy);
+      });
 
-    it('should update timestamp if enrolmentType changes', async () => {
-      const enrolment = new Enrolment();
-      const timestamp = new Date('13.02.2020 14:45:20');
-      enrolment.timestamp = timestamp;
-      enrolment.enrolmentType = EnrolmentType.ABMELDUNG;
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(enrolment);
-      await service.enrol(dto);
-      expect(enrolment.timestamp).not.toEqual(timestamp);
-    });
+      it("should not update timestamp if user doesn't changes registration type", async () => {
+        enrolmentRepository.findOne = jest.fn().mockResolvedValue(enrolment);
+        await service.enrol(dto);
+        enrolmentCopy.squadlead = dto.squadlead;
+        enrolmentCopy.username = dto.member.contact.name;
+        expect(enrolmentRepository.save).toHaveBeenCalledWith(enrolmentCopy);
+      });
 
-    it("shouldn't update postitions if user was already in a squad", async () => {
-      const enrolment = new Enrolment();
-      const squadId = 2;
-      const pos = 1;
-      enrolment.squadId = squadId;
-      enrolment.position = pos;
-      enrolment.enrolmentType = EnrolmentType.ABMELDUNG;
-
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(enrolment);
-      await service.enrol(dto);
-
-      expect(enrolment.squadId).toBeNull();
-      expect(enrolment.position).toBeNull();
-      expect(enrolmentsService.shiftSquad).toHaveBeenCalledWith(pos, 100, squadId);
+      it('should update timestamp if user changes registration type', async () => {
+        dto.type = EnrolmentType.ABMELDUNG;
+        enrolmentRepository.findOne = jest.fn().mockResolvedValue(enrolment);
+        await service.enrol(dto);
+        enrolmentCopy.enrolmentType = EnrolmentType.ABMELDUNG;
+        enrolmentCopy.squadlead = dto.squadlead;
+        enrolmentCopy.username = dto.member.contact.name;
+        enrolmentCopy.squadId = null;
+        enrolmentCopy.position = null;
+        enrolmentCopy.enrolmentType = EnrolmentType.ABMELDUNG;
+        enrolmentCopy.timestamp = enrolmentRepository.save.mock.calls[0][0].timestamp as Date;
+        expect(enrolmentRepository.save).toHaveBeenCalledWith(enrolmentCopy);
+      });
     });
   });
 });

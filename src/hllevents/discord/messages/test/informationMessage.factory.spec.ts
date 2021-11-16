@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { HLLEvent } from '../../../../postgres/entities';
+import { HLLEvent } from '../../../../typeorm/entities';
 import { InformationMessageFactory } from '../informationMessage.factory';
 
 describe('Information Message Factory', () => {

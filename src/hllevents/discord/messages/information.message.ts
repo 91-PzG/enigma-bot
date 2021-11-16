@@ -1,5 +1,5 @@
 import { EmbedConfig } from '../../../config/embeds.config';
-import { HLLEvent } from '../../../postgres/entities';
+import { HLLEvent } from '../../../typeorm/entities';
 import { dateTransformationPipe } from '../../../util/dateTransformation.pipe';
 import { DefaultMessage } from './default.message';
 
@@ -31,22 +31,28 @@ const translationMatrix: { [key: string]: Translation } = {
 
 const eventReductor = (acc: [string, any], [key, value]: [string, any]): [string, any] => {
   const translation = translationMatrix[key];
+  if (typeof value === 'number') {
+    value = value.toString();
+  }
   if (value != undefined && translation)
-    acc.push([translation.name, translation.valuePipe ? translation.valuePipe(value) : value]);
+    acc.push([
+      translation.name,
+      translation.valuePipe ? translation.valuePipe(value as string) : (value as string),
+    ]);
   return acc;
 };
 
 export class InformationMessage extends DefaultMessage {
-  constructor(private event: HLLEvent, config: EmbedConfig) {
+  constructor(event: HLLEvent, config: EmbedConfig) {
     super(event, config);
     this.setDescription(event.description)
       .setURL(`${config.baseUrl}events/${event.id}`)
       .setTitle(event.name);
-    this.addOptionalFields();
+    this.addOptionalFields(event);
   }
 
-  private addOptionalFields() {
-    const fields = Object.entries(this.event).reduce(eventReductor, [] as unknown as [string, any]);
+  private addOptionalFields(event) {
+    const fields = Object.entries(event).reduce(eventReductor, [] as unknown as [string, any]);
     fields.forEach(([key, value]) => {
       this.addField(key, value, true);
     });

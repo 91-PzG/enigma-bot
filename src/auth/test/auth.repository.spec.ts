@@ -1,6 +1,6 @@
 import { NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { AccessRoles, Contact, Member } from '../../postgres/entities';
+import { AccessRoles, Contact, Member } from '../../typeorm/entities';
 import { AuthRepository } from '../auth.repository';
 
 describe('AuthRepository', () => {

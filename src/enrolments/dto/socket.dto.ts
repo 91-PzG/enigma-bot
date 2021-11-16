@@ -1,4 +1,4 @@
-import { Division, Enrolment } from '../../postgres/entities';
+import { Division, Enrolment } from '../../typeorm/entities';
 
 export interface CreateSquadDto {
   name: string;

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
-import { AccessRoles, Division, Member } from '../postgres/entities';
+import { AccessRoles, Division, Member } from '../typeorm/entities';
 import { PatchUserDto } from './dto/patch-user.dto';
 import { UserListDto } from './dto/user-list.dto';
 
@@ -54,6 +54,8 @@ export class UsersService {
         'member.rank',
         'member.roles',
         'contact.name',
+        'contact.id',
+        'member.contactId',
       ])
       .where('member.id = :id', { id });
   }

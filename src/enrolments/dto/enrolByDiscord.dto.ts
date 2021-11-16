@@ -1,4 +1,4 @@
-import { Division, EnrolmentType, Member } from '../../postgres/entities';
+import { Division, EnrolmentType, Member } from '../../typeorm/entities';
 
 export class EnrolByDiscordDto {
   type: EnrolmentType;

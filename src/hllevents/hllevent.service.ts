@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { EnrolmentsService } from '../enrolments/enrolments.service';
-import { HLLEvent, IHLLEvent, Member } from '../postgres/entities';
+import { HLLEvent, IHLLEvent, Member } from '../typeorm/entities';
 import { UsersService } from '../users/users.service';
 import { HLLEventsDiscordService } from './discord/hllevent-discord.service';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
@@ -44,20 +44,24 @@ export class HLLEventService {
   }
 
   async createEvent(dto: HLLEventCreateWrapperDto): Promise<HLLEvent> {
-    const event = this.eventRepository.create();
+    let event = this.eventRepository.create();
 
     const organisator = await this.getMemberById(dto.control.organisator);
     event.organisatorId = organisator.id;
     Object.entries(dto.data).forEach(([key, value]) => {
       event[key] = value;
     });
-
-    await event.save();
-    event.organisator = organisator.contact;
-
+    const id = (await this.eventRepository.save(event)).id;
+    event = await this.eventRepository.getEventById(id);
     if (dto.control.publish) this.discordService.publishMessages(event);
 
     return event;
+  }
+
+  async switchSquadVisibility(eventId: number, showSquads: boolean) {
+    await this.eventRepository.update(eventId, { showSquads });
+    const event = await this.getEventById(eventId);
+    return this.discordService.updateEnrolmentMessage(event);
   }
 
   private async getMemberById(id: string): Promise<Member> {

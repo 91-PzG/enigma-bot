@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { Enrolment, HLLEvent, Squad } from '../postgres/entities';
+import { Enrolment, HLLEvent, Squad } from '../typeorm/entities';
 import { EnrolmentsGateway } from './enrolment.gateway';
 import { EnrolmentsDiscordService } from './enrolments-discord.service';
 import { EnrolmentsController } from './enrolments.controller';

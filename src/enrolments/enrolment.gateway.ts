@@ -8,7 +8,7 @@ import { Server, Socket } from 'socket.io';
 import { CreateSquadDto, DeleteSquadDto, MoveSoldierDto, RenameSquadDto } from './dto/socket.dto';
 import { EnrolmentsService } from './enrolments.service';
 
-@WebSocketGateway()
+@WebSocketGateway({ cors: true })
 export class EnrolmentsGateway implements OnGatewayConnection {
   @WebSocketServer()
   server: Server;

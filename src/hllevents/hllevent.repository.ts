@@ -1,5 +1,5 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { HLLEvent, IHLLEvent } from '../postgres/entities';
+import { HLLEvent, IHLLEvent } from '../typeorm/entities';
 
 const MILLISECONDS_IN_DAY = 60 * 60 * 24 * 1000;
 

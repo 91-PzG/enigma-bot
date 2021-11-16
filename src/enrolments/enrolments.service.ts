@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Contact, Enrolment, EnrolmentType, HLLEvent, HLLRole, Squad } from '../postgres/entities';
+import { Contact, Enrolment, EnrolmentType, HLLEvent, HLLRole, Squad } from '../typeorm/entities';
 import { MixedRosterDto, RosterDto } from './dto/roster.dto';
 import { CreateSquadDto, RenameSquadDto } from './dto/socket.dto';
 
