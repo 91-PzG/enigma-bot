@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { firstValueFrom } from 'rxjs';
 import { AuthRepository } from './auth.repository';
 import { DiscordUserDataDto } from './dtos/discord-user-data.dto';
 import { JwtWrapperDto } from './dtos/jwt-wrapper.dto';
@@ -16,13 +17,13 @@ export class AuthService {
 
   async signIn(token: string): Promise<JwtWrapperDto> {
     const data: DiscordUserDataDto = (
-      await this.httpService
-        .get('https://discord.com/api/users/@me', {
+      await firstValueFrom(
+        this.httpService.get('https://discord.com/api/users/@me', {
           headers: {
             authorization: `Bearer ${token}`,
           },
-        })
-        .toPromise()
+        }),
+      )
     ).data;
 
     if (!data.id) throw new NotFoundException('User not found');
