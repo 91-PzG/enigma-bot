@@ -2,7 +2,6 @@ import { registerAs } from '@nestjs/config';
 
 export interface DiscordConfig {
   token: string;
-  commandPrefix: string;
   clanChat: string;
   eventCategory: string;
   guild: string;
@@ -31,7 +30,6 @@ export default registerAs(
   'discord',
   (): DiscordConfig => ({
     token: process.env.DISCORD_TOKEN,
-    commandPrefix: process.env.PREFIX || '!',
     clanChat: process.env.CLAN_CHAT,
     eventCategory: process.env.EVENT_CATEGORY,
     guild: process.env.GUILD_ID,
