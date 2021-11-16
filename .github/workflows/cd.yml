@@ -89,7 +89,7 @@ jobs:
 
       - name: Zip output files
         run: |
-          cd dist/coral-app/
+          cd dist/
           zip -r "${{ env.RELEASE_FILENAME }}" *
           mv "${{ env.RELEASE_FILENAME }}" ../../
           cd ../../
