@@ -44,7 +44,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '14'
+          node-version: '16'
 
       - name: Install dependencies
         run: npm ci --no-optional
@@ -73,7 +73,7 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: ./
-          platforms: linux/386, linux/amd64, linux/arm/v6, linux/arm/v7, linux/arm64/v8, linux/ppc64le, linux/s390x
+          platforms: linux/amd64
           file: ./Dockerfile
           push: true
           tags: |
@@ -101,3 +101,10 @@ jobs:
           name: ${{ env.RELEASE_NAME }}
           files: |
             ${{ env.RELEASE_FILENAME }}
+
+      - name: Invoke deployment hook
+        uses: distributhor/workflow-webhook@v2
+        env:
+          webhook_url: ${{ secrets.DEPLOY_WEBHOOK }}
+          webhook_secret: ${{ secrets.DEPLOY_SECRET }}
+          silent: true
