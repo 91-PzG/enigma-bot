@@ -77,8 +77,8 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ghcr.io/91pzg/enigma-bot:latest
-            ghcr.io/91pzg/enigma-bot:${{ github.event.inputs.version }}
+            ghcr.io/91-pzg/enigma-bot:latest
+            ghcr.io/91-pzg/enigma-bot:${{ github.event.inputs.version }}
 
       - name: Create Release strings
         id: release_strings
