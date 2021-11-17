@@ -125,7 +125,7 @@ export class EnrolmentMessage extends DefaultMessage {
 
   private addSquad(squads: EnrolmentSquad[]) {
     squads.forEach((squad) =>
-      this.addPool(`${squad.name} (${squad.members.length})`, squad.members),
+      this.addPool(`${squad.name} (${squad.members.length})`, squad.members, true),
     );
   }
 
