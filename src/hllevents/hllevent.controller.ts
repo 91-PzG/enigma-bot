@@ -35,7 +35,7 @@ export class HLLEventController {
     @Param('id', ParseIntPipe) id: number,
     @GetUser() user: JwtPayload,
   ): Promise<HLLEventGetByIdDto> {
-    return this.hllEventService.getEventById(id, user.userId);
+    return this.hllEventService.getEventById(id, user?.userId);
   }
 
   @Scopes(AccessRoles.EVENTORGA)
