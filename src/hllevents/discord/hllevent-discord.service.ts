@@ -30,7 +30,10 @@ export class HLLEventsDiscordService {
     this.logger.warn('Updating existing events using compatibility mode');
 
     const events = await this.eventRepository.getOpenEvents();
-    events.forEach((event) => this.updateInformationMessage(event));
+    events.forEach((event) => {
+      this.updateInformationMessage(event);
+      this.updateEnrolmentMessage(event);
+    });
   }
 
   async publishMessages(event: HLLEvent) {
