@@ -33,9 +33,12 @@ export class HLLEventService {
     if (dto.control?.organisator) {
       dto.data['organisator'] = await this.getMemberById(dto.control.organisator);
     }
-    Object.entries(dto.data).forEach(([key, value]) => {
-      event[key] = value;
-    });
+
+    Object.entries(dto.data)
+      .filter(([, value]) => value !== undefined)
+      .forEach(([key, value]) => {
+        event[key] = value;
+      });
 
     await event.save();
 

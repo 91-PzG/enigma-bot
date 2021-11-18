@@ -10,7 +10,7 @@ import { AttendanceDto } from './dto/attendance.dto';
 
 @Command({
   name: 'attendance',
-  description: 'Plays a song',
+  description: 'Sets the attendance for an event by querying a HLL Server',
 })
 @UsePipes(TransformPipe)
 export class AttendanceCommand implements DiscordTransformedCommand<AttendanceDto> {
