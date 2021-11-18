@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CommandInteraction } from 'discord.js';
 import { Repository } from 'typeorm';
 import { HLLEvent } from '../../typeorm/entities';
-import { AttendanceService } from '../attendance.service';
+import { AttendanceService } from '../services/attendance.service';
 import { AttendanceDto } from './dto/attendance.dto';
 
 @Command({

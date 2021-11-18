@@ -3,10 +3,10 @@ import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
 import { GuildEmoji, MessageEmbed } from 'discord.js';
 import { Repository } from 'typeorm';
-import { EmbedConfig } from '../../../config/embeds.config';
-import { DiscordService } from '../../../discord/discord.service';
-import { EnrolmentsDiscordService } from '../../../enrolments/enrolments-discord.service';
-import { HLLEvent, Squad } from '../../../typeorm/entities';
+import { EmbedConfig } from '../../config/embeds.config';
+import { EnrolmentsDiscordService } from '../../enrolments/enrolments-discord.service';
+import { HLLEvent, Squad } from '../../typeorm/entities';
+import { DiscordService } from '../discord.service';
 import { EnrolmentMessage } from './enrolment.message';
 
 export interface EmojiWrapper {

@@ -2,16 +2,13 @@ import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 't
 import { HLLEvent } from './hllevent.entity';
 
 @Entity()
-export class Mapvote extends BaseEntity {
+export class Mappoll extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
-  channelId: string;
-
-  @Column()
-  massageId: string;
-
   @ManyToOne(() => HLLEvent)
   event: HLLEvent;
+
+  @Column({ nullable: true })
+  eventId: number;
 }

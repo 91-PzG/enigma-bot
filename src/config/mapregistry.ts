@@ -1,6 +1,14 @@
-export class MapType {
-  [key: string]: { name: string; imageUrl: string; emoji: string; omitFromMapvote?: boolean };
-}
+import { HLLOffensiveMaps, HLLWarfareMaps } from '../typeorm/entities';
+
+export type MapType = Record<
+  HLLWarfareMaps | HLLOffensiveMaps,
+  {
+    name: string;
+    imageUrl: string;
+    emoji: string;
+    omitFromMapvote?: boolean;
+  }
+>;
 
 export const mapRegistry: MapType = {
   CT: {

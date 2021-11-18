@@ -5,10 +5,10 @@ import { Cron } from '@nestjs/schedule';
 import { Message, MessageEmbed, TextChannel } from 'discord.js';
 import { query, QueryResult } from 'gamedig';
 import { EmbedConfig } from '../../config/embeds.config';
+import { mapRegistry } from '../../config/mapregistry';
 import { ServerConfig } from '../../config/server.config';
 import { DiscordService } from '../../discord/discord.service';
 import { MaprecorderGuard } from '../../util/guards/maprecorder.guard';
-import { mapRegistry } from './mapregistry';
 
 @Injectable()
 export class ServerService {

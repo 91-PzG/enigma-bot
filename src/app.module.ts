@@ -36,7 +36,7 @@ const CONFIG: ConfigFactory<any>[] = [
       imports: [ConfigModule],
       useFactory: (service: ConfigService): TypeOrmModuleOptions => ({
         type: 'postgres',
-        entities: [__dirname + '/**/*.{entity,view}.ts'],
+        entities: [__dirname + '/**/*.{entity,view}.{ts,js}'],
         host: service.get('database.host'),
         port: service.get('database.port'),
         username: service.get('database.username'),

@@ -2,13 +2,19 @@ import { Once } from '@discord-nestjs/core';
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
-import { ButtonInteraction, Message, MessageActionRow, MessageButton } from 'discord.js';
+import {
+  ButtonInteraction,
+  Message,
+  MessageActionRow,
+  MessageButton,
+  MessageEditOptions,
+} from 'discord.js';
 import { DiscordService } from '../../discord/discord.service';
+import { EnrolmentMessageFactory } from '../../discord/messages/enrolmentMessage.factory';
+import { InformationMessageFactory } from '../../discord/messages/informationMessage.factory';
 import { HLLEvent } from '../../typeorm/entities';
 import { HLLEventRepository } from '../hllevent.repository';
 import { HLLDiscordEventRepository } from './hlldiscordevent.repository';
-import { EnrolmentMessageFactory } from './messages/enrolmentMessage.factory';
-import { InformationMessageFactory } from './messages/informationMessage.factory';
 
 @Injectable()
 export class HLLEventsDiscordService {
@@ -78,7 +84,7 @@ export class HLLEventsDiscordService {
     }
 
     const embed = await this.enrolmentMessageFactory.createMessage(event);
-    const newMessage = {
+    const newMessage: MessageEditOptions = {
       embeds: [embed],
       components: [this.createMessageActionRow(event.id, event.locked, event.closed)],
     };

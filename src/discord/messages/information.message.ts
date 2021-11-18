@@ -1,6 +1,6 @@
-import { EmbedConfig } from '../../../config/embeds.config';
-import { HLLEvent } from '../../../typeorm/entities';
-import { dateTransformationPipe } from '../../../util/dateTransformation.pipe';
+import { EmbedConfig } from '../../config/embeds.config';
+import { HLLEvent } from '../../typeorm/entities';
+import { dateTransformationPipe } from '../../util/dateTransformation.pipe';
 import { DefaultMessage } from './default.message';
 
 type Translation = {
@@ -44,7 +44,7 @@ const eventReductor = (acc: [string, any], [key, value]: [string, any]): [string
 
 export class InformationMessage extends DefaultMessage {
   constructor(event: HLLEvent, config: EmbedConfig) {
-    super(event, config);
+    super(config, event);
     this.setDescription(event.description)
       .setURL(`${config.baseUrl}events/${event.id}`)
       .setTitle(event.name);

@@ -6,6 +6,7 @@ import { Intents } from 'discord.js';
 import { BotModule } from '../bot/bot.module';
 import { Contact, Member } from '../typeorm/entities';
 import { DiscordService } from './discord.service';
+import { MessageModule } from './messages/message.module';
 import { DiscordUtil } from './util/discord.util';
 
 @Global()
@@ -35,10 +36,11 @@ import { DiscordUtil } from './util/discord.util';
 
       inject: [ConfigService],
     }),
+    MessageModule,
     ConfigModule,
     TypeOrmModule.forFeature([Contact, Member]),
   ],
   providers: [DiscordService, DiscordUtil],
-  exports: [DiscordService, DiscordUtil],
+  exports: [DiscordService, DiscordUtil, MessageModule],
 })
 export class DiscordModule {}
