@@ -22,7 +22,6 @@ export interface IHLLEvent {
   mandatory: boolean;
   locked: boolean;
   closed: boolean;
-  singlePool: boolean;
 
   //optional
   rounds?: number;
@@ -72,9 +71,6 @@ export class HLLEvent extends BaseEntity implements IHLLEvent {
 
   @Column({ default: false })
   closed: boolean;
-
-  @Column()
-  singlePool: boolean;
 
   @Column()
   channelName: string;

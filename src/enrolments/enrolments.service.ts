@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Contact, Enrolment, EnrolmentType, HLLEvent, HLLRole, Squad } from '../typeorm/entities';
-import { MixedRosterDto, RosterDto } from './dto/roster.dto';
+import { Contact, Enrolment, HLLEvent, HLLRole, Squad } from '../typeorm/entities';
+import { RosterDto } from './dto/roster.dto';
 import { CreateSquadDto, RenameSquadDto } from './dto/socket.dto';
 
 @Injectable()
@@ -20,7 +20,7 @@ export class EnrolmentsService {
     return enrolment;
   }
 
-  async getEnrolmentsForEvent(id: number): Promise<RosterDto | MixedRosterDto> {
+  async getEnrolmentsForEvent(id: number): Promise<RosterDto> {
     const event = await this.eventRepository.findOne(id);
 
     if (!event) throw new NotFoundException(`Event with id ${id} not found`);
@@ -28,14 +28,13 @@ export class EnrolmentsService {
     const enrolments = await this.getEnrolments(id);
     const squads = await this.getSquads(id);
 
-    return this.getSeperatePoolEnrolments(enrolments, squads, event.name);
+    return this.getRoster(enrolments, squads, event.name);
   }
 
   createSquad(data: CreateSquadDto, eventId: number): Promise<Squad> {
     return this.squadRepository
       .create({
         name: data.name,
-        division: data.division,
         position: data.position,
         eventId,
       })
@@ -62,10 +61,6 @@ export class EnrolmentsService {
   }
 
   async moveSoldier(oldSoldier: Enrolment, newSoldier: Enrolment): Promise<any> {
-    if (!oldSoldier.squadId && newSoldier.division != oldSoldier.division) {
-      return this.moveToDivision(newSoldier);
-    }
-
     if (newSoldier.squadId) {
       if (oldSoldier.squadId) {
         if (oldSoldier.squadId == newSoldier.squadId) {
@@ -80,7 +75,6 @@ export class EnrolmentsService {
       return this.moveToSquad(newSoldier);
     }
     await this.shiftSquad(oldSoldier.position, 100, oldSoldier.squadId);
-    return this.moveToDivision(newSoldier);
   }
 
   shiftSquad(oldPos: number, newPos: number, squadId: number): Promise<any> {
@@ -96,25 +90,7 @@ export class EnrolmentsService {
       .execute();
   }
 
-  private async moveToSquad(newSoldier: Enrolment): Promise<any> {
-    return this.enrolmentRepository
-      .createQueryBuilder()
-      .update()
-      .set({ squadId: newSoldier.squadId, position: newSoldier.position })
-      .where('id=:id', { id: newSoldier.id })
-      .execute();
-  }
-
-  private moveToDivision(newSoldier: Enrolment): Promise<any> {
-    return this.enrolmentRepository
-      .createQueryBuilder()
-      .update()
-      .set({ division: newSoldier.division, squadId: null, position: null })
-      .where('id=:id', { id: newSoldier.id })
-      .execute();
-  }
-
-  private async getSeperatePoolEnrolments(
+  private async getRoster(
     enrolments: Enrolment[],
     squads: Squad[],
     eventname: string,
@@ -123,7 +99,7 @@ export class EnrolmentsService {
 
     squads.forEach((squad: Squad) => {
       squad.members = [];
-      roster[squad.division].squads[squad.position] = squad;
+      roster.squads[squad.position] = squad;
     });
 
     enrolments.forEach((enrolment) => {
@@ -132,20 +108,30 @@ export class EnrolmentsService {
         delete enrolment['name'];
       }
 
-      if (enrolment.role == HLLRole.COMMANDER) return (roster.commander = enrolment);
+      if (enrolment.role == HLLRole.COMMANDER) {
+        roster.commander = enrolment;
+        return;
+      }
 
       if (enrolment.squadId) {
         const squadPos = enrolment['squad_pos'];
-        return (roster[enrolment.division].squads[squadPos].members[enrolment.position] =
-          enrolment);
+        roster.squads[squadPos].members[enrolment.position] = enrolment;
+        return;
       }
 
-      if (enrolment.enrolmentType == EnrolmentType.ANMELDUNG)
-        return roster[enrolment.division].pool.push(enrolment);
-      roster[enrolment.division].reserve.push(enrolment);
+      roster.pool.push(enrolment);
     });
 
     return roster;
+  }
+
+  private async moveToSquad(newSoldier: Enrolment): Promise<any> {
+    return this.enrolmentRepository
+      .createQueryBuilder()
+      .update()
+      .set({ squadId: newSoldier.squadId, position: newSoldier.position })
+      .where('id=:id', { id: newSoldier.id })
+      .execute();
   }
 
   private getEnrolments(eventId: number): Promise<Enrolment[]> {

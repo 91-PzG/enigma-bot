@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { SelectQueryBuilder } from 'typeorm';
-import { Division, Enrolment, EnrolmentType } from '../../typeorm/entities';
+import { Enrolment, EnrolmentType } from '../../typeorm/entities';
 import { EnrolmentsRepository } from '../enrolments.repository';
 
 describe('Enrolment Repository', () => {
@@ -37,21 +37,18 @@ describe('Enrolment Repository', () => {
         squadlead: true,
         commander: false,
         enrolmentType: EnrolmentType.ANMELDUNG,
-        division: Division.ARMOR,
       },
       {
         username: 'Peter',
         squadlead: false,
         commander: true,
         enrolmentType: EnrolmentType.RESERVE,
-        division: Division.INFANTERIE,
       },
       {
         username: 'Susi',
         squadlead: false,
         commander: false,
         enrolmentType: EnrolmentType.ABMELDUNG,
-        division: Division.ARTILLERY,
       },
     ];
     queryBuilder.getMany = jest.fn().mockResolvedValue(enrolments);

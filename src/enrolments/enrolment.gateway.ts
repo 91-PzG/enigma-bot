@@ -29,7 +29,6 @@ export class EnrolmentsGateway implements OnGatewayConnection {
     this.server.to(squad.eventId.toString()).emit('create-squad', {
       id: squad.id,
       name: squad.name,
-      division: squad.division,
       position: squad.position,
     });
   }
@@ -38,7 +37,6 @@ export class EnrolmentsGateway implements OnGatewayConnection {
   async deleteSquad(client: Socket, data: DeleteSquadDto) {
     await this.service.deleteSquad(data.id);
     this.server.to(client.handshake.query.eventId).emit('delete-squad', {
-      division: data.division,
       position: data.position,
     });
   }
@@ -48,7 +46,6 @@ export class EnrolmentsGateway implements OnGatewayConnection {
     await this.service.renameSquad(data);
     this.server.to(client.handshake.query.eventId).emit('rename-squad', {
       name: data.name,
-      division: data.division,
       position: data.position,
     });
   }

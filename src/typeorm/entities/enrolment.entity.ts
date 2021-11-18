@@ -1,6 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { EnrolByDiscordDto } from '../../enrolments/dto/enrolByDiscord.dto';
-import { Division } from './division.enum';
 import { EnrolmentType } from './enrolmentType.enum';
 import { HLLEvent } from './hllevent.entity';
 import { HLLRole } from './hllRole.enum';
@@ -40,12 +39,6 @@ export class Enrolment extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: Division,
-  })
-  division: Division;
-
-  @Column({
-    type: 'enum',
     enum: EnrolmentType,
   })
   enrolmentType: EnrolmentType;
@@ -70,7 +63,6 @@ export class Enrolment extends BaseEntity {
     this.commander = dto.commander;
     this.username = dto.member.contact.name;
     this.enrolmentType = dto.type;
-    this.division = dto.division;
     this.eventId = dto.eventId;
     this.memberId = dto.member.id;
   }

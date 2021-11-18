@@ -174,7 +174,6 @@ describe('RegistrationService', () => {
           type: EnrolmentType.ANMELDUNG,
           eventId: event.id,
           member: member as Member,
-          division: member.division,
           squadlead: false,
           commander: false,
         };
