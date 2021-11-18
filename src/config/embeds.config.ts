@@ -7,6 +7,7 @@ export interface EmbedConfig {
   thumbnail: string;
   squadleadEmoji: string;
   commanderEmoji: string;
+  rifleman: string;
   lockedEmoji: string;
   closedEmoji: string;
 }
@@ -16,8 +17,9 @@ export default registerAs('embed', (): EmbedConfig => {
     color: process.env.COLOR as `#${string}`,
     baseUrl: process.env.BASE_URL,
     thumbnail: process.env.THUMBNAIL,
-    squadleadEmoji: process.env.SQUADLEAD_EMOJI || '💂',
-    commanderEmoji: process.env.COMMANDER_EMOJI || '🤠',
+    rifleman: process.env.RIFLEMAN_EMOJI || '💂',
+    squadleadEmoji: process.env.SQUADLEAD_EMOJI || '🤠',
+    commanderEmoji: process.env.COMMANDER_EMOJI || '🕵️‍♂️',
     lockedEmoji: '🔒',
     closedEmoji: '🛑',
   };

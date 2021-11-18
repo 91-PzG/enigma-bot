@@ -62,28 +62,28 @@ describe('HLLEventDiscordService', () => {
         customId: `${event.id}-register`,
         style: 'SUCCESS',
         label: 'Anmelden',
-        emoji: null,
+        emoji: '💂',
         disabled: false,
       }),
       new MessageButton({
         customId: `${event.id}-squadlead-register`,
         style: 'PRIMARY',
         label: 'Squadlead',
-        emoji: null,
+        emoji: '🤠',
         disabled: false,
       }),
       new MessageButton({
         customId: `${event.id}-commander-register`,
         style: 'SECONDARY',
         label: 'Kommandant',
-        emoji: null,
+        emoji: '🕵️‍♂️',
         disabled: false,
       }),
       new MessageButton({
         customId: `${event.id}-cancel-register`,
         style: 'DANGER',
         label: 'Abmelden',
-        emoji: null,
+        emoji: '✖️',
         disabled: false,
       }),
     );
@@ -106,6 +106,11 @@ describe('HLLEventDiscordService', () => {
       createMessage: jest.fn().mockReturnValue(informationMessage),
     };
     const enrolmentFactoryMock: Partial<EnrolmentMessageFactory> = {
+      emojis: {
+        rifleman: '💂',
+        squadlead: '🤠',
+        commander: '🕵️‍♂️',
+      },
       createMessage: jest.fn().mockResolvedValue(enrolmentMessage),
     };
     const configServiceMock: Partial<ConfigService> = {

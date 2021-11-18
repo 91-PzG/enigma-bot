@@ -10,6 +10,7 @@ import { DiscordService } from '../discord.service';
 import { EnrolmentMessage } from './enrolment.message';
 
 export interface EmojiWrapper {
+  rifleman: GuildEmoji | string;
   squadlead: GuildEmoji | string;
   commander: GuildEmoji | string;
 }
@@ -17,7 +18,7 @@ export interface EmojiWrapper {
 @Injectable()
 export class EnrolmentMessageFactory {
   private config: EmbedConfig;
-  private emojis: EmojiWrapper;
+  public emojis: EmojiWrapper;
 
   constructor(
     config: ConfigService,
@@ -53,6 +54,9 @@ export class EnrolmentMessageFactory {
       commander: /[\d]+/.test(this.config.commanderEmoji)
         ? await this.discordService.getEmojiById(this.config.commanderEmoji)
         : this.config.commanderEmoji,
+      rifleman: /[\d]+/.test(this.config.rifleman)
+        ? await this.discordService.getEmojiById(this.config.rifleman)
+        : this.config.rifleman,
     };
   }
 }

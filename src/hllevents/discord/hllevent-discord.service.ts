@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { Cron } from '@nestjs/schedule';
 import {
   ButtonInteraction,
+  EmojiIdentifierResolvable,
   Message,
   MessageActionRow,
   MessageButton,
@@ -127,38 +128,40 @@ export class HLLEventsDiscordService {
     closed: boolean,
   ): MessageActionRow {
     const disabled = locked || closed;
-    const emoji = closed
-      ? this.configService.get('embed.closedEmoji')
-      : locked
-      ? this.configService.get('embed.lockedEmoji')
-      : '';
+    const getEmoji = (emoji: any) => {
+      if (closed) return this.configService.get('embed.closedEmoji');
+      if (locked) return this.configService.get('embed.lockedEmoji');
+      return emoji;
+    };
     return new MessageActionRow().addComponents(
       new MessageButton({
         customId: `${eventId}-register`,
         style: 'SUCCESS',
         label: 'Anmelden',
-        emoji,
+        emoji: getEmoji(this.enrolmentMessageFactory.emojis.rifleman),
         disabled,
       }),
       new MessageButton({
         customId: `${eventId}-squadlead-register`,
         style: 'PRIMARY',
         label: 'Squadlead',
-        emoji,
+        emoji: getEmoji(this.enrolmentMessageFactory.emojis.squadlead),
         disabled,
       }),
       new MessageButton({
         customId: `${eventId}-commander-register`,
         style: 'SECONDARY',
         label: 'Kommandant',
-        emoji,
+        emoji: getEmoji(this.enrolmentMessageFactory.emojis.commander),
         disabled,
       }),
       new MessageButton({
         customId: `${eventId}-cancel-register`,
         style: 'DANGER',
         label: 'Abmelden',
-        emoji: closed ? emoji : '',
+        emoji: closed
+          ? (this.configService.get('embed.closedEmoji') as EmojiIdentifierResolvable)
+          : '✖️',
         disabled: closed,
       }),
     );
