@@ -35,7 +35,7 @@ export class Enrolment extends BaseEntity {
   @ManyToOne(() => Member, { nullable: true })
   member?: Member;
 
-  @Column()
+  @Column({ nullable: true })
   memberId: string;
 
   @Column({
