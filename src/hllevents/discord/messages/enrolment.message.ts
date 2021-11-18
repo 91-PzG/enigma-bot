@@ -49,7 +49,7 @@ export class EnrolmentMessage extends DefaultMessage {
             .members.push(name);
           return this.assigned++;
         }
-        this.abmeldungPool.push(name);
+        this.anmeldungPool.push(name);
       });
     } else {
       iterator = this.defaultIterator((name: string) => this.anmeldungPool.push(name));
@@ -57,8 +57,8 @@ export class EnrolmentMessage extends DefaultMessage {
 
     this.enrolments.forEach(iterator);
 
-    const registrationCount = this.anmeldungPool.length.toString();
-    const assignedTitle = this.event.showSquads && `${this.assigned}/` + registrationCount;
+    const registrationCount = this.anmeldungPool.length + this.assigned;
+    const assignedTitle = (this.event.showSquads ? `${this.assigned}/` : '') + registrationCount;
     this.setTitle(`Anmeldungen (${assignedTitle})`);
   }
 
