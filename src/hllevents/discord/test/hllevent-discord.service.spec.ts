@@ -8,14 +8,14 @@ import {
   TextChannel,
 } from 'discord.js';
 import { DiscordService } from '../../../discord/discord.service';
+import { EnrolmentMessage } from '../../../discord/messages/enrolment.message';
+import { EnrolmentMessageFactory } from '../../../discord/messages/enrolmentMessage.factory';
+import { InformationMessage } from '../../../discord/messages/information.message';
+import { InformationMessageFactory } from '../../../discord/messages/informationMessage.factory';
 import { HllDiscordEvent, HLLEvent } from '../../../typeorm/entities';
 import { HLLEventRepository } from '../../hllevent.repository';
 import { HLLDiscordEventRepository } from '../hlldiscordevent.repository';
 import { HLLEventsDiscordService } from '../hllevent-discord.service';
-import { EnrolmentMessage } from '../messages/enrolment.message';
-import { EnrolmentMessageFactory } from '../messages/enrolmentMessage.factory';
-import { InformationMessage } from '../messages/information.message';
-import { InformationMessageFactory } from '../messages/informationMessage.factory';
 
 describe('HLLEventDiscordService', () => {
   let service: HLLEventsDiscordService;

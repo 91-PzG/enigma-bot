@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { query, QueryResult } from 'gamedig';
 import { Repository } from 'typeorm';
-import { Enrolment } from '../typeorm/entities';
+import { Enrolment } from '../../typeorm/entities';
 
 @Injectable()
 export class AttendanceService {

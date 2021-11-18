@@ -1,6 +1,6 @@
 import { Util } from 'discord.js';
-import { EmbedConfig } from '../../../config/embeds.config';
-import { Enrolment, EnrolmentType, HLLEvent, Squad } from '../../../typeorm/entities';
+import { EmbedConfig } from '../../config/embeds.config';
+import { Enrolment, EnrolmentType, HLLEvent, Squad } from '../../typeorm/entities';
 import { DefaultMessage } from './default.message';
 import { EmojiWrapper } from './enrolmentMessage.factory';
 
@@ -22,7 +22,7 @@ export class EnrolmentMessage extends DefaultMessage {
     private squads: Squad[],
     config: EmbedConfig,
   ) {
-    super(event, config);
+    super(config, event);
     this.setURL(`${config.baseUrl}enrolment/${event.id}`);
     this.loadEnrolments();
   }

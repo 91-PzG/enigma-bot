@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AttendanceService } from '../attendance.service';
 import { BotController } from '../bot.controller';
+import { AttendanceService } from '../services/attendance.service';
 
 describe('BotController', () => {
   let botController: BotController;

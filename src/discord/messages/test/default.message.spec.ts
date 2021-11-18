@@ -1,5 +1,5 @@
-import { EmbedConfig } from '../../../../config/embeds.config';
-import { HLLEvent } from '../../../../typeorm/entities';
+import { EmbedConfig } from '../../../config/embeds.config';
+import { HLLEvent } from '../../../typeorm/entities';
 import { DefaultMessage } from '../default.message';
 
 describe('Default Message', () => {
@@ -18,7 +18,7 @@ describe('Default Message', () => {
       color: '#123456',
       thumbnail: 'https://test.com/image.jpg',
     };
-    message = new DefaultMessage(event as HLLEvent, config as EmbedConfig);
+    message = new DefaultMessage(config as EmbedConfig, event as HLLEvent);
   });
 
   it('should be defined', () => {

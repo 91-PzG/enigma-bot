@@ -3,9 +3,9 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { Message, MessageEmbed, MessageOptions, TextChannel } from 'discord.js';
 import { query, QueryOptions, QueryResult } from 'gamedig';
 import { EmbedConfig } from '../../../config/embeds.config';
+import { mapRegistry } from '../../../config/mapregistry';
 import { ServerConfig } from '../../../config/server.config';
 import { DiscordService } from '../../../discord/discord.service';
-import { mapRegistry } from '../mapregistry';
 import { ServerService } from '../server.service';
 
 const serverConfig: ServerConfig = {
