@@ -39,9 +39,8 @@ export class EnrolmentMessageFactory {
   private async getSquads(eventId: number): Promise<Squad[]> {
     return this.squadRepository
       .createQueryBuilder()
-      .select(['name', 'id', 'position', 'division'])
+      .select(['name', 'id', 'position'])
       .where('"eventId" = :eventId', { eventId })
-      .orderBy('division', 'ASC')
       .addOrderBy('position', 'ASC')
       .getRawMany();
   }

@@ -96,7 +96,6 @@ export class RegistrationService {
       type,
       eventId,
       member,
-      division: member.division,
       squadlead: customId.includes('squadlead'),
       commander: customId.includes('commander'),
     };

@@ -4,13 +4,6 @@ import { Enrolment, EnrolmentType, HLLEvent, Squad } from '../../../typeorm/enti
 import { DefaultMessage } from './default.message';
 import { EmojiWrapper } from './enrolmentMessage.factory';
 
-class DivisionEnrolments<T> {
-  infanterie: T[] = [];
-  armor: T[] = [];
-  recon: T[] = [];
-  artillery: T[] = [];
-}
-
 class EnrolmentSquad {
   constructor(public name: string, public id: number) {}
   members: string[] = [];
@@ -18,22 +11,9 @@ class EnrolmentSquad {
 
 export class EnrolmentMessage extends DefaultMessage {
   private abmeldungPool: string[] = [];
-  private squadPool: DivisionEnrolments<EnrolmentSquad> = new DivisionEnrolments<EnrolmentSquad>();
-
-  private iterator = (fn: (name: string, enrolment: Enrolment) => void) => {
-    this.enrolments.forEach((enrolment) => {
-      const name = this.formatName(enrolment);
-      if (enrolment.enrolmentType === EnrolmentType.ABMELDUNG) {
-        this.abmeldungPool.push(name);
-      } else if (this.event.showSquads && enrolment.squadId) {
-        this.squadPool[enrolment.division].find(
-          (squad: EnrolmentSquad) => squad.id === enrolment.squadId,
-        ).members[enrolment.position] = name;
-      } else {
-        fn(name, enrolment);
-      }
-    });
-  };
+  private anmeldungPool: string[] = [];
+  private squadPool: EnrolmentSquad[] = [];
+  private assigned: number = 0;
 
   constructor(
     private event: HLLEvent,
@@ -43,61 +23,54 @@ export class EnrolmentMessage extends DefaultMessage {
     config: EmbedConfig,
   ) {
     super(event, config);
-    this.setURL(`${config.baseUrl}enrolment/${event.id}`).setTitle(event.name);
+    this.setURL(`${config.baseUrl}enrolment/${event.id}`);
     this.loadEnrolments();
   }
 
   private loadEnrolments() {
     if (this.event.showSquads) this.initSquads();
-    if (this.event.singlePool) this.loadSinglePool();
-    else this.loadSeparatePools();
-    this.addDefaultPools();
+    this.sortEnrolments();
+    this.addPools();
   }
 
   private initSquads() {
     this.squads.forEach((squad) => {
-      this.squadPool[squad.division].push(new EnrolmentSquad(squad.name, squad.id));
+      this.squadPool.push(new EnrolmentSquad(squad.name, squad.id));
     });
   }
 
-  private loadSinglePool() {
-    const an: string[] = this.enrolments
-      .filter(
-        (enrolment) =>
-          enrolment.enrolmentType === EnrolmentType.ANMELDUNG && enrolment.squadId === null,
-      )
-      .map((enrolment) => this.formatName(enrolment));
+  private sortEnrolments() {
+    let iterator: (enrolment?: Enrolment) => void;
+    if (this.event.showSquads) {
+      iterator = this.defaultIterator((name: string, enrolment: Enrolment) => {
+        if (enrolment.squadId) {
+          this.squadPool
+            .find((squad: EnrolmentSquad) => squad.id === enrolment.squadId)
+            .members.push(name);
+          return this.assigned++;
+        }
+        this.abmeldungPool.push(name);
+      });
+    } else {
+      iterator = this.defaultIterator((name: string) => this.anmeldungPool.push(name));
+    }
 
-    const fn = (name: string) => {
-      an.push(name);
-    };
-    this.iterator(fn);
+    this.enrolments.forEach(iterator);
 
-    const halflength = Math.ceil(an.length) + 1;
-
-    this.addPool(`Anmeldungen (${an.length})`, an.slice(0, halflength));
-    this.addPool('\u200B', an.slice(halflength));
+    const registrationCount = this.anmeldungPool.length.toString();
+    const assignedTitle = this.event.showSquads && `${this.assigned}/` + registrationCount;
+    this.setTitle(`Anmeldungen (${assignedTitle})`);
   }
 
-  private loadSeparatePools() {
-    const divisions: DivisionEnrolments<string> = new DivisionEnrolments<string>();
-
-    const fn = (name: string, enrolment: Enrolment) => {
-      divisions[enrolment.division].push(name);
+  private defaultIterator = (
+    iterator: (name: string, enrolment?: Enrolment) => void,
+  ): ((enrolment: Enrolment) => void) => {
+    return (enrolment: Enrolment) => {
+      const name = this.formatName(enrolment);
+      if (enrolment.enrolmentType === EnrolmentType.ABMELDUNG) return this.abmeldungPool.push(name);
+      iterator(name, enrolment);
     };
-    this.iterator(fn);
-
-    const anmeldungen = Object.values(divisions)
-      .map((div) => div.length)
-      .reduce((acc, cur) => acc + cur);
-    this.setTitle(`Anmeldungen - ${anmeldungen}`);
-
-    this.addPool(`Infanterie (${divisions.infanterie.length})`, divisions.infanterie, true);
-    this.addPool(`Panzer (${divisions.armor.length})`, divisions.armor, true);
-    this.addField('\u200B', '\u200B');
-    this.addPool(`Aufklärer (${divisions.recon.length})`, divisions.recon, true);
-    this.addPool(`Artillerie (${divisions.artillery.length})`, divisions.artillery, true);
-  }
+  };
 
   private formatName(enrolment: Enrolment): string {
     //@ts-ignore
@@ -112,15 +85,14 @@ export class EnrolmentMessage extends DefaultMessage {
     return name.includes('91.') ? name.split('|').slice(1).join('|') : name;
   }
 
-  private addPool(header: string, members: string[], inline?: boolean) {
+  private addPool(header: string, members: string[], inline: boolean = true) {
     this.addField(header, this.joinMemberList(members), inline);
   }
 
-  private addDefaultPools() {
-    this.addField('\u200B', '\u200B');
-    if (this.event.showSquads)
-      Object.keys(this.squadPool).forEach((division) => this.addSquad(this.squadPool[division]));
-    this.addPool(`Abmeldungen (${this.abmeldungPool.length})`, this.abmeldungPool, true);
+  private addPools() {
+    this.addPool(`Anmeldungen (${this.anmeldungPool.length})`, this.anmeldungPool);
+    if (this.event.showSquads) this.addSquad(this.squadPool);
+    this.addPool(`Abmeldungen (${this.abmeldungPool.length})`, this.abmeldungPool);
   }
 
   private addSquad(squads: EnrolmentSquad[]) {

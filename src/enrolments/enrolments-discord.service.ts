@@ -22,7 +22,6 @@ export class EnrolmentsDiscordService {
         'squadlead',
         'commander',
         '"enrolmentType"',
-        'division',
         'name',
         '"squadId"',
         'position',
