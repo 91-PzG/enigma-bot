@@ -59,10 +59,6 @@ export class HLLEventUpdateDataDto {
   closed?: boolean;
 
   @IsOptional()
-  @IsBoolean()
-  singlePool?: boolean;
-
-  @IsOptional()
   @Transform(({ value }) => parseInt(value))
   @IsPositive()
   @IsInt()

@@ -2,9 +2,9 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import { DiscordService } from '../../../../discord/discord.service';
-import { EnrolmentsDiscordService } from '../../../../enrolments/enrolments-discord.service';
-import { HLLEvent, Squad } from '../../../../typeorm/entities';
+import { EnrolmentsDiscordService } from '../../../enrolments/enrolments-discord.service';
+import { HLLEvent, Squad } from '../../../typeorm/entities';
+import { DiscordService } from '../../discord.service';
 import { EnrolmentMessageFactory } from '../enrolmentMessage.factory';
 
 describe('Enrolment Message Factory', () => {

@@ -39,9 +39,6 @@ export class HLLEventCreateDataDto {
   @IsString()
   channelName: string;
 
-  @IsBoolean()
-  singlePool: boolean;
-
   @IsOptional()
   @Transform(({ value }) => parseInt(value))
   @IsPositive()

@@ -1,5 +1,5 @@
-import { EmbedConfig } from '../../../../config/embeds.config';
-import { HLLEvent } from '../../../../typeorm/entities';
+import { EmbedConfig } from '../../../config/embeds.config';
+import { HLLEvent } from '../../../typeorm/entities';
 import { InformationMessage } from '../information.message';
 
 describe('Default Message', () => {

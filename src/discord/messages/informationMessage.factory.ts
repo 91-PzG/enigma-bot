@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MessageEmbed } from 'discord.js';
-import { EmbedConfig } from '../../../config/embeds.config';
-import { HLLEvent } from '../../../typeorm/entities';
+import { EmbedConfig } from '../../config/embeds.config';
+import { HLLEvent } from '../../typeorm/entities';
 import { InformationMessage } from './information.message';
 
 @Injectable()

@@ -2,7 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { query, QueryResult } from 'gamedig';
 import { SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import { Enrolment } from '../../typeorm/entities';
+import { Enrolment } from '../../../typeorm/entities';
 import { AttendanceService } from '../attendance.service';
 
 jest.mock('gamedig');

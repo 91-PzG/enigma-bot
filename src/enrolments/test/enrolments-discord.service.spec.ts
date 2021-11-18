@@ -1,14 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder } from 'typeorm';
-import {
-  Contact,
-  Division,
-  Enrolment,
-  EnrolmentType,
-  HLLEvent,
-  Member,
-} from '../../typeorm/entities';
+import { Contact, Enrolment, EnrolmentType, HLLEvent, Member } from '../../typeorm/entities';
 import { EnrolByDiscordDto } from '../dto/enrolByDiscord.dto';
 import { EnrolmentsDiscordService } from '../enrolments-discord.service';
 import { EnrolmentsService } from '../enrolments.service';
@@ -70,21 +63,18 @@ describe('Enrolment Service', () => {
           squadlead: true,
           commander: false,
           enrolmentType: EnrolmentType.ANMELDUNG,
-          division: Division.ARMOR,
         },
         {
           username: 'Peter',
           squadlead: false,
           commander: true,
           enrolmentType: EnrolmentType.RESERVE,
-          division: Division.INFANTERIE,
         },
         {
           username: 'Susi',
           squadlead: false,
           commander: false,
           enrolmentType: EnrolmentType.ABMELDUNG,
-          division: Division.ARTILLERY,
         },
       ];
       enrolmentQueryBuilder.getRawMany = jest.fn().mockResolvedValue(enrolments);
@@ -108,7 +98,6 @@ describe('Enrolment Service', () => {
       e.username = 'username';
       e.eventId = 1;
       e.memberId = '5343';
-      e.division = Division.INFANTERIE;
       e.enrolmentType = EnrolmentType.ANMELDUNG;
       e.role = null;
       e.isPresent = false;
@@ -120,7 +109,6 @@ describe('Enrolment Service', () => {
         type: EnrolmentType.ANMELDUNG,
         eventId: 1,
         member: { id: '5343', contact: { name: 'hans' } as Contact } as Member,
-        division: Division.INFANTERIE,
         squadlead: true,
         commander: false,
       };
