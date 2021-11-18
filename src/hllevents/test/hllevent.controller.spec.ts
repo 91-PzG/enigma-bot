@@ -50,7 +50,6 @@ describe('EventController', () => {
           mandatory: true,
           maxPlayerCount: 5,
           organisator: new Contact(),
-          singlePool: false,
         },
         {
           id: 2,
@@ -64,7 +63,6 @@ describe('EventController', () => {
           mandatory: true,
           maxPlayerCount: 5,
           organisator: new Contact(),
-          singlePool: false,
         },
       ];
 

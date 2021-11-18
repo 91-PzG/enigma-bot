@@ -32,26 +32,8 @@ describe('Enrolment Controller', () => {
     const rosterDto: RosterDto = {
       eventname: 'TestEvent',
       commander: null,
-      infanterie: {
-        pool: [],
-        reserve: [],
-        squads: [],
-      },
-      armor: {
-        pool: [],
-        reserve: [],
-        squads: [],
-      },
-      artillery: {
-        pool: [],
-        reserve: [],
-        squads: [],
-      },
-      recon: {
-        pool: [],
-        reserve: [],
-        squads: [],
-      },
+      pool: [],
+      squads: [],
     };
     it('should return value from service', () => {
       enrolmentsService.getEnrolmentsForEvent = jest.fn().mockReturnValue(rosterDto);

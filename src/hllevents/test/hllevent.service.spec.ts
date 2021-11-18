@@ -132,7 +132,6 @@ describe('HLLEventService', () => {
         password: 'string',
         maxPlayerCount: 10,
         briefing: new Date(),
-        singlePool: true,
       };
       eventRepository.getEventById.mockResolvedValue(event as HLLEvent);
       const foundEvent = await hllEventService.getEventById(5);
