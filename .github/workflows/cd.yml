@@ -1,15 +1,8 @@
 name: CD
 on:
-  workflow_dispatch:
-    # Inputs the workflow accepts.
-    inputs:
-      version:
-        # Friendly description to be shown in the UI instead of 'name'
-        description: 'Version number'
-        # Default value if no value is explicitly provided
-        default: '0.0.0'
-        # Input has to be provided for the workflow to run
-        required: true
+  push:
+    branches:
+      - main
 jobs:
   build_and_release:
     runs-on: ubuntu-latest
@@ -17,29 +10,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           token: ${{ secrets.CI_PERSONAL_TOKEN }}
-
-      - name: Setup Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.9'
-
-      - name: Import GPG key
-        uses: crazy-max/ghaction-import-gpg@v4
-        with:
-          gpg_private_key: ${{ secrets.PRIVATE_KEY_CI }}
-          passphrase: ${{ secrets.PASSWORD_KEY_CI }}
-          git_user_signingkey: true
-          git_commit_gpgsign: true
-
-      - name: Bump versions
-        run: python3 bumpversion.py ${{ github.event.inputs.version }}
-
-      - name: Commit changes
-        run: |
-          git config --global user.name '91pzgbot'
-          git config --global user.email '91pzgbot@users.noreply.github.com'
-          git commit -S -am "chore: bump version to ${{ github.event.inputs.version }}"
-          git push
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
