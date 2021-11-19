@@ -41,7 +41,7 @@ jobs:
           git config --global user.email ${{ secrets.CI_EMAIL }}
           echo "NEW_BRANCH_NAME=release/v${{github.event.inputs.version}}" >> $GITHUB_ENV
           echo ${{ env.NEW_BRANCH_NAME }}
-          echo "TEST_VARIABLE" >> $GITHUB_ENV
+          echo "TEST_VARIABLE=test" >> $GITHUB_ENV
           echo ${{ env.TEST_VARIABLE }}
           git checkout -b ${{ env.NEW_BRANCH_NAME }}
           git commit -S -am "chore: bump version to ${{ github.event.inputs.version }}"
