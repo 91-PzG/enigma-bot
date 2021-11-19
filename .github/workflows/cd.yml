@@ -62,8 +62,8 @@ jobs:
         run: |
           cd dist/
           zip -r "${{ env.RELEASE_FILENAME }}" *
-          mv "${{ env.RELEASE_FILENAME }}" ../../
-          cd ../../
+          mv "${{ env.RELEASE_FILENAME }}" ../
+          cd ../
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1
