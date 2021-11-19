@@ -1,6 +1,6 @@
 import { NotImplementedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
 import { AccessRoles, Contact, Division, Member, Rank } from '../../typeorm/entities';
 import { NameListDto } from '../dto/name-list.dto';
@@ -69,6 +69,12 @@ describe('UsersService', () => {
           provide: getRepositoryToken(Member),
           useValue: {
             createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
+          },
+        },
+        {
+          provide: getEntityManagerToken(),
+          useValue: {
+            find: jest.fn(),
           },
         },
       ],

@@ -36,7 +36,7 @@ describe('UsersController', () => {
         {
           provide: UsersService,
           useValue: {
-            getUserList: jest.fn().mockReturnValue(users),
+            getNameList: jest.fn().mockReturnValue(users),
             getMemberById: jest.fn().mockReturnValue(user),
             patchUser: jest.fn().mockImplementation(() => {
               throw new NotImplementedException();
@@ -55,8 +55,8 @@ describe('UsersController', () => {
     expect(controller).toBeDefined();
   });
 
-  describe('userList', () => {
-    it('should call getUserList on usersService', () => {
+  describe('nameList', () => {
+    it('should call getNameList on usersService', () => {
       controller.findNameList();
       expect(usersService.getNameList).toHaveBeenCalled();
     });
