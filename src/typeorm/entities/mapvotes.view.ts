@@ -16,7 +16,7 @@ import { HLLWarfareMaps, Mappoll, Mappollvote } from '.';
     return qb;
   },
 })
-export class MappollvotesView implements Record<HLLWarfareMaps, number> {
+export class MappollvotesView implements Record<HLLWarfareMaps, string> {
   @ViewColumn()
   @PrimaryColumn()
   id: number;
@@ -25,32 +25,32 @@ export class MappollvotesView implements Record<HLLWarfareMaps, number> {
   eventId: number;
 
   @ViewColumn()
-  CT: number;
+  CT: string;
 
   @ViewColumn()
-  Foy: number;
+  Foy: string;
 
   @ViewColumn()
-  Hill400: number;
+  Hill400: string;
 
   @ViewColumn()
-  Hurtgen: number;
+  Hurtgen: string;
 
   @ViewColumn()
-  PHL: number;
+  PHL: string;
 
   @ViewColumn()
-  SME: number;
+  SME: string;
 
   @ViewColumn()
-  StMarie: number;
+  StMarie: string;
 
   @ViewColumn()
-  Utah: number;
+  Utah: string;
 
   @ViewColumn()
-  Kursk: number;
+  Kursk: string;
 
   @ViewColumn()
-  Stalin: number;
+  Stalin: string;
 }

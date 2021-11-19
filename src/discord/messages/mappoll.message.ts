@@ -17,14 +17,14 @@ export class MappollMessage extends DefaultMessage {
     Object.values(HLLWarfareMaps).forEach((map) => {
       const mapConfig = mapRegistry[map];
       mapnames += mapConfig.emoji + ' - ' + mapConfig.name + '\n';
-      const vote = mapVotes ? mapVotes[map] : 0;
+      const vote = mapVotes ? parseInt(mapVotes[map]) : 0;
       sumVotes += vote;
-      votes += vote.toString() + '\n';
+      votes += vote + '\n';
     });
 
     this.setTitle('Mapvote')
       .setFooter(footer)
       .addField('Maps', mapnames, true)
-      .addField(`Votes ${sumVotes}`, votes, true);
+      .addField(`Votes - ${sumVotes}`, votes, true);
   }
 }
