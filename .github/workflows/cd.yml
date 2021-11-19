@@ -11,6 +11,13 @@ jobs:
         with:
           token: ${{ secrets.CI_PERSONAL_TOKEN }}
 
+      - name: Get release string
+        run: |
+          branchname=${git rev-parse --abbrev-ref HEAD}
+          version=${branchname#*v}
+          [[ $version =~ ^[0-9]+.[0-9]+.[0-9]+$ ]] || exit 1
+          echo "VERSION=${branchname#*v} >> $GITHUB_ENV
+
       - name: Setup Node.js
         uses: actions/setup-node@v2
         with:
