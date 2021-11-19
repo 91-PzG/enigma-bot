@@ -13,15 +13,18 @@ export class MappollMessage extends DefaultMessage {
 
     let mapnames = '';
     let votes = '';
+    let sumVotes = 0;
     Object.values(HLLWarfareMaps).forEach((map) => {
       const mapConfig = mapRegistry[map];
       mapnames += mapConfig.emoji + ' - ' + mapConfig.name + '\n';
-      votes += (mapVotes ? mapVotes[map] : '0') + '\n';
+      const vote = mapVotes ? mapVotes[map] : 0;
+      sumVotes += vote;
+      votes += vote.toString() + '\n';
     });
 
     this.setTitle('Mapvote')
       .setFooter(footer)
       .addField('Maps', mapnames, true)
-      .addField('Votes', votes, true);
+      .addField(`Votes ${sumVotes}`, votes, true);
   }
 }
