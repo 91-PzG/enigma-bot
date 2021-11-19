@@ -49,6 +49,7 @@ jobs:
         with:
           token: ${{ secrets.CI_PERSONAL_TOKEN }}
           committer: ${{ secrets.CI_USERNAME }} <${{ secrets.CI_EMAIL }}>
+          author: ${{ secrets.CI_USERNAME }} <${{ secrets.CI_EMAIL }}>
           commit-message: 'chore: bump version to ${{ github.event.inputs.version }}'
           branch: ${{ env.NEW_BRANCH_NAME }}
           delete-branch: true
