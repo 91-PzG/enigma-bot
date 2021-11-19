@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { getEntityManagerToken } from '@nestjs/typeorm';
 import { DiscordService } from '../../discord/discord.service';
-import { EnrolmentsService } from '../../enrolments/enrolments.service';
 import { Contact, HLLEvent, IHLLEvent, Member } from '../../typeorm/entities';
 import { UsersService } from '../../users/users.service';
 import { HLLEventsDiscordService } from '../discord/hllevent-discord.service';
@@ -13,7 +13,6 @@ describe('HLLEventService', () => {
   let eventRepository: jest.Mocked<HLLEventRepository>;
   let usersService: jest.Mocked<UsersService>;
   let discordService: jest.Mocked<DiscordService>;
-  let enrolmentService: jest.Mocked<EnrolmentsService>;
   let hllEventService: HLLEventService;
   const events = [
     {
@@ -55,7 +54,6 @@ describe('HLLEventService', () => {
       publishMessages: jest.fn(),
       updateInformationMessage: jest.fn(),
     };
-    const enrolmentServiceMock: Partial<EnrolmentsService> = {};
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -76,7 +74,12 @@ describe('HLLEventService', () => {
           provide: HLLEventsDiscordService,
           useValue: hllEventDiscordServiceMock,
         },
-        { provide: EnrolmentsService, useValue: enrolmentServiceMock },
+        {
+          provide: getEntityManagerToken(),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -84,7 +87,6 @@ describe('HLLEventService', () => {
     eventRepository = module.get(HLLEventRepository);
     usersService = module.get(UsersService);
     discordService = module.get(HLLEventsDiscordService);
-    enrolmentService = module.get(EnrolmentsService);
   });
 
   it('should be defined', () => {
