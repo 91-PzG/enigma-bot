@@ -38,6 +38,6 @@ jobs:
         run: |
           git config --global user.name '91pzgbot'
           git config --global user.email '91pzgbot@users.noreply.github.com'
-          git ckeckout -b release/v${{github.event.inputs.version}}
+          git checkout -b release/v${{github.event.inputs.version}}
           git commit -S -am "chore: bump version to ${{ github.event.inputs.version }}"
           git push -u origin HEAD
