@@ -1,14 +1,14 @@
 import { NotImplementedException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
 import { AccessRoles, Contact, Division, Member, Rank } from '../../typeorm/entities';
-import { UserListDto } from '../dto/user-list.dto';
+import { NameListDto } from '../dto/name-list.dto';
 import { UsersService } from '../users.service';
 
 describe('UsersService', () => {
   let service: UsersService;
-  let users: UserListDto[] = [
+  let users: NameListDto[] = [
     { id: '1', username: 'hans' },
     { id: '2', username: 'susi' },
   ];
@@ -71,6 +71,12 @@ describe('UsersService', () => {
             createQueryBuilder: jest.fn().mockReturnValue(queryBuilder),
           },
         },
+        {
+          provide: getEntityManagerToken(),
+          useValue: {
+            find: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -83,7 +89,7 @@ describe('UsersService', () => {
 
   describe('userList', () => {
     it('should return users', async () => {
-      expect(await service.getUserList()).toEqual(users);
+      expect(await service.getNameList()).toEqual(users);
     });
   });
 

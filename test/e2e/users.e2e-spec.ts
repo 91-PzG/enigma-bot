@@ -1,7 +1,7 @@
-import { UserListDto } from '../../src/users/dto/user-list.dto';
+import { NameListDto } from '../../src/users/dto/name-list.dto';
 import request from './request';
 
-const sort = (a: UserListDto, b: UserListDto) => (a.id < b.id ? -1 : 1);
+const sort = (a: NameListDto, b: NameListDto) => (a.id < b.id ? -1 : 1);
 
 describe('UserController (e2e)', () => {
   let hr, eventOrga, signIn, clanrat;
