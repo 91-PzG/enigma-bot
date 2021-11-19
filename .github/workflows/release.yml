@@ -39,9 +39,11 @@ jobs:
         run: |
           git config --global user.name ${{ secrets.CI_USERNAME }}
           git config --global user.email ${{ secrets.CI_EMAIL }}
-          echo "BRANCH_NAME=release/v${{github.event.inputs.version}}" >> $GITHUB_ENV
-          echo ${{ env.BRANCH_NAME }}
-          git checkout -b ${{ env.BRANCH_NAME }}
+          echo "NEW_BRANCH_NAME=release/v${{github.event.inputs.version}}" >> $GITHUB_ENV
+          echo ${{ env.NEW_BRANCH_NAME }}
+          echo "TEST_VARIABLE" >> $GITHUB_ENV
+          echo ${{ env.TEST_VARIABLE }}
+          git checkout -b ${{ env.NEW_BRANCH_NAME }}
           git commit -S -am "chore: bump version to ${{ github.event.inputs.version }}"
           git push -u origin HEAD
 
@@ -50,7 +52,7 @@ jobs:
         with:
           token: ${{ secrets.CI_PERSONAL_TOKEN }}
           committer: ${{ secrets.CI_USERNAME }} <${{ secrets.CI_EMAIL }}>
-          branch: ${{ env.BRANCH_NAME }}
+          branch: ${{ env.NEW_BRANCH_NAME }}
           delete-branch: true
           base: 'main'
           title: 'Release v${{ github.event.inputs.version }}'
