@@ -16,7 +16,7 @@ jobs:
           commitmsg=${git log -1 --pretty=%B}
           version=${commitmsg#*v}
           [[ $version =~ ^[0-9]+.[0-9]+.[0-9]+$ ]] || exit 1
-          echo "RELEASE_VERSION=$version >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$version" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
