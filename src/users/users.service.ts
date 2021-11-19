@@ -1,19 +1,22 @@
 import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository, SelectQueryBuilder } from 'typeorm';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
 import { AccessRoles, Division, Member } from '../typeorm/entities';
+import { MembersView } from '../typeorm/views/members.view';
+import { MembersDto } from './dto/members.dto';
+import { NameListDto } from './dto/name-list.dto';
 import { PatchUserDto } from './dto/patch-user.dto';
-import { UserListDto } from './dto/user-list.dto';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(Member)
     private memberRepository: Repository<Member>,
+    @InjectEntityManager() private entityManager: EntityManager,
   ) {}
 
-  async getUserList(): Promise<UserListDto[]> {
+  async getNameList(): Promise<NameListDto[]> {
     return (await this.memberRepository
       .createQueryBuilder('member')
       .leftJoin('member.contact', 'contact')
@@ -21,7 +24,11 @@ export class UsersService {
       .where('member.honoraryMember = false')
       .andWhere('member.reserve = false')
       .andWhere('member.memberTill IS NULL')
-      .getRawMany()) as unknown as Promise<UserListDto[]>;
+      .getRawMany()) as unknown as Promise<NameListDto[]>;
+  }
+
+  getAll(): Promise<MembersDto[]> {
+    return this.entityManager.find(MembersView);
   }
 
   async getMemberById(id: string, user?: JwtPayload): Promise<Member> {

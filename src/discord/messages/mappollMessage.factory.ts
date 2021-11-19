@@ -5,7 +5,7 @@ import { MessageEmbed } from 'discord.js';
 import { EntityManager } from 'typeorm';
 import { EmbedConfig } from '../../config/embeds.config';
 import { Mappoll } from '../../typeorm/entities';
-import { MappollvotesView } from '../../typeorm/entities/mapvotes.view';
+import { MappollvotesView } from '../../typeorm/views/mapvotes.view';
 import { MappollMessage } from './mappoll.message';
 
 @Injectable()

@@ -1,4 +1,4 @@
-export class UserListDto {
+export class NameListDto {
   id: string;
   username: string;
 }

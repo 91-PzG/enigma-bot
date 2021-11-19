@@ -3,14 +3,14 @@ import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { JwtPayload } from '../../auth/jwt/jwt-payload.interface';
 import { AccessRoles } from '../../typeorm/entities';
-import { UserListDto } from '../dto/user-list.dto';
+import { NameListDto } from '../dto/name-list.dto';
 import { UsersController } from '../users.controller';
 import { UsersService } from '../users.service';
 
 describe('UsersController', () => {
   let controller: UsersController;
   let usersService: jest.Mocked<UsersService>;
-  const users: UserListDto[] = [
+  const users: NameListDto[] = [
     { id: '1', username: 'hans' },
     { id: '2', username: 'susi' },
   ];
@@ -57,12 +57,12 @@ describe('UsersController', () => {
 
   describe('userList', () => {
     it('should call getUserList on usersService', () => {
-      controller.findAll();
-      expect(usersService.getUserList).toHaveBeenCalled();
+      controller.findNameList();
+      expect(usersService.getNameList).toHaveBeenCalled();
     });
 
     it('should return users', () => {
-      expect(controller.findAll()).toEqual(users);
+      expect(controller.findNameList()).toEqual(users);
     });
   });
 

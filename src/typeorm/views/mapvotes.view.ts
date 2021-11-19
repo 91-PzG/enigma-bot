@@ -1,5 +1,5 @@
 import { Connection, PrimaryColumn, ViewColumn, ViewEntity } from 'typeorm';
-import { HLLWarfareMaps, Mappoll, Mappollvote } from '.';
+import { HLLWarfareMaps, Mappoll, Mappollvote } from '../entities';
 
 @ViewEntity({
   expression: (connection: Connection) => {
