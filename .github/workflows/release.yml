@@ -11,7 +11,7 @@ on:
         # Input has to be provided for the workflow to run
         required: true
 jobs:
-  build_and_release:
+  create-release-branch:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -43,15 +43,14 @@ jobs:
         run: |
           git config --global user.name ${{ secrets.CI_USERNAME }}
           git config --global user.email ${{ secrets.CI_EMAIL }}
-          git checkout -b ${{ env.NEW_BRANCH_NAME }}
-          git commit -S -am "chore: bump version to ${{ github.event.inputs.version }}"
-          git push -u origin HEAD
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.CI_PERSONAL_TOKEN }}
           committer: ${{ secrets.CI_USERNAME }} <${{ secrets.CI_EMAIL }}>
+          author: ${{ secrets.CI_USERNAME }} <${{ secrets.CI_EMAIL }}>
+          commit-message: 'chore: bump version to ${{ github.event.inputs.version }}'
           branch: ${{ env.NEW_BRANCH_NAME }}
           delete-branch: true
           base: 'main'
