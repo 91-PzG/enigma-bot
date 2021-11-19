@@ -1,9 +1,9 @@
-import { Enrolment } from '../../typeorm/entities';
+import { EnrolmentDto } from './enrolment.dto';
 
 export class RosterDto {
   eventname: string;
-  commander: Enrolment | null;
-  pool: Enrolment[] = [];
+  commander: EnrolmentDto | null;
+  pool: EnrolmentDto[] = [];
   squads: SquadDto[] = [];
 
   constructor(eventname: string) {
@@ -15,5 +15,5 @@ export class SquadDto {
   id: number;
   name: string;
   position: number;
-  members?: Enrolment[] = [];
+  members?: EnrolmentDto[] = [];
 }
