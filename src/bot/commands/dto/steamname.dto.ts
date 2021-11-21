@@ -1,0 +1,10 @@
+import { Param } from '@discord-nestjs/core';
+
+export class SteamnameDto {
+  @Param({
+    name: 'name',
+    description: 'Dein Steam-Nutzername',
+    required: true,
+  })
+  name: string;
+}
