@@ -1,5 +1,5 @@
 import { BaseEntity, Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
-import { Enrolment, HLLEvent } from '.';
+import { HLLEvent } from '.';
 
 @Entity()
 export class Squad extends BaseEntity {
@@ -17,6 +17,4 @@ export class Squad extends BaseEntity {
 
   @Column()
   eventId: number;
-
-  members: Enrolment[];
 }
