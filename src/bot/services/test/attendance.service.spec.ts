@@ -81,15 +81,5 @@ describe('AttandanceCommand', () => {
         eventId,
       });
     });
-
-    it('should call where with all player names', async () => {
-      await attendanceService.attendanceCommand(eventId, socket);
-      for (const player of successfullQuery.players) {
-        if (!player.name) continue;
-        expect(enrolmentUpdateQueryBuilder.where).toHaveBeenCalledWith('username LIKE :name', {
-          name: player.name + '%',
-        });
-      }
-    });
   });
 });

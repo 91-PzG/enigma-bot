@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { query, QueryResult } from 'gamedig';
-import { Repository } from 'typeorm';
+import { Brackets, Repository } from 'typeorm';
 import { Enrolment } from '../../typeorm/entities';
 
 @Injectable()
@@ -42,7 +42,16 @@ export class AttendanceService {
         .createQueryBuilder()
         .update()
         .set({ isPresent: true })
-        .where('username LIKE :name', { name: playerName + '%' })
+        .where(
+          new Brackets((qb) => {
+            qb.where('username LIKE :name', { name: playerName + '%' }).orWhere(
+              'memberId = (SELECT m.id FROM public.member as m WHERE "steamName" LIKE :name LIMIT 1)',
+              {
+                name: playerName + '%',
+              },
+            );
+          }),
+        )
         .andWhere('eventId = :eventId', { eventId })
         .execute();
       resolve();
