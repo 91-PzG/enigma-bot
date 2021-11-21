@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { getRepositoryToken } from '@nestjs/typeorm';
+import { getEntityManagerToken, getRepositoryToken } from '@nestjs/typeorm';
 import { Repository, SelectQueryBuilder, UpdateQueryBuilder } from 'typeorm';
-import { Enrolment, EnrolmentType, HLLEvent, Squad } from '../../typeorm/entities';
+import { Enrolment, HLLEvent, Squad } from '../../typeorm/entities';
 import { CreateSquadDto, RenameSquadDto } from '../dto/socket.dto';
 import { EnrolmentsRepository } from '../enrolments.repository';
 import { EnrolmentsService } from '../enrolments.service';
@@ -28,6 +28,7 @@ describe('Enrolment Service', () => {
   let squadSelectQueryBuilder: Partial<SelectQueryBuilder<Squad>> = {
     where: jest.fn().mockReturnThis(),
     getMany: jest.fn(),
+    orderBy: jest.fn().mockReturnThis(),
     update: jest.fn().mockReturnValue(squadUpdateQueryBuilder),
   };
   let enrolmentQueryBuilder: Partial<SelectQueryBuilder<Enrolment>> = {
@@ -69,6 +70,13 @@ describe('Enrolment Service', () => {
           provide: getRepositoryToken(Squad),
           useValue: squadRepositoryMock,
         },
+        {
+          provide: getEntityManagerToken(),
+          useValue: {
+            find: jest.fn(),
+            findOne: jest.fn(),
+          },
+        },
       ],
     }).compile();
 
@@ -80,39 +88,6 @@ describe('Enrolment Service', () => {
 
   it('should be defined', () => {
     expect(service).toBeDefined();
-  });
-
-  describe('getEnrolmentforUserAndEvent', () => {
-    let mockEnrolment: Partial<Enrolment>;
-    let mockSquad: Partial<Squad>;
-
-    beforeEach(() => {
-      mockEnrolment = {
-        id: 5,
-        memberId: 'id',
-        eventId: 10,
-        enrolmentType: EnrolmentType.ANMELDUNG,
-      };
-      mockSquad = {
-        id: 1,
-        name: 'Abficker',
-      };
-      enrolmentRepository.findOne = jest.fn().mockResolvedValue(mockEnrolment);
-      squadRepository.findOne = jest.fn().mockResolvedValue(mockSquad);
-    });
-
-    it('should return enrolment', async () => {
-      const enrolment = await service.getEnrolmentForUserAndEvent(1, 'one');
-      expect(enrolment).toBe(mockEnrolment);
-    });
-
-    it('should add squad if squadId is set', async () => {
-      mockEnrolment.squadId = 5;
-      const enrolment = await service.getEnrolmentForUserAndEvent(1, 'one');
-      //@ts-ignore
-      mockEnrolment.squad = mockSquad;
-      expect(enrolment).toBe(mockEnrolment);
-    });
   });
 
   describe('getEnrolmentforEvent', () => {
