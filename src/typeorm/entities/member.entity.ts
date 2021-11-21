@@ -62,4 +62,7 @@ export class Member extends BaseEntity {
 
   @Column()
   contactId: string;
+
+  @Column({ nullable: true })
+  steamName: string;
 }
