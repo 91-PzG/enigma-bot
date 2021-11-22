@@ -4,7 +4,7 @@ export class SteamnameDto {
   @Param({
     name: 'name',
     description: 'Dein Steam-Nutzername',
-    required: true,
+    required: false,
   })
   name: string;
 }

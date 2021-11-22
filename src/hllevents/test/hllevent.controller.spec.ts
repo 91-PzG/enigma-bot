@@ -1,6 +1,6 @@
 import { ConfigService } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
-import { plainToClass } from 'class-transformer';
+import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { Contact, HLLEvent, IHLLEvent } from '../../typeorm/entities';
 import { HLLEventCreateWrapperDto } from '../dtos/hlleventCreate.dto';
@@ -69,7 +69,7 @@ describe('EventController', () => {
       hllEventService.getAll.mockResolvedValue(events);
 
       const dtos = (await hllEventController.getAll()).map((pojo) =>
-        plainToClass(HLLEventGetAllDto, pojo),
+        plainToInstance(HLLEventGetAllDto, pojo),
       );
       expect(dtos.length).toBeGreaterThan(0);
       for (const dto of dtos) {
@@ -117,7 +117,6 @@ describe('EventController', () => {
 
       const errors = await validate(dto);
       expect(errors).toHaveLength(0);
-      //expect(dto.organisator).toEqual(event.organisator.contact.name);
     });
   });
 
