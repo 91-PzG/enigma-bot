@@ -13,10 +13,10 @@ jobs:
 
       - name: Get release string
         run: |
-          commitmsg=${git log -1 --pretty=%B}
+          commitmsg=$(git log -1 --pretty=%b)
           version=${commitmsg#*v}
           [[ $version =~ ^[0-9]+.[0-9]+.[0-9]+$ ]] || exit 1
-          echo "RELEASE_VERSION=$version >> $GITHUB_ENV
+          echo "RELEASE_VERSION=$version" >> $GITHUB_ENV
 
       - name: Setup Node.js
         uses: actions/setup-node@v2
@@ -62,8 +62,8 @@ jobs:
         run: |
           cd dist/
           zip -r "${{ env.RELEASE_FILENAME }}" *
-          mv "${{ env.RELEASE_FILENAME }}" ../../
-          cd ../../
+          mv "${{ env.RELEASE_FILENAME }}" ../
+          cd ../
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v1

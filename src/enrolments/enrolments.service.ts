@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { Contact, Enrolment, HLLEvent, HLLRole, Squad } from '../typeorm/entities';
-import { RosterDto } from './dto/roster.dto';
+import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
+import { EntityManager, Repository } from 'typeorm';
+import { Enrolment, EnrolmentType, HLLEvent, HLLRole, Squad } from '../typeorm/entities';
+import { EnrolmentView } from '../typeorm/views/enrolment.view';
+import { RosterDto, SquadDto } from './dto/roster.dto';
 import { CreateSquadDto, RenameSquadDto } from './dto/socket.dto';
 
 @Injectable()
@@ -11,13 +12,11 @@ export class EnrolmentsService {
     @InjectRepository(HLLEvent) private eventRepository: Repository<HLLEvent>,
     @InjectRepository(Enrolment) private enrolmentRepository: Repository<Enrolment>,
     @InjectRepository(Squad) private squadRepository: Repository<Squad>,
+    @InjectEntityManager() private entityManager: EntityManager,
   ) {}
 
-  async getEnrolmentForUserAndEvent(eventId: number, memberId: string): Promise<Enrolment> {
-    const enrolment = await this.enrolmentRepository.findOne({ memberId, eventId });
-    //@ts-ignore
-    if (enrolment?.squadId) enrolment.squad = await this.squadRepository.findOne(enrolment.squadId);
-    return enrolment;
+  test() {
+    this.entityManager.find(EnrolmentView, {});
   }
 
   async getEnrolmentsForEvent(id: number): Promise<RosterDto> {
@@ -25,10 +24,9 @@ export class EnrolmentsService {
 
     if (!event) throw new NotFoundException(`Event with id ${id} not found`);
 
-    const enrolments = await this.getEnrolments(id);
     const squads = await this.getSquads(id);
 
-    return this.getRoster(enrolments, squads, event.name);
+    return this.getRoster(squads, event.name, event.id);
   }
 
   createSquad(data: CreateSquadDto, eventId: number): Promise<Squad> {
@@ -91,35 +89,26 @@ export class EnrolmentsService {
   }
 
   private async getRoster(
-    enrolments: Enrolment[],
-    squads: Squad[],
+    squads: SquadDto[],
     eventname: string,
+    eventId: number,
   ): Promise<RosterDto> {
     const roster = new RosterDto(eventname);
 
-    squads.forEach((squad: Squad) => {
-      squad.members = [];
-      roster.squads[squad.position] = squad;
+    squads.forEach(async (squad: SquadDto) => {
+      const squadId = squad.id;
+      squad.members = await this.entityManager.find(EnrolmentView, {
+        where: { eventId, squadId },
+        order: { position: 'ASC' },
+      });
+      roster.squads.push(squad);
     });
 
-    enrolments.forEach((enrolment) => {
-      if (enrolment['name']) {
-        enrolment.username = enrolment['name'];
-        delete enrolment['name'];
-      }
-
-      if (enrolment.role == HLLRole.COMMANDER) {
-        roster.commander = enrolment;
-        return;
-      }
-
-      if (enrolment.squadId) {
-        const squadPos = enrolment['squad_pos'];
-        roster.squads[squadPos].members[enrolment.position] = enrolment;
-        return;
-      }
-
-      roster.pool.push(enrolment);
+    roster.pool = await this.entityManager.find(EnrolmentView, {
+      where: { eventId, enrolmentType: EnrolmentType.ANMELDUNG, squadId: null },
+    });
+    roster.commander = await this.entityManager.findOne(EnrolmentView, {
+      where: { eventId, enrolmentType: EnrolmentType.ANMELDUNG, role: HLLRole.COMMANDER },
     });
 
     return roster;
@@ -134,24 +123,11 @@ export class EnrolmentsService {
       .execute();
   }
 
-  private getEnrolments(eventId: number): Promise<Enrolment[]> {
-    return this.enrolmentRepository
-      .createQueryBuilder('e')
-      .leftJoin(Contact, 'contact', '"memberId" = contact.id')
-      .leftJoin(Squad, 'squad', '"squadId" = squad.id')
-      .select('e.*')
-      .addSelect('squad.position', 'squad_pos')
-      .addSelect('contact.name', 'name')
-      .where('e.eventId = :eventId', { eventId })
-      .andWhere(`not "enrolmentType" = 'AB'`)
-      .orderBy('timestamp', 'ASC')
-      .getRawMany();
-  }
-
   private getSquads(eventId: number): Promise<Squad[]> {
     return this.squadRepository
       .createQueryBuilder('s')
       .where('s.eventId=:eventId', { eventId })
+      .orderBy('position', 'ASC')
       .getMany();
   }
 }

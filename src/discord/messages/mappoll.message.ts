@@ -1,7 +1,7 @@
 import { EmbedConfig } from '../../config/embeds.config';
 import { mapRegistry } from '../../config/mapregistry';
 import { HLLWarfareMaps, Mappoll } from '../../typeorm/entities';
-import { MappollvotesView } from '../../typeorm/entities/mapvotes.view';
+import { MappollvotesView } from '../../typeorm/views/mapvotes.view';
 import { DefaultMessage } from './default.message';
 
 export class MappollMessage extends DefaultMessage {

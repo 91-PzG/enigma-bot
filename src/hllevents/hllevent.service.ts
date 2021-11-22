@@ -1,6 +1,8 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { EnrolmentsService } from '../enrolments/enrolments.service';
+import { InjectEntityManager } from '@nestjs/typeorm';
+import { EntityManager } from 'typeorm';
 import { HLLEvent, IHLLEvent, Member } from '../typeorm/entities';
+import { EnrolmentView } from '../typeorm/views/enrolment.view';
 import { UsersService } from '../users/users.service';
 import { HLLEventsDiscordService } from './discord/hllevent-discord.service';
 import { HLLEventCreateWrapperDto } from './dtos/hlleventCreate.dto';
@@ -13,7 +15,7 @@ export class HLLEventService {
     private eventRepository: HLLEventRepository,
     private userService: UsersService,
     private discordService: HLLEventsDiscordService,
-    private enrolmentService: EnrolmentsService,
+    @InjectEntityManager() private entityManager: EntityManager,
   ) {}
 
   getAll(): Promise<IHLLEvent[]> {
@@ -24,7 +26,9 @@ export class HLLEventService {
     const event = await this.eventRepository.getEventById(id);
     if (!event) throw new NotFoundException(`Event with id '${id}' not found.`);
     if (userId)
-      event['enrolment'] = await this.enrolmentService.getEnrolmentForUserAndEvent(id, userId);
+      event['enrolment'] = await this.entityManager.findOne(EnrolmentView, {
+        where: { memberId: userId, eventId: id },
+      });
     return event;
   }
 
