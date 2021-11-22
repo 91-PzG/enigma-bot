@@ -26,18 +26,39 @@ export class SteamnameCommand implements DiscordTransformedCommand<SteamnameDto>
     if (!isMember)
       return interaction.reply({ content: 'Du bist kein Clanmember', ephemeral: true });
 
-    const updateResult = await this.memberRepository.update(interaction.user.id, {
-      steamName: dto.name,
-    });
-    if (updateResult.affected > 0) {
-      return interaction.reply({
-        content: 'Du hast erfolgreich deinen Steamnamen eingetragen.\nVielen Dank!',
-        ephemeral: true,
-      });
+    if (dto.name) {
+      this.setSteamname(interaction, dto.name);
+    } else {
+      this.printSteamname(interaction);
     }
-    interaction.reply({
-      content: 'Fehler beim Updaten des Steamnamens.\nBitte versuche es später erneut.',
-      ephemeral: true,
+  }
+
+  async setSteamname(interaction: CommandInteraction, name: string) {
+    const updateResult = await this.memberRepository.update(interaction.user.id, {
+      steamName: name,
     });
+
+    if (updateResult.affected > 0) {
+      this.reply(interaction, 'Du hast erfolgreich deinen Steamnamen eingetragen.\nVielen Dank!');
+    } else {
+      this.reply(
+        interaction,
+        'Fehler beim Updaten des Steamnamens.\nBitte versuche es später erneut.',
+      );
+    }
+  }
+
+  async printSteamname(interaction: CommandInteraction) {
+    const member = await this.memberRepository.findOne(interaction.user.id);
+
+    if (member.steamName) {
+      this.reply(interaction, `Du hast \`${member.steamName}\` als Steamname eingespeichert.`);
+    } else {
+      this.reply(interaction, 'Du hast noch keinen Steamnamen eingespeichert.');
+    }
+  }
+
+  reply(interaction: CommandInteraction, content: string) {
+    interaction.reply({ content, ephemeral: true });
   }
 }
