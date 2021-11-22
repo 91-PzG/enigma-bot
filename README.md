@@ -29,6 +29,10 @@ After that you're good to go. To start/debug and test the bot use the following 
 - `npm run test:watch` Works analogous to `start dev` but reruns the test instead of restarting the application
 - `npm run test:e2e` Runs the e2e tests. **Warning!** This rebuilds the database and fills it with test data. (TODO: move e2e tests to different db)
 
+## Code of Conduct
+
+Please read and abide by the [Code of Conduct](./CODE_OF_CONDUCT.md) .
+
 ## Development Guidelines
 
 Please abide by the following guidelines to keep the repository as clean as possible
