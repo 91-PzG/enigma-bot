@@ -48,7 +48,7 @@ export class HLLEventRepository extends Repository<HLLEvent> {
   getReminderEventsOne(): Promise<HLLEvent[]> {
     return this.createQueryBuilder('event')
       .leftJoinAndSelect('event.discordEvent', 'discordEvent')
-      .where('event.registerByDate < :date ', { date: new Date(new Date().valueOf() + 3600 * 24) })
+      .where('event.registerByDate < :date ', { date: this.isoStringInOneDay() })
       .andWhere('event.closed = false and event.sentReminderOne = false and event.mandatory = true')
       .getMany();
   }
@@ -56,9 +56,18 @@ export class HLLEventRepository extends Repository<HLLEvent> {
   getReminderEventsTwo(): Promise<HLLEvent[]> {
     return this.createQueryBuilder('event')
       .leftJoinAndSelect('event.discordEvent', 'discordEvent')
-      .where('event.date < :date ', { date: new Date(new Date().valueOf() + 3600 * 24 * 1000) })
+      .where('event.date < :date ', {
+        date: this.isoStringInOneDay(),
+      })
       .andWhere('event.closed = false and event.sentReminderTwo = false')
       .getMany();
+  }
+
+  private isoStringInOneDay(): string {
+    const msInDay = 86400000;
+    const date = new Date();
+    const tzOffset = date.getTimezoneOffset() * 60000;
+    return new Date(date.valueOf() + msInDay - tzOffset).toISOString();
   }
 
   getOpenEvents(): Promise<HLLEvent[]> {
