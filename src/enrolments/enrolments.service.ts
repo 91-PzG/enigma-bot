@@ -15,8 +15,8 @@ export class EnrolmentsService {
     @InjectEntityManager() private entityManager: EntityManager,
   ) {}
 
-  test() {
-    this.entityManager.find(EnrolmentView, {});
+  setAttendance(data: Enrolment) {
+    return this.enrolmentRepository.update(data.id, { isPresent: !data.isPresent });
   }
 
   async getEnrolmentsForEvent(id: number): Promise<RosterDto> {

@@ -5,6 +5,7 @@ import {
   WebSocketServer,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { Enrolment } from '../typeorm/entities';
 import { CreateSquadDto, DeleteSquadDto, MoveSoldierDto, RenameSquadDto } from './dto/socket.dto';
 import { EnrolmentsService } from './enrolments.service';
 
@@ -36,26 +37,25 @@ export class EnrolmentsGateway implements OnGatewayConnection {
   @SubscribeMessage('delete-squad')
   async deleteSquad(client: Socket, data: DeleteSquadDto) {
     await this.service.deleteSquad(data.id);
-    this.server.to(client.handshake.query.eventId).emit('delete-squad', {
-      position: data.position,
-    });
+    this.server.to(client.handshake.query.eventId).emit('delete-squad', data);
   }
 
   @SubscribeMessage('rename-squad')
   async renameSquad(client: Socket, data: RenameSquadDto) {
     await this.service.renameSquad(data);
-    this.server.to(client.handshake.query.eventId).emit('rename-squad', {
-      name: data.name,
-      position: data.position,
-    });
+    this.server.to(client.handshake.query.eventId).emit('rename-squad', data);
   }
 
   @SubscribeMessage('move-soldier')
   async moveSoldier(client: Socket, data: MoveSoldierDto) {
     await this.service.moveSoldier(data.oldSoldier, data.newSoldier);
-    this.server.to(client.handshake.query.eventId).emit('move-soldier', {
-      oldSoldier: data.oldSoldier,
-      newSoldier: data.newSoldier,
-    });
+    this.server.to(client.handshake.query.eventId).emit('move-soldier', data);
+  }
+
+  @SubscribeMessage('set-attendance')
+  async setAttendance(client: Socket, data: Enrolment) {
+    await this.service.setAttendance(data);
+    data.isPresent = !data.isPresent;
+    this.server.to(client.handshake.query.eventId).emit('set-attendance', data);
   }
 }
