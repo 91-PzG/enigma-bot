@@ -3,7 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiscordService } from '../../discord/discord.service';
-import { Enrolment, EnrolmentType, HLLEvent, Member } from '../../typeorm/entities';
+import { Enrolment, EnrolmentType, HLLEvent } from '../../typeorm/entities';
 import { HLLEventRepository } from '../hllevent.repository';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class ReminderService {
   ) {}
 
   private async sendReminderOne(event: HLLEvent) {
-    const enrolments: Member[] = await this.enrolmentRepository.query(
+    const enrolments: { id: string }[] = await this.enrolmentRepository.query(
       `SELECT m.id FROM public."member" m WHERE NOT EXISTS (SELECT FROM public."enrolment" e WHERE m.id = e."memberId" AND e."eventId" = ${event.id}) AND m."honoraryMember" = FALSE AND m.reserve = FALSE AND m."memberTill" IS NULL AND NOT (m."memberSince" IS NULL AND m."recruitTill" IS NOT NULL)`,
     );
     const eventChannel = event.discordEvent.channelId;
@@ -44,7 +44,7 @@ export class ReminderService {
   }
 
   private async sendMessage(memberIds: string[], message: string) {
-    for (const id in memberIds) {
+    for (const id of memberIds) {
       const member = await this.discordService.getMember(id);
       if (member) member.send(message);
     }
@@ -54,14 +54,14 @@ export class ReminderService {
   async checkReminders() {
     this.eventRepository.getReminderEventsOne().then((events) => {
       events.forEach((event) => {
-        this.eventRepository.setReminderOne(event.id);
         this.sendReminderOne(event);
+        this.eventRepository.setReminderOne(event.id);
       });
     });
     this.eventRepository.getReminderEventsTwo().then((events) => {
       events.forEach((event) => {
-        this.eventRepository.setReminderTwo(event.id);
         this.sendReminderTwo(event);
+        this.eventRepository.setReminderTwo(event.id);
       });
     });
   }
