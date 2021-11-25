@@ -17,7 +17,7 @@ Combination of the "Enigma"-Bot and the backend for the 91.PzG Memberportal
 
 ## Setting up your development environment
 
-After cloning the repository and installing the dependencies conntact an owner to help you fill out the `.env`-File with the necessary information.
+After cloning the repository and installing the dependencies contact an owner to help you fill out the `.env`-File with the necessary information.
 Also you should request an invite to the development discord where we set up roles event channels etc and discuss the next steps.
 After that you're good to go. To start/debug and test the bot use the following commands (defined in `package.json`):
 
