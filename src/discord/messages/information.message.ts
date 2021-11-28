@@ -8,10 +8,7 @@ type Translation = {
   valuePipe?: (value: any) => string;
 };
 
-const boolTransformation = (value: any): string => {
-  return value === 'true' ? 'Ja' : 'Nein';
-};
-
+const boolTransformation = (value: any): string => (value != 'false' ? 'Ja' : 'Nein');
 const translationMatrix: { [key: string]: Translation } = {
   date: { name: 'Datum:', valuePipe: dateTransformationPipe },
   registerByDate: { name: 'Anmeldefrist:', valuePipe: dateTransformationPipe },
