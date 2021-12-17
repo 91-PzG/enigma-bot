@@ -1,0 +1,26 @@
+name: Create_Release
+on:
+  push:
+    branches:
+      version:
+        - master
+
+jobs:
+  merge-back-into-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CI_PERSONAL_TOKEN }}
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.CI_PERSONAL_TOKEN }}
+          committer: ${{ secrets.CI_USERNAME }} <${{ secrets.CI_EMAIL }}>
+          author: ${{ secrets.CI_USERNAME }} <${{ secrets.CI_EMAIL }}>
+          base: 'dev'
+          title: 'Merge Branch main back into dev'
+          body: 'TODO'
+          reviewers: 'hoersamu'
+          assignees: 'hoersamu'
