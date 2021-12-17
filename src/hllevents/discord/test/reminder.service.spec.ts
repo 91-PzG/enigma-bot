@@ -1,6 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { GuildMember } from 'discord.js';
+import { GuildMember, User } from 'discord.js';
 import { Repository, SelectQueryBuilder } from 'typeorm';
 import { DiscordService } from '../../../discord/discord.service';
 import { Enrolment, HllDiscordEvent, HLLEvent, Member } from '../../../typeorm/entities';
@@ -12,6 +12,7 @@ describe('ReminderService', () => {
   let enrolmentRepository: jest.Mocked<Repository<Enrolment>>;
   let discordService: jest.Mocked<DiscordService>;
   let hllEventRepository: jest.Mocked<HLLEventRepository>;
+  let memberRepository: jest.Mocked<Repository<Member>>;
   let queryBuilder: Partial<SelectQueryBuilder<Enrolment>> = {
     select: jest.fn().mockReturnThis(),
     where: jest.fn().mockReturnThis(),
@@ -32,6 +33,9 @@ describe('ReminderService', () => {
       setReminderOne: jest.fn(),
       setReminderTwo: jest.fn(),
     };
+    const memberRepositoryMock: Partial<Repository<Member>> = {
+      update: jest.fn(),
+    };
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -48,6 +52,10 @@ describe('ReminderService', () => {
           provide: HLLEventRepository,
           useValue: hllEventRepositoryMock,
         },
+        {
+          provide: getRepositoryToken(Member),
+          useValue: memberRepositoryMock,
+        },
       ],
     }).compile();
 
@@ -55,6 +63,7 @@ describe('ReminderService', () => {
     enrolmentRepository = module.get(getRepositoryToken(Enrolment));
     discordService = module.get(DiscordService);
     hllEventRepository = module.get(HLLEventRepository);
+    memberRepository = module.get(getRepositoryToken(Member));
   });
 
   it('should be defined', () => {
@@ -70,7 +79,11 @@ describe('ReminderService', () => {
       name: 'TestEvent#2',
       discordEvent: { channelId: '12233435766' } as HllDiscordEvent,
     };
-    const members: Partial<Member>[] = [{ id: '4234234234' }, { id: '4359830958' }];
+    const members: Partial<Member>[] = [
+      { id: '4234234234' },
+      { id: '4359830958' },
+      { id: 'notfound' },
+    ];
     const enrolments: Partial<Enrolment>[] = [{ memberId: '134134' }, { memberId: '7767' }];
     const guildMember: Partial<GuildMember> = {
       send: jest.fn(),
@@ -83,7 +96,12 @@ describe('ReminderService', () => {
     beforeAll(async () => {
       enrolmentRepository.query.mockResolvedValue(members);
       (queryBuilder.getMany as jest.Mock<any, any>).mockResolvedValue(enrolments);
-      discordService.getMember.mockResolvedValue(guildMember as GuildMember);
+      discordService.getMember.mockImplementation((user: string | User) => {
+        return new Promise((resolve, reject) => {
+          if (user == 'notfound') reject();
+          resolve(guildMember as GuildMember);
+        });
+      });
       hllEventRepository.getReminderEventsOne.mockResolvedValue([eventOne as HLLEvent]);
       hllEventRepository.getReminderEventsTwo.mockResolvedValue([eventTwo as HLLEvent]);
 

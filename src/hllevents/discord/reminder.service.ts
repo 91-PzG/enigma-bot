@@ -3,7 +3,7 @@ import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { DiscordService } from '../../discord/discord.service';
-import { Enrolment, EnrolmentType, HLLEvent } from '../../typeorm/entities';
+import { Enrolment, EnrolmentType, HLLEvent, Member } from '../../typeorm/entities';
 import { HLLEventRepository } from '../hllevent.repository';
 
 @Injectable()
@@ -12,6 +12,8 @@ export class ReminderService {
     @InjectRepository(Enrolment) private enrolmentRepository: Repository<Enrolment>,
     private discordService: DiscordService,
     private eventRepository: HLLEventRepository,
+    @InjectRepository(Member)
+    private memberRepository: Repository<Member>,
   ) {}
 
   private async sendReminderOne(event: HLLEvent) {
@@ -45,8 +47,12 @@ export class ReminderService {
 
   private async sendMessage(memberIds: string[], message: string) {
     for (const id of memberIds) {
-      const member = await this.discordService.getMember(id);
-      if (member) member.send(message);
+      try {
+        const member = await this.discordService.getMember(id);
+        if (member) member.send(message);
+      } catch (error) {
+        this.memberRepository.update(id, { reserve: true });
+      }
     }
   }
 
