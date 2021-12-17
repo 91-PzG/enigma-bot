@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -8,6 +8,8 @@ import { HLLEventRepository } from '../hllevent.repository';
 
 @Injectable()
 export class ReminderService {
+  logger = new Logger('Reminder Service');
+
   constructor(
     @InjectRepository(Enrolment) private enrolmentRepository: Repository<Enrolment>,
     private discordService: DiscordService,
@@ -22,6 +24,9 @@ export class ReminderService {
     );
     const eventChannel = event.discordEvent.channelId;
     const message = `Vergiss nicht dich für das Event "${event.name}" an- oder abzumelden! <#${eventChannel}>`;
+
+    this.logger.log(`Sending Reminder One for Event #${event.id} to ${enrolments.length} members`);
+
     this.sendMessage(
       enrolments.map((e) => e.id),
       message,
@@ -39,6 +44,9 @@ export class ReminderService {
       .getMany();
     const eventChannel = event.discordEvent.channelId;
     const message = `Vergiss nicht, dass das Event "${event.name}" morgen stattfindet! <#${eventChannel}>`;
+
+    this.logger.log(`Sending Reminder Two for Event #${event.id} to ${enrolments.length} members`);
+
     this.sendMessage(
       enrolments.map((e) => e.memberId),
       message,
@@ -51,6 +59,7 @@ export class ReminderService {
         const member = await this.discordService.getMember(id);
         if (member) member.send(message);
       } catch (error) {
+        this.logger.log(`Adding member "${id}" to reserve`);
         this.memberRepository.update(id, { reserve: true });
       }
     }
