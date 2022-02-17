@@ -94,13 +94,13 @@ export class UsersService {
     const contactUpdate = this.contactRepository
       .createQueryBuilder()
       .update()
-      .where(id)
+      .where({ id: id })
       .set({ comment: body.comment })
       .execute();
     const memberUpdate = this.memberRepository
       .createQueryBuilder()
       .update()
-      .where(id)
+      .where({ id: id })
       .set({ memberSince: body.memberSince, recruitSince: body.recruitSince })
       .execute();
     return Promise.all([contactUpdate, memberUpdate]);
