@@ -97,12 +97,11 @@ export class UsersService {
       .where(id)
       .set({ comment: body.comment })
       .execute();
-    delete body.comment;
     const memberUpdate = this.memberRepository
       .createQueryBuilder()
       .update()
       .where(id)
-      .set(body)
+      .set({ memberSince: body.memberSince, recruitSince: body.recruitSince })
       .execute();
     return Promise.all([contactUpdate, memberUpdate]);
   }
