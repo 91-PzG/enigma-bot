@@ -1,8 +1,8 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, SelectQueryBuilder, UpdateResult } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
-import { AccessRoles, Division, Member } from '../typeorm/entities';
+import { AccessRoles, Contact, Division, Member } from '../typeorm/entities';
 import { MembersView } from '../typeorm/views/members.view';
 import { MembersDto } from './dto/members.dto';
 import { NameListDto } from './dto/name-list.dto';
@@ -13,6 +13,8 @@ export class UsersService {
   constructor(
     @InjectRepository(Member)
     private memberRepository: Repository<Member>,
+    @InjectRepository(Contact)
+    private contactRepository: Repository<Contact>,
     @InjectEntityManager() private entityManager: EntityManager,
   ) {}
 
@@ -88,7 +90,20 @@ export class UsersService {
     )?.division;
   }
 
-  patchUser(id: string, body: PatchUserDto): Promise<UpdateResult> {
-    return this.memberRepository.createQueryBuilder().update().where(id).set(body).execute();
+  patchUser(id: string, body: PatchUserDto): Promise<any> {
+    const contactUpdate = this.contactRepository
+      .createQueryBuilder()
+      .update()
+      .where(id)
+      .set({ comment: body.comment })
+      .execute();
+    delete body.comment;
+    const memberUpdate = this.memberRepository
+      .createQueryBuilder()
+      .update()
+      .where(id)
+      .set(body)
+      .execute();
+    return Promise.all([contactUpdate, memberUpdate]);
   }
 }

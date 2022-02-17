@@ -1,5 +1,4 @@
 import { Body, Controller, Get, Param, Patch, UseGuards } from '@nestjs/common';
-import { UpdateResult } from 'typeorm';
 import { GetUser } from '../auth/jwt/get-user.decorator';
 import { RoleGuard } from '../auth/jwt/guards/role.guard';
 import { Scopes } from '../auth/jwt/guards/scopes.decorator';
@@ -32,7 +31,7 @@ export class UsersController {
   @Scopes(AccessRoles.HUMANRESOURCES)
   @UseGuards(RoleGuard)
   @Patch('/:id')
-  patchUser(@Param('id') id: string, @Body() body: PatchUserDto): Promise<UpdateResult> {
+  patchUser(@Param('id') id: string, @Body() body: PatchUserDto): Promise<any> {
     return this.usersService.patchUser(id, body);
   }
 }
