@@ -1,6 +1,6 @@
-import { Injectable, NotFoundException, NotImplementedException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { EntityManager, Repository, SelectQueryBuilder } from 'typeorm';
+import { EntityManager, Repository, SelectQueryBuilder, UpdateResult } from 'typeorm';
 import { JwtPayload } from '../auth/jwt/jwt-payload.interface';
 import { AccessRoles, Division, Member } from '../typeorm/entities';
 import { MembersView } from '../typeorm/views/members.view';
@@ -88,7 +88,7 @@ export class UsersService {
     )?.division;
   }
 
-  patchUser(id: string, body: PatchUserDto): number {
-    throw new NotImplementedException();
+  patchUser(id: string, body: PatchUserDto): Promise<UpdateResult> {
+    return this.memberRepository.createQueryBuilder().update().where(id).set(body).execute();
   }
 }
