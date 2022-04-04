@@ -22,7 +22,7 @@
     "test:e2e": "jest --config ./test/jest/jest.config.ts"
   },
   "dependencies": {
-    "@discord-nestjs/common": "^2.0.16",
+    "@discord-nestjs/common": "^3.0.5",
     "@discord-nestjs/core": "^2.1.12",
     "@nestjs/axios": "^0.0.5",
     "@nestjs/common": "^8.2.6",
@@ -45,7 +45,7 @@
     "pg": "^8.7.1",
     "pm2": "^5.1.2",
     "reflect-metadata": "^0.1.13",
-    "rxjs": "^7.5.2",
+    "rxjs": "^7.5.5",
     "typeorm": "^0.2.41"
   },
   "devDependencies": {
